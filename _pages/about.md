@@ -16,7 +16,7 @@ selected_papers: true # includes a list of papers marked as "selected={true}"
 social: true # includes social icons at the bottom of the page
 ---
 
-  Hi! I am a fourth year Harvard math graduate student. My advisor is Mike Hopkins.
+  Hello! I am a fourth year Harvard math graduate student. My advisor is Mike Hopkins.
   Before grad school, I did my undergraduate at UT Austin with Dan Freed.
 
   I work in both math and physics, mostly in between. 
