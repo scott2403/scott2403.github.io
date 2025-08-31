@@ -23,7 +23,7 @@ projects: []
 Ukrainian motion verbs can be divided based on 2 dimensions:
 
 - whether you go by food/vehicle
-- whether you are describing a habitual motion or not
+- whether you are describing a habitual motion or not (habitual verbs typically appear with `щодня` or similar)
 
 The main 4 verbs are:
 
@@ -33,9 +33,7 @@ The main 4 verbs are:
 2. By Vehicle:
     a. Non-repeated motion: `їхати`
     b. Repeated motion: `їздити`
-
-- There are two equivalent verbs for "to go (on foot)" or "to walk". These verbs are `іти` (ite) or `йти` ("gli"-te). 
-- The verb `ходити`: this is the same verb, but should be used for "to go" in general, as a habit (typically appears with `щодня` and similar).
+  
 - Imperative:
     - One person: `іди!` or `йди!` (go!)
     - Multiple persons: `ідіть!` or `йдіть` (let's go!)
