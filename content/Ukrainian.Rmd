@@ -21,9 +21,12 @@ projects: []
 
 # To Go
 Ukrainian motion verbs can be divided based on 2 dimensions:
+
 - whether you go by food/vehicle
 - whether you are describing a habitual motion or not
+
 The main 4 verbs are:
+
 1. By Foot:
     a. Non-repeated motion: `ити` or `йти` (equivalent).
     b. Repeated motion: `ходити`
