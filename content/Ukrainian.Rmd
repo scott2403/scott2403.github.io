@@ -1,0 +1,45 @@
+---
+title: Ukrainian Lessons
+author: Mauro Camara Escudero
+date: '2025-08-31'
+slug: ukrainian
+categories:
+  - ukrainian
+tags:
+  - ukrainian
+subtitle: 'Just a repository of mnemonics, tricks or just enumerations of Ukrainian words and grammar.'
+summary: ''
+authors: []
+lastmod: '2025-08-31T23:34:07+01:00'
+featured: no
+image:
+  caption: ''
+  focal_point: ''
+  preview_only: no
+projects: []
+---
+
+# To Go
+- There are two main verbs for "to go (on foot)" or "to walk". These verbs are `іти` (ite) or `йти` ("gli"-te)
+- Imperative:
+    - One person: `іди!` or `йди!` (go!)
+    - Multiple persons: `ідіть!` or `йдіть` (let's go!)
+
+### Phrases
+  - `іди геть!` or `ідіть геть` go away!
+  - `іди здоровий` or `ідіть здорові` go healthy! Use as goodbye
+  - `іди з Богом` go with God! Use as goodbye
+  - `іди з миром` go with peace! Use as goodbye
+  - `іти на небо` to go to Heaven. Means "to die"
+  - `іти на пенсію` to retire. Think of "pensiiu" as pension.
+      - `коли люди в Україні ідуть на пенсію` (when do people in Ukraine retire?)
+  - `іти під ніж` (literally "to go under the knife") means "to have an operation/to be operated".
+  - `іти у гості` to go as a guest.
+  - `іти на компроміс` to go for a compromise.
+  - `іти пішки` to go by foot.
+      - `Я йду пішки на роботу` (I go to work by foot)
+  - `іти на прогулянку` to go for a walk (think about pro + "huliate" verb)
+
+### Resources
+- [Youtube Ukrainian Language](https://www.youtube.com/watch?v=hCKv52TYrs8&t=23s)
+- [Ukrainian Online Keyboard](https://www.lexilogos.com/keyboard/ukrainian.htm)
