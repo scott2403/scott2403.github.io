@@ -16,7 +16,7 @@
  [zh.params]
 #    description = "Site description in Chinese..."
  [[zh.menu.main]]
-   name = "随笔"
+   name = "近期"
    url = "#posts"
    weight = 2
   
