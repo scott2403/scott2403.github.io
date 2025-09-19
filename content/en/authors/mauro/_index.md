@@ -24,8 +24,10 @@ bio: My research interests include Representation Theory, Algebraic Geometry and
 
 interests:
 - Animes
-- $\LaTex$ 
-- Philosophy
+- Musical & Opera
+- Classical Music
+- \LaTeX
+- Philosophy & Linguistics
 - Galgames
 - Some Applied Mathematics
 
