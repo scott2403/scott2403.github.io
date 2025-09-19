@@ -16,27 +16,27 @@
  [zh.params]
 #    description = "Site description in Chinese..."
  [[zh.menu.main]]
-   name = "近期"
+   name = "个人随笔与教学"
    url = "#posts"
    weight = 2
   
   [[zh.menu.main]]
-  name = "报告"
+  name = "学术会议"
   url = "#talk"
   weight = 25
 
   [[zh.menu.main]]
-  name = "项目"
+  name = "笔记"
   url = "#projects"
   weight = 30
 
   [[zh.menu.main]]
-  name = "论文"
+  name = "论文和预印本"
   url = "consulting/"
   weight = 40
 
   [[zh.menu.main]]
-  name = "笔记"
+  name = "杂项"
   url = "freelance/"
   weight = 45
 
