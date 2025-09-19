@@ -1,0 +1,89 @@
+---
+title: An Introduction to Transformers - Summary
+author: Mauro Camara Escudero
+date: '2024-01-29'
+slug: an_introduction_to_transformers
+categories:
+  - attention
+  - transformers
+  - deep-learning
+tags:
+  - attention
+  - transformers
+  - deep-learning
+subtitle: 'Summary of "An Introduction to Transformers" by Richard E. Turner (2023).'
+summary: ''
+authors: []
+lastmod: '2024-01-29T14:34:07+01:00'
+featured: no
+image:
+  caption: ''
+  focal_point: ''
+  preview_only: no
+projects: []
+---
+
+
+
+<div id="input-to-the-transformer" class="section level3">
+<h3>Input to the Transformer</h3>
+<p>The input to the transformer is a <strong>sequence</strong> <span class="math inline">\(X^{(0)}\in\mathbb{R}^{D\times N}\)</span> where <span class="math inline">\(N\)</span> is the length of the sequence and <span class="math inline">\(D\)</span> is the dimensionality of each item in the sequence, which are known as <strong>tokens</strong> and denoted as <span class="math inline">\(\mathbf{x}_n^{(0)}\in\mathbb{R}^{D\times 1}\)</span>.
+<span class="math display">\[
+X = \left[\mathbf{x}_0^{(0)}, \ldots, \mathbf{x}_N^{(0)}\right]
+\]</span>
+The items in the sequence are representations of objects of interest. For instance, in language tasks, a token is usually a unique vector representation of a word, whereas for an image it would be a vector representation of a patch. The representation can be given/fixed (e.g. Word2Vec) or learned during training.</p>
+</div>
+<div id="transformer-block" class="section level3">
+<h3>Transformer Block</h3>
+<p>The <strong>output</strong> of the transformer is denoted <span class="math inline">\(X^{(M)}\)</span> where <span class="math inline">\(M\)</span> is the number of transformer blocks
+<span class="math display">\[
+X^{(m+1)} = \text{transformer-block}(X^{(m)}).
+\]</span>
+Each transformer block consists of two stages, each with three steps, where the middle step is sandwiched between a standardization and a residual connection.</p>
+<ul>
+<li><strong>Stage 1</strong>:
+<ul>
+<li><strong>Standardisation</strong>: Each token is <strong>standardized</strong> separately before being fed into the tranformer to stabilise learning: to each token <span class="math inline">\(\mathbf{x}_n^{(0)}\)</span> we subtract the mean and divide by the standard deviation
+<span class="math display">\[
+\bar{\mathbf{x}}_n^{(0)} = \frac{\mathbf{x}_n^{(0)} - \text{mean}(\mathbf{x}_n^{(0)})}{\text{std}(\mathbf{x}_n^{(0)})} \qquad \qquad \forall n = 1, \ldots, N.
+\]</span>
+so we form <span class="math inline">\(\bar{X}^{(0)} = [\bar{\mathbf{x}}_0^{(0)}, \ldots, \bar{\mathbf{x}}_N^{(0)}]\)</span>. Typically this is called LayerNorm, but the author calls it <strong>TokenNorm</strong>.</li>
+<li><strong>MHSA Layer</strong>: Consists of <span class="math inline">\(H\in\mathbb{Z}_+\)</span> heads, meaning that we perform <span class="math inline">\(H\)</span> operations in parallel. Each of the <span class="math inline">\(H\)</span> operations, shown below, consists of multiplying the standardised sequence <span class="math inline">\(\bar{X}^{(m-1)}\)</span> by the <strong>attention matrix</strong> and the projecting, thus obtaining a <span class="math inline">\(D\times N\)</span> matrix and then “linearly projecting” this by <span class="math inline">\(V_h\)</span>. The attention matrix is constructed from the input.
+<span class="math display">\[
+\begin{align}
+  Y^{(m)} &amp;= \text{MHSA}(\bar{X}^{(m-1)}) = \sum_{h=1}^H V_h \bar{X}^{(m-1)} A_h^{(m)} &amp;&amp; \text{where }\, V_h\in\mathbb{R}^{D\times D} \text{ and } A_h^{(m)}\in\mathbb{R}^{N\times N}\\
+  (A_h)_{n, n&#39;}
+  &amp;= \frac{\displaystyle \exp\left\{\left\langle\mathbf{k}_{h, n}^{(m)}, \mathbf{q}_{h, n&#39;}^{(m)} \right\rangle\right\}}{\displaystyle \sum_{n&#39;&#39;=1}^N \exp\left\{\left\langle\mathbf{k}_{h, n&#39;&#39;}^{(m)}, \mathbf{q}_{h, n&#39;}^{(m)} \right\rangle\right\}} &amp;&amp; \text{where } \, \mathbf{q}_{h, n}^{(m)} = U_{\mathbf{q}, h}^{(m)} \bar{\mathbf{x}}_n^{(m-1)} \text{ and } \mathbf{k}_{h, n}^{(m)} = U_{\mathbf{k}, h}^{(m)}\bar{\mathbf{x}}_n^{(m-1)}.
+\end{align}
+\]</span>
+The vectors <span class="math inline">\(\mathbf{q}\)</span> and <span class="math inline">\(\mathbf{k}\)</span> are known as <strong>queries</strong> and <strong>keys</strong> respectively and we use the matrices <span class="math inline">\(U_{\mathbf{q}}\)</span> and <span class="math inline">\(U_{\mathbf{k}}\)</span> to introduce a notion of asymmetry of the relationship between the various tokens. Each element of <span class="math inline">\(A_h^{(m)}\)</span> is then the softmax of this relationship and we use multiple heads because each head is <em>capturing a different type of relationship</em>. The parameters for this layer are <span class="math inline">\(U_{\mathbf{q}, h}, U_{\mathbf{k}, h}\)</span> and <span class="math inline">\(V_h\)</span> for every <span class="math inline">\(h=1, \ldots, H\)</span>.</li>
+<li><strong>Residual Connection</strong>: We use residual connections so that each preceding transformation is not too dissimilar to a identity operation: it only introduces a mild non-linearity. This stabilizes training, and if we have enough layers, it will still be able to learn complex representations. To implement the residual connection we simply do
+<span class="math display">\[
+Z^{(m)} = X^{(m-1)} + Y^{(m)},
+\]</span>
+and we point out that we sum the un-standadized <span class="math inline">\(X^{(m-1)}\)</span>. This ends the first stage.</li>
+</ul></li>
+<li><strong>Stage 2</strong>
+<ul>
+<li><strong>Standardization</strong>: We do the same as before and standardize each token in <span class="math inline">\(Z^{(m)}\)</span> to obtain <span class="math inline">\(\bar{Z}^{(m)}\)</span>.</li>
+<li><strong>MLP Layer</strong>: A simple (usually quite shallow) MLP is applied to each transformed token <span class="math inline">\(\bar{\mathbf{z}}_n^{(m)}\)</span> to obtain the corresponding representation
+<span class="math display">\[
+\mathbf{\varkappa}_n^{(m)} = \text{MLP}(\bar{\mathbf{z}}_n^{(m)}) \qquad n=1, \ldots, N \text{ and } m=0, \ldots, M.
+\]</span>
+Notice that we have <strong>a single MLP</strong> and this is used for all the transformed tokens.</li>
+<li><strong>Residual Connection</strong>: Finally, we apply one last residual connection to obtain <span class="math inline">\(X^{(m)}\)</span>
+<span class="math display">\[
+\mathbf{x}_n^{(m)} = Z^{(m)} + \mathbf{\varkappa}_n^{(m)},
+\]</span>
+where we notice, one again, that we sum the output of the first stage, before being normalised by the second stage.</li>
+</ul></li>
+</ul>
+</div>
+<div id="transformers-for-sequential-tasks" class="section level3">
+<h3>Transformers for Sequential Tasks</h3>
+<p>To use Transformers for sequential tasks we use <strong>masking</strong> which means that the matrices <span class="math inline">\(A^{(m)}_h\)</span> are all <strong>upper-triangular</strong> (notice that other references use <span class="math inline">\(N\times D\)</span> inputs and so require lower-triangular matrices), meaning that we enforce an <strong>auto-regressive</strong> behavior, which makes the model more computationally tractable for sequential problems, at the cost of losing some representation ability. To perform <strong>Language Modelling</strong> (i.e. predicting the next word), we want to use <span class="math inline">\(\mathbf{x}_{n-1}^{(M)}\)</span> to predict <span class="math inline">\(\mathbf{x}_{n}^{(M)}\)</span>. We do this using the <strong>softmax</strong> function on the dictionary
+<span class="math display">\[
+p(\text{word}_n = w \mid \mathbf{x}_{n-1}^{(M)}) = \frac{\displaystyle \exp\left(\mathbf{g}_w^\top \mathbf{x}_{n-1}^{(M)}\right)}{\displaystyle \sum_{w=1}^W \exp\left(\mathbf{g}_w^\top \mathbf{x}_{n-1}^{(M)}\right)},
+\]</span>
+where <span class="math inline">\(W\)</span> is the size of the vocabulary and <span class="math inline">\(w\)</span> is the <span class="math inline">\(w^{\text{th}}\)</span> word in this vocabulary, and <span class="math inline">\(\left\{\mathbf{g}_w\right\}_{w=1}^W\)</span> are weights of the softmax function.</p>
+</div>
