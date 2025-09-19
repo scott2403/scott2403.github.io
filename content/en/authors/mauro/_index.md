@@ -23,12 +23,11 @@ organizations:
 bio: My research interests include Representation Theory, Algebraic Geometry and Mathematical Physics.
 
 interests:
-- Algebraic/Geometric Representation Theory
-- Geometric Langlands & its related physics problems
-- Lie Theory (Hopf algebras, Tensor categories)
-- Algebraic Geometry (Quantum cohomology, Moduli space)
-- Noncommutative Geometry & K-Theory
-- Mathematical Physics (including Mathematical concepts of TQFT/CFT & String Theory )
+- Animes
+- $\LaTex$ 
+- Philosophy
+- Galgames
+- Some Applied Mathematics
 
 education:
   courses:
@@ -72,12 +71,14 @@ user_groups:
 - ResearchersContact
 - Visitors
 ---
-Greating, welcome to my personal website. I am a fourth-year student in the NJUPT, and My current research interests lie in representation theory, algebraic geometry, and mathematical physics.
+Greetings, welcome to my personal website. I am a fourth-year student in the NJUPT, and My current research interests lie in representation theory, algebraic geometry, and mathematical physics.
 
-Other things I am passionate about include:
+I'm mainly concerned with the following mathematical problems:
 
-- Basketball :basketball: 
-- Dancing (mostly Modern Jive, West Coast Swing and Blues) :dancer:
-- Journalism, especially investigative (e.g. Bellingcat) :detective:
-- Science of Cooking :test_tube: :shallow_pan_of_food:
-- Exercising whether bodyweight, calisthenics or at the gym :weight_lifting:
+- Algebraic/Geometric Representation Theory
+- Geometric Langlands & its related physics problems
+- Lie Theory (Hopf algebras, Tensor categories)
+- Algebraic Geometry (Quantum cohomology, Moduli space)
+- Noncommutative Geometry & K-Theory
+- Mathematical Physics (including Mathematical concepts of TQFT/CFT & String Theory )
+
