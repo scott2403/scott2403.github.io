@@ -1,6 +1,6 @@
 ---
 # Display name
-name: Mauro Camara Escudero
+name: Hui-Tung Kuo
 
 # R PORTFOLIO: https://statisticalcomputingportfolio.netlify.com/
 
@@ -12,32 +12,32 @@ authors:
 superuser: true
 
 # Role/position
-role: Machine Learning Engineer
+role: Undergraduate Student
 
 # Organizations/Affiliations
 organizations:
-- name: ExTrac AI
-  url: "https://extrac.ai/"
+- name: Nanjing University of Posts and Telecommunications
+  url: "https://www.njupt.edu.cn/"
 
 # Short bio (displayed in user profile at end of posts)
-bio: My research interests include approximate manifold sampling and generative models.
+bio: My research interests include Representation Theory, Algebraic Geometry and Mathematical Physics.
 
 interests:
-- Multilingual LLMs for low-resource languages
-- AI Safety, Trustworthy AI
-- Score-based sampling (HMC, MALA)
-- Generative Models (LLMs, DDGM)
-- Approximate Manifold Sampling
-- Scalable/Robust inference (SMC,SBI)
+- Algebraic/Geometric Representation Theory
+- Geometric Langlands Theory & its related physics problems
+- Lie Theory (Hopf algebras, Tensor categories)
+- Algebraic Geometry (Quantum cohomology, Moduli space)
+- Noncommutative Geometry & K-Theory
+- Mathematical Physics (including Mathematical concepts of TQFT/CFT & String Theory )
 
 education:
   courses:
-  - course: PhD in Statistical Machine Learning
-    institution: University of Bristol
-    year: 2020-2023
-  - course: BSc in Mathematics with Year in Employment
-    institution: University of Southampton
-    year: 2019
+#   - course: PhD in Statistical Machine Learning
+#     institution: University of Bristol
+#     year: 2020-2023
+  - course: BSc in Mathematics
+    institution: Nanjing University of Posts and Telecommunications
+    year: 2026
 
 # course: MRes in Computational Statistics and Data Science
 # institution: University of Bristol
