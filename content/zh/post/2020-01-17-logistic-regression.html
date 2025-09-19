@@ -1,0 +1,431 @@
+---
+title: Logistic Regression
+author: Mauro Camara Escudero
+date: '2020-01-17'
+slug: logistic-regression
+categories:
+  - classification
+tags:
+  - classification
+  - logistic regression
+subtitle: ''
+summary: 'Rigorous summary of results and formulas concerning Bayesian Logistic Regression.'
+authors: []
+lastmod: '2020-01-17T02:41:40Z'
+featured: no
+image:
+  caption: ''
+  focal_point: ''
+  preview_only: no
+projects: []
+---
+
+
+
+
+<div id="bernoulli-setting" class="section level3">
+<h3>Bernoulli Setting</h3>
+<p>Assume <span class="math inline">\(Y_i\)</span> follows Bernoulli distribution given the <span class="math inline">\(i^{th}\)</span> observation <span class="math inline">\(\boldsymbol{\mathbf{x}}_i\)</span> and the parameters <span class="math inline">\(\boldsymbol{\mathbf{\beta}}\)</span>
+<span class="math display">\[
+Y_i \mid \boldsymbol{\mathbf{x}}_i \sim \text{Bernoulli}(p_i)
+\]</span>
+We can write the probability mass function for <span class="math inline">\(y_i\)</span> as follows
+<span class="math display">\[
+\mathbb{P}(Y_i=y_i\mid \boldsymbol{\mathbf{x}}_i, p_i) = p_i^{y_i}(1 - p_i)^{1- y_i} 
+\]</span>
+We assume that the log-odds is a linear combination of the input
+<span class="math display">\[
+\ln\left(\frac{p_i}{1 - p_i}\right)= \boldsymbol{\mathbf{x}}_i^\top \boldsymbol{\mathbf{\beta}}\qquad \text{i.e.} \qquad p_i = \frac{1}{1 + \exp(-\boldsymbol{\mathbf{x}}_i^\top \boldsymbol{\mathbf{\beta}})} = \frac{\exp(\boldsymbol{\mathbf{x}}_i^\top \boldsymbol{\mathbf{\beta}})}{1 + \exp(\boldsymbol{\mathbf{x}}_i^\top \boldsymbol{\mathbf{\beta}})} = \sigma(\boldsymbol{\mathbf{x}}_i^\top\boldsymbol{\mathbf{\beta}})
+\]</span></p>
+</div>
+<div id="joint-log-likelihood" class="section level3">
+<h3>Joint Log-Likelihood</h3>
+<p>The joint likelihood is then found assuming IID-ness
+<span class="math display">\[
+\begin{align}
+  p(\boldsymbol{\mathbf{y}}\mid \boldsymbol{\mathbf{\beta}}) &amp;= \prod_{i=1}^n \mathbb{P}(Y_i=y_i\mid \boldsymbol{\mathbf{x}}_i, p_i) \\
+  &amp;= \prod_{i=1}^n  p_i^{y_i}(1 - p_i)^{1- y_i}
+\end{align}
+\]</span>
+The log-likelihood is then
+<span class="math display">\[
+\begin{align}
+\ln p(\boldsymbol{\mathbf{y}}\mid \boldsymbol{\mathbf{\beta}}) &amp;= \ln\left(\prod_{i=1}^n p_i^{y_i}(1 - p_i)^{1- y_i}\right) \\
+&amp;= \sum_{i=1}^n y_i \ln(p_i) + (1 - y_i)\ln(1 - p_i)
+\end{align}
+\]</span>
+Alternatively, the likelihood can be written as follows
+<span class="math display">\[
+\begin{align}
+p(\boldsymbol{\mathbf{y}}\mid \boldsymbol{\mathbf{\beta}}) &amp;= \prod_{i=1}^n  p_i^{y_i}(1 - p_i)^{1- y_i} \\
+&amp;= \prod_{i=1}^n \left(\frac{\exp(\boldsymbol{\mathbf{x}}_i^\top \boldsymbol{\mathbf{\beta}})}{1 + \exp(\boldsymbol{\mathbf{x}}_i^\top \boldsymbol{\mathbf{\beta}})}\right)^{y_i} \left(1 - \frac{\exp(\boldsymbol{\mathbf{x}}_i^\top \boldsymbol{\mathbf{\beta}})}{1 + \exp(\boldsymbol{\mathbf{x}}_i^\top \boldsymbol{\mathbf{\beta}})}\right)^{1 - y_i} \\
+&amp;= \prod_{i=1}^n \left(\frac{\exp(\boldsymbol{\mathbf{x}}_i^\top \boldsymbol{\mathbf{\beta}})}{1 + \exp(\boldsymbol{\mathbf{x}}_i^\top \boldsymbol{\mathbf{\beta}})}\right)^{y_i} \left(\frac{1}{1 + \exp(\boldsymbol{\mathbf{x}}_i^\top \boldsymbol{\mathbf{\beta}})}\right)^{1 - y_i} \\
+&amp;= \prod_{i=1}^n \left(\frac{\exp(\boldsymbol{\mathbf{x}}_i^\top \boldsymbol{\mathbf{\beta}})}{1 + \exp(\boldsymbol{\mathbf{x}}_i^\top \boldsymbol{\mathbf{\beta}})}\right)^{y_i} \left(\frac{1}{1 + \exp(\boldsymbol{\mathbf{x}}_i^\top \boldsymbol{\mathbf{\beta}})}\right)\left(1 + \exp(\boldsymbol{\mathbf{x}}_i^\top\boldsymbol{\mathbf{\beta}})\right)^{y_i} \\
+&amp;= \prod_{i=1}^n \exp(\boldsymbol{\mathbf{x}}_i^\top \boldsymbol{\mathbf{\beta}}y_i)\frac{1}{\left(1 + \exp(\boldsymbol{\mathbf{x}}_i^\top \boldsymbol{\mathbf{\beta}})\right)^{y_i}} \left(\frac{1}{1 + \exp(\boldsymbol{\mathbf{x}}_i^\top \boldsymbol{\mathbf{\beta}})}\right)\left(1 + \exp(\boldsymbol{\mathbf{x}}_i^\top\boldsymbol{\mathbf{\beta}})\right)^{y_i} \\
+&amp;= \prod_{i=1}^n \frac{\exp(\boldsymbol{\mathbf{x}}_i^\top \boldsymbol{\mathbf{\beta}}y_i)}{1 + \exp(\boldsymbol{\mathbf{x}}_i^\top \boldsymbol{\mathbf{\beta}})}
+\end{align}
+\]</span></p>
+<p>Taking the logarithm of this expression gives
+<span class="math display">\[
+\begin{align}
+\ln(p(\boldsymbol{\mathbf{y}}\mid\boldsymbol{\mathbf{\beta}})) &amp;= \sum_{i=1}^n \ln\left(\frac{\exp(\boldsymbol{\mathbf{x}}_i^\top \boldsymbol{\mathbf{\beta}}y_i)}{1 + \exp(\boldsymbol{\mathbf{x}}_i^\top \boldsymbol{\mathbf{\beta}})}\right) \\
+&amp;= \sum_{i=1}^n \ln(\exp(\boldsymbol{\mathbf{x}}_i^\top \boldsymbol{\mathbf{\beta}}y_i)) - \ln(1 + \exp(\boldsymbol{\mathbf{x}}_i^\top \boldsymbol{\mathbf{\beta}})) \\
+&amp;= \sum_{i=1}^n \boldsymbol{\mathbf{x}}_i^\top \boldsymbol{\mathbf{\beta}}y_i  - \ln(1 + \exp(\boldsymbol{\mathbf{x}}_i^\top \boldsymbol{\mathbf{\beta}}))
+\end{align}
+\]</span></p>
+</div>
+<div id="maximum-likelihood-equiv-minimize-loss-function" class="section level3">
+<h3>Maximum Likelihood <span class="math inline">\(\equiv\)</span> Minimize Loss Function</h3>
+<p>Our aim is to maximize the likelihood. This is equivalent to maximizing the log likelihood, which is equivalent to minimizing the negative log likelihood.
+<span class="math display">\[
+\min_{\boldsymbol{\mathbf{\beta}}} -\sum_{i=1}^n y_i \ln(p_i) + (1 - y_i)\ln(1 - p_i)
+\]</span>
+Let’s consider the expression inside the summation
+<span class="math display">\[
+y_i \ln(p_i) + (1 - y_i)\ln(1 - p_i)
+\]</span>
+We can notice that
+<span class="math display">\[
+y_i \ln(p_i) + (1 - y_i)\ln(1 - p_i) = 
+\begin{cases}
+\ln(1 - p_i) &amp;&amp; \text{if } y_i=0\\
+\ln(p_i) &amp;&amp; \text{if } y_i = 1
+\end{cases}
+\]</span>
+Remember that <span class="math inline">\(p_i = \sigma(\boldsymbol{\mathbf{x}}_i^\top \boldsymbol{\mathbf{\beta}})\)</span> and that <span class="math inline">\(1 - \sigma(\boldsymbol{\mathbf{x}}_i^\top \boldsymbol{\mathbf{\beta}}) = \sigma(-\boldsymbol{\mathbf{x}}_i^\top\boldsymbol{\mathbf{\beta}})\)</span>
+<span class="math display">\[
+y_i \ln(\sigma(\boldsymbol{\mathbf{x}}_i^\top \boldsymbol{\mathbf{\beta}})) + (1 - y_i)\ln(\sigma(-\boldsymbol{\mathbf{x}}_i^\top\boldsymbol{\mathbf{\beta}})) = 
+\begin{cases}
+\ln(\sigma(-\boldsymbol{\mathbf{x}}_i^\top\boldsymbol{\mathbf{\beta}})) &amp;&amp; \text{if } y_i=0\\
+\ln(\sigma(\boldsymbol{\mathbf{x}}_i^\top \boldsymbol{\mathbf{\beta}})) &amp;&amp; \text{if } y_i = 1
+\end{cases}
+\]</span>
+We are thus looking for something that is <span class="math inline">\(-1\)</span> when <span class="math inline">\(y_i=0\)</span> and that it is <span class="math inline">\(1\)</span> when <span class="math inline">\(y_i=1\)</span>. In particular, notice that <span class="math inline">\(2 y_i - 1\)</span> does the job. Thus we can write our problem as
+<span class="math display">\[
+\begin{align}
+\min_{\boldsymbol{\mathbf{\beta}}} -\sum_{i=1}^n \ln\left(\sigma((2y_i - 1)\boldsymbol{\mathbf{x}}_i^\top \boldsymbol{\mathbf{\beta}})\right) &amp;= \min_{\boldsymbol{\mathbf{\beta}}}\sum_{i=1}^n - \ln\left(\frac{1}{1 + \exp((1 - 2y_i)\boldsymbol{\mathbf{x}}_i^\top\boldsymbol{\mathbf{\beta}})}\right) \\
+&amp;= \min_{\boldsymbol{\mathbf{\beta}}}\sum_{i=1}^n\ln\left(1 + \exp((1 - 2y_i)\boldsymbol{\mathbf{x}}_i^\top\boldsymbol{\mathbf{\beta}})\right) \\
+&amp;= \min_{\boldsymbol{\mathbf{\beta}}} \sum_{i=1}^n L(\boldsymbol{\mathbf{x}}_i^\top, y_i ; \boldsymbol{\mathbf{\beta}})
+\end{align}
+\]</span>
+where the loss incurred using parameter <span class="math inline">\(\boldsymbol{\mathbf{\beta}}\)</span> when predicting the label for <span class="math inline">\(\boldsymbol{\mathbf{x}}_i^\top\)</span> whose true label is <span class="math inline">\(y_i\)</span> is
+<span class="math display">\[
+L(\boldsymbol{\mathbf{x}}_i^\top, y_i; \boldsymbol{\mathbf{\beta}}) = 
+\begin{cases}
+\ln\left(1 + \exp(\boldsymbol{\mathbf{x}}_i^\top \boldsymbol{\mathbf{\beta}})\right) &amp;&amp; \text{if } y_i= 0\\
+\ln\left(1 + \exp(-\boldsymbol{\mathbf{x}}_i^\top \boldsymbol{\mathbf{\beta}}\right) &amp;&amp; \text{if } y_i = 1
+\end{cases}
+\]</span></p>
+</div>
+<div id="maximum-a-posteriori-map" class="section level3">
+<h3>Maximum-A-Posteriori (MAP)</h3>
+<p>Recall from Bayes Rule
+<span class="math display">\[
+p(\boldsymbol{\mathbf{\beta}}\mid \boldsymbol{\mathbf{y}}) = \frac{p(\boldsymbol{\mathbf{y}}\mid \boldsymbol{\mathbf{\beta}})p(\boldsymbol{\mathbf{\beta}})}{p(\boldsymbol{\mathbf{y}})} \propto p(\boldsymbol{\mathbf{y}}\mid \boldsymbol{\mathbf{\beta}}) p(\boldsymbol{\mathbf{\beta}})
+\]</span>
+Taking the logarithm both sides and multiplying by <span class="math inline">\(-1\)</span> we obtain
+<span class="math display">\[
+-\ln(p(\boldsymbol{\mathbf{\beta}}\mid \boldsymbol{\mathbf{y}})) \propto -\ln(p(\boldsymbol{\mathbf{y}}\mid \boldsymbol{\mathbf{\beta}})) - \ln(p(\boldsymbol{\mathbf{\beta}}))
+\]</span>
+We can choose to use a Gaussian Prior on the parameters <span class="math inline">\(p(\boldsymbol{\mathbf{\beta}}) = N(\boldsymbol{\mathbf{\mu}}_0, \boldsymbol{\mathbf{\Sigma}}_0)\)</span>. If <span class="math inline">\(\boldsymbol{\mathbf{\beta}}\in\mathbb{R}^{p\times 1}\)</span> then
+<span class="math display">\[
+\ln(p(\boldsymbol{\mathbf{\beta}})) = -\frac{p}{2}\ln(2\pi) - \frac{1}{2}\ln(|\Sigma_0|)-\frac{1}{2}(\boldsymbol{\mathbf{\beta}}- \boldsymbol{\mathbf{\mu}}_0)^\top \boldsymbol{\mathbf{\Sigma}}_0^{-1}(\boldsymbol{\mathbf{\beta}}- \boldsymbol{\mathbf{\mu}}_0)
+\]</span>
+Plugging this in, we obtain the following. Notice how we neglect terms that do not depend on <span class="math inline">\(\boldsymbol{\mathbf{\beta}}\)</span> because they will not matter when we minimize this with respect to <span class="math inline">\(\boldsymbol{\mathbf{\beta}}\)</span>.
+<span class="math display">\[
+\begin{align}
+\min_{\boldsymbol{\mathbf{\beta}}} -\ln(p(\boldsymbol{\mathbf{\beta}}\mid \boldsymbol{\mathbf{y}})) &amp;= \min_{\boldsymbol{\mathbf{\beta}}} -\ln(p(\boldsymbol{\mathbf{y}}\mid \boldsymbol{\mathbf{\beta}})) - \ln(p(\boldsymbol{\mathbf{\beta}})) \\
+&amp;= \min_{\boldsymbol{\mathbf{\beta}}} -\ln(p(\boldsymbol{\mathbf{y}}\mid \boldsymbol{\mathbf{\beta}}))  + \frac{p}{2}\ln(2\pi)  + \frac{1}{2}\ln(|\Sigma_0|) +\frac{1}{2}(\boldsymbol{\mathbf{\beta}}- \boldsymbol{\mathbf{\mu}}_0)^\top \boldsymbol{\mathbf{\Sigma}}_0^{-1}(\boldsymbol{\mathbf{\beta}}- \boldsymbol{\mathbf{\mu}}_0) \\
+&amp;= \min_{\boldsymbol{\mathbf{\beta}}} -\ln(p(\boldsymbol{\mathbf{y}}\mid \boldsymbol{\mathbf{\beta}})) + \frac{1}{2}(\boldsymbol{\mathbf{\beta}}- \boldsymbol{\mathbf{\mu}}_0)^\top \boldsymbol{\mathbf{\Sigma}}_0^{-1}(\boldsymbol{\mathbf{\beta}}- \boldsymbol{\mathbf{\mu}}_0) \\
+&amp;= \min_{\boldsymbol{\mathbf{\beta}}} \sum_{i=1}^n\ln\left(1 + \exp((1 - 2y_i)\boldsymbol{\mathbf{x}}_i^\top\boldsymbol{\mathbf{\beta}})\right) + \frac{1}{2}(\boldsymbol{\mathbf{\beta}}- \boldsymbol{\mathbf{\mu}}_0)^\top \boldsymbol{\mathbf{\Sigma}}_0^{-1}(\boldsymbol{\mathbf{\beta}}- \boldsymbol{\mathbf{\mu}}_0)
+\end{align}
+\]</span></p>
+</div>
+<div id="ridge-regularization-equiv-isotripic-gaussian-prior" class="section level3">
+<h3>Ridge Regularization <span class="math inline">\(\equiv\)</span> Isotripic Gaussian Prior</h3>
+<p>Now if we set <span class="math inline">\(\boldsymbol{\mathbf{\mu}}_0 = \boldsymbol{\mathbf{0}}_{p}\)</span> and <span class="math inline">\(\boldsymbol{\mathbf{\Sigma}}_0 = \sigma^2_{\boldsymbol{\mathbf{\beta}}} I_p\)</span> (this is equivalent to setting a univariate normal prior on each coefficient, with <span class="math inline">\(p(\beta_j) = N(0, \sigma_{\boldsymbol{\mathbf{\beta}}}^2)\)</span>) we have
+<span class="math display">\[
+\min_{\boldsymbol{\mathbf{\beta}}} \sum_{i=1}^n\ln\left(1 + \exp((1 - 2y_i)\boldsymbol{\mathbf{x}}_i^\top\boldsymbol{\mathbf{\beta}})\right) + \frac{1}{2}\boldsymbol{\mathbf{\beta}}^\top (\sigma^2_{\boldsymbol{\mathbf{\beta}}} I_p)^{-1}\boldsymbol{\mathbf{\beta}}
+\]</span>
+using the fact that for an invertible matrix <span class="math inline">\(A\)</span> and a non-zero constant <span class="math inline">\(c\in\mathbb{R}\backslash\{0\}\)</span> we have <span class="math inline">\((cA)^{-1} = \frac{1}{c}A^{-1}\)</span> we obtain
+<span class="math display">\[
+\min_{\boldsymbol{\mathbf{\beta}}} \sum_{i=1}^n\ln\left(1 + \exp((1 - 2y_i)\boldsymbol{\mathbf{x}}_i^\top\boldsymbol{\mathbf{\beta}})\right) + \frac{1}{2 \sigma^2_{\boldsymbol{\mathbf{\beta}}}}\boldsymbol{\mathbf{\beta}}^\top\boldsymbol{\mathbf{\beta}}
+\]</span>
+Setting <span class="math inline">\(\lambda:=\frac{1}{\sigma^2_{\boldsymbol{\mathbf{\beta}}}}\)</span> we have regularized logistic regression
+<span class="math display">\[
+\min_{\boldsymbol{\mathbf{\beta}}} \sum_{i=1}^n\ln\left(1 + \exp((1 - 2y_i)\boldsymbol{\mathbf{x}}_i^\top\boldsymbol{\mathbf{\beta}})\right) + \frac{\lambda}{2}\boldsymbol{\mathbf{\beta}}^\top\boldsymbol{\mathbf{\beta}}
+\]</span>
+It is more stable to multiply out by <span class="math inline">\(\sigma^2_{\boldsymbol{\mathbf{\beta}}}\)</span> so we get
+<span class="math display">\[
+\min_{\boldsymbol{\mathbf{\beta}}} \sigma^2_{\boldsymbol{\mathbf{\beta}}}\sum_{i=1}^n\ln\left(1 + \exp((1 - 2y_i)\boldsymbol{\mathbf{x}}_i^\top\boldsymbol{\mathbf{\beta}})\right) + \frac{1}{2}\boldsymbol{\mathbf{\beta}}^\top\boldsymbol{\mathbf{\beta}}
+\]</span></p>
+</div>
+<div id="ridge-regularization-except-on-intercept" class="section level3">
+<h3>Ridge Regularization except on Intercept</h3>
+<p>Where
+<span class="math display">\[
+\boldsymbol{\mathbf{\beta}}= 
+\begin{pmatrix}
+  \beta_0\\
+  \beta_1 \\
+  \vdots \\
+  \beta_{p-1}
+\end{pmatrix} := 
+\begin{pmatrix}
+  \beta_0 \\
+  \boldsymbol{\mathbf{\beta}}_{1:p-1}
+\end{pmatrix}
+\]</span>
+We’ve defined <span class="math inline">\(\boldsymbol{\mathbf{\beta}}_{1:p-1}:=(\beta_1, \ldots, \beta_p)^\top\)</span> because often we don’t really regularize the intercept. This means that we place a Multivariate Gaussian prior on <span class="math inline">\(\boldsymbol{\mathbf{\beta}}_{1:p-1}\)</span> as follows <span class="math inline">\(p(\boldsymbol{\mathbf{\beta}}_{1:p-1}) = N(\boldsymbol{\mathbf{0}}_{p-1}, \sigma_{\boldsymbol{\mathbf{\beta}}_{1:p-1}}^2 I_{p-1})\)</span> (again, this is equivalent to putting a univariate normal prior on each of <span class="math inline">\(\beta_1, \ldots, \beta_{p-1}\)</span> with <span class="math inline">\(p(\beta_j) = N(0, \sigma^2_{\boldsymbol{\mathbf{\beta}}_{1:p-1}})\)</span>). Instead, on <span class="math inline">\(\beta_0\)</span> we could place a uniform prior, which means it’s value would not depend on <span class="math inline">\(\beta_0\)</span> and so could be dropped from the expression.
+<span class="math display">\[
+\min_{\boldsymbol{\mathbf{\beta}}} \sum_{i=1}^n\ln\left(1 + \exp((1 - 2y_i)\boldsymbol{\mathbf{x}}_i^\top\boldsymbol{\mathbf{\beta}})\right) + \frac{1}{2 \sigma_{\boldsymbol{\mathbf{\beta}}_{1:p-1}}^2}\boldsymbol{\mathbf{\beta}}_{1:p-1}^\top\boldsymbol{\mathbf{\beta}}_{1:p-1}
+\]</span>
+It is more stable to multiply out by <span class="math inline">\(\sigma^2_{\boldsymbol{\mathbf{\beta}}_{1:p-1}}\)</span> therefore
+<span class="math display">\[
+\min_{\boldsymbol{\mathbf{\beta}}} \sigma_{\boldsymbol{\mathbf{\beta}}_{1:p-1}}^2\sum_{i=1}^n\ln\left(1 + \exp((1 - 2y_i)\boldsymbol{\mathbf{x}}_i^\top\boldsymbol{\mathbf{\beta}})\right) + \frac{1}{2}\boldsymbol{\mathbf{\beta}}_{1:p-1}^\top\boldsymbol{\mathbf{\beta}}_{1:p-1}
+\]</span>
+Notice that this is consistent with the implementation used by <code>scikit-learn</code> provided <a href="https://scikit-learn.org/stable/modules/linear_model.html#logistic-regression">here</a>.</p>
+</div>
+<div id="full-bayesian-laplace-approximation" class="section level3">
+<h3>Full-Bayesian (Laplace Approximation)</h3>
+<p>Full-Bayesian in intractable. Laplace Approximation approximates <span class="math inline">\(p(\boldsymbol{\mathbf{\beta}}\mid \boldsymbol{\mathbf{y}})\)</span> with a Gaussian distribution <span class="math inline">\(q(\boldsymbol{\mathbf{\beta}})\)</span>. To find such a distribution, we use the multivariate version of Taylor’s expansion to expand the log posterior around its mode <span class="math inline">\(\boldsymbol{\mathbf{\beta}}_{\text{MAP}}\)</span>. We take a second order approximation
+<span class="math display">\[
+\ln p(\boldsymbol{\mathbf{\beta}}\mid \boldsymbol{\mathbf{y}}) \simeq \ln p(\boldsymbol{\mathbf{\beta}}_{\text{MAP}}\mid \boldsymbol{\mathbf{y}}) + \nabla\ln p(\boldsymbol{\mathbf{\beta}}_{\text{MAP}}\mid \boldsymbol{\mathbf{y}})(\boldsymbol{\mathbf{\beta}}- \boldsymbol{\mathbf{\beta}}_{\text{MAP}}) + \frac{1}{2}(\boldsymbol{\mathbf{\beta}}- \boldsymbol{\mathbf{\beta}}_{\text{MAP}})^\top \nabla^2 \ln p(\boldsymbol{\mathbf{\beta}}_{\text{MAP}}\mid \boldsymbol{\mathbf{y}}) (\boldsymbol{\mathbf{\beta}}- \boldsymbol{\mathbf{\beta}}_{\text{MAP}})
+\]</span>
+Since <span class="math inline">\(\boldsymbol{\mathbf{\beta}}_{\text{MAP}}\)</span> is a stationary point, the gradient at this point will be zero so we have
+<span class="math display">\[
+\ln p(\boldsymbol{\mathbf{\beta}}\mid \boldsymbol{\mathbf{y}}) \simeq \ln p(\boldsymbol{\mathbf{\beta}}_{\text{MAP}}\mid \boldsymbol{\mathbf{y}}) + \frac{1}{2}(\boldsymbol{\mathbf{\beta}}- \boldsymbol{\mathbf{\beta}}_{\text{MAP}})^\top \nabla^2 \ln p(\boldsymbol{\mathbf{\beta}}_{\text{MAP}}\mid \boldsymbol{\mathbf{y}}) (\boldsymbol{\mathbf{\beta}}- \boldsymbol{\mathbf{\beta}}_{\text{MAP}})
+\]</span>
+We take the exponential both sides to obtain
+<span class="math display">\[
+p(\boldsymbol{\mathbf{\beta}}\mid \boldsymbol{\mathbf{y}}) \simeq p(\boldsymbol{\mathbf{\beta}}_{\text{MAP}}\mid \boldsymbol{\mathbf{y}}) \exp\left(\frac{1}{2}(\boldsymbol{\mathbf{\beta}}- \boldsymbol{\mathbf{\beta}}_{\text{MAP}})^\top \nabla^2 \ln p(\boldsymbol{\mathbf{\beta}}_{\text{MAP}}\mid \boldsymbol{\mathbf{y}}) (\boldsymbol{\mathbf{\beta}}- \boldsymbol{\mathbf{\beta}}_{\text{MAP}})\right)
+\]</span>
+We regnize this has the shape of a Multivariate Normal distribution. We therefore define our Laplace approximation to be
+<span class="math display">\[
+q(\boldsymbol{\mathbf{\beta}})  = (2\pi)^{-\frac{p}{2}}\text{det}\left(-\nabla^2\ln p(\boldsymbol{\mathbf{\beta}}_{\text{MAP}}\mid \boldsymbol{\mathbf{y}})\right) \exp\left(\frac{1}{2}(\boldsymbol{\mathbf{\beta}}- \boldsymbol{\mathbf{\beta}}_{\text{MAP}})^\top \nabla^2 \ln p(\boldsymbol{\mathbf{\beta}}_{\text{MAP}}\mid \boldsymbol{\mathbf{y}}) (\boldsymbol{\mathbf{\beta}}- \boldsymbol{\mathbf{\beta}}_{\text{MAP}})\right)
+\]</span>
+That is
+<span class="math display">\[
+q(\boldsymbol{\mathbf{\beta}}) = N\left(\boldsymbol{\mathbf{\beta}}_{\text{MAP}}, \left[-\nabla^2 \ln p(\boldsymbol{\mathbf{\beta}}_{\text{MAP}}\mid \boldsymbol{\mathbf{y}})\right]^{-1}\right)
+\]</span>
+To find <span class="math inline">\(\nabla_{\boldsymbol{\mathbf{\beta}}}^2 \ln p(\boldsymbol{\mathbf{\beta}}\mid \boldsymbol{\mathbf{y}})\biggr\rvert_{\boldsymbol{\mathbf{\beta}}=\boldsymbol{\mathbf{\beta}}_{\text{MAP}}}\)</span> we write
+<span class="math display">\[
+\nabla_{\boldsymbol{\mathbf{\beta}}}^2 \ln p(\boldsymbol{\mathbf{\beta}}\mid \boldsymbol{\mathbf{y}}) = \nabla_{\boldsymbol{\mathbf{\beta}}}^2 \ln p(\boldsymbol{\mathbf{y}}\mid \boldsymbol{\mathbf{\beta}}) + \nabla_{\boldsymbol{\mathbf{\beta}}}^2 \ln p(\boldsymbol{\mathbf{\beta}})
+\]</span>
+and we find each of the expressions on the right-hand side separately. We start with <span class="math inline">\(\nabla_{\boldsymbol{\mathbf{\beta}}}^2 \ln p(\boldsymbol{\mathbf{\beta}})\)</span>. Recall that if we have a quadratic form <span class="math inline">\(\boldsymbol{\mathbf{x}}^\top A \boldsymbol{\mathbf{x}}\)</span> the derivative of this quadratic form with respect to <span class="math inline">\(\boldsymbol{\mathbf{x}}\)</span> is given by <span class="math inline">\(\boldsymbol{\mathbf{x}}^\top (A + A^\top)\)</span>. Applying this to our case, and using the fact that <span class="math inline">\(\boldsymbol{\mathbf{\Sigma}}_0^{-1}\)</span> is <strong>symmetric</strong> we have
+<span class="math display">\[
+\nabla_{\boldsymbol{\mathbf{\beta}}} \ln p(\boldsymbol{\mathbf{\beta}}) = -\frac{1}{2} (\boldsymbol{\mathbf{\beta}}- \boldsymbol{\mathbf{\mu}}_0)^\top 2\boldsymbol{\mathbf{\Sigma}}_0^{-1} = -(\boldsymbol{\mathbf{\beta}}- \boldsymbol{\mathbf{\mu}}_0)^\top \boldsymbol{\mathbf{\Sigma}}_0^{-1} = -\boldsymbol{\mathbf{\beta}}^\top \boldsymbol{\mathbf{\Sigma}}_0^{-1} + \boldsymbol{\mathbf{\mu}}_0^\top \boldsymbol{\mathbf{\Sigma}}_0^{-1}
+\]</span>
+Taking the derivative with respect to <span class="math inline">\(\boldsymbol{\mathbf{\beta}}\)</span> again we get
+<span class="math display">\[
+-\nabla^2_{\boldsymbol{\mathbf{\beta}}} \ln p(\boldsymbol{\mathbf{\beta}}) = \boldsymbol{\mathbf{\Sigma}}_0^{-1}
+\]</span>
+To find <span class="math inline">\(\nabla_{\boldsymbol{\mathbf{\beta}}} \ln p(\boldsymbol{\mathbf{y}}\mid \boldsymbol{\mathbf{\beta}})\)</span> we take the derivative componentwise
+<span class="math display">\[
+\begin{align}
+\frac{\partial}{\partial \beta_j} \ln p(\boldsymbol{\mathbf{y}}\mid \boldsymbol{\mathbf{\beta}}) &amp;= \sum_{i=1}^n y_i \partial_{\beta_j}\ln \sigma(\boldsymbol{\mathbf{x}}_i^\top \boldsymbol{\mathbf{\beta}}) + (1 - y_i)\partial_{\beta_j} \ln \sigma(-\boldsymbol{\mathbf{x}}_i^\top \boldsymbol{\mathbf{\beta}}) \\
+&amp;= \sum_{i=1}^n y_i \frac{\sigma(\boldsymbol{\mathbf{x}}_i^\top \boldsymbol{\mathbf{\beta}})(1 - \sigma(\boldsymbol{\mathbf{x}}_i^\top \boldsymbol{\mathbf{\beta}}))}{\sigma(\boldsymbol{\mathbf{x}}_i^\top \boldsymbol{\mathbf{\beta}})} x_i^{(j)} + (1 - y_i) \frac{\sigma(-\boldsymbol{\mathbf{x}}_i^\top \boldsymbol{\mathbf{\beta}})(1 - \sigma(-\boldsymbol{\mathbf{x}}_i^\top \boldsymbol{\mathbf{\beta}}))}{\sigma(-\boldsymbol{\mathbf{x}}_i^\top \boldsymbol{\mathbf{\beta}})}(-x_i^{(j)}) \\
+&amp;= \sum_{i=1}^n y_ix_i^{(j)}\sigma(-\boldsymbol{\mathbf{x}}_i^\top \boldsymbol{\mathbf{\beta}}) + (y_i x_i^{(j)} - x_i^{(j)})\sigma(\boldsymbol{\mathbf{x}}_i^\top \boldsymbol{\mathbf{\beta}})
+\end{align}
+\]</span>
+Now take the derivative with respect to <span class="math inline">\(\beta_k\)</span>
+<span class="math display">\[
+\begin{align}
+\partial_{\beta_k}\partial_{\beta_j} \ln p(\boldsymbol{\mathbf{y}}\mid \boldsymbol{\mathbf{\beta}}) &amp;= \sum_{i=1}^n y_ix_i^{(j)}\partial_{\beta_k}\sigma(-\boldsymbol{\mathbf{x}}_i^\top \boldsymbol{\mathbf{\beta}}) + (y_i x_i^{(j)} - x_i^{(j)})\partial_{\beta_k}\sigma(\boldsymbol{\mathbf{x}}_i^\top \boldsymbol{\mathbf{\beta}}) \\
+&amp;= \sum_{i=1}^n y_ix_i^{(j)}\sigma(-\boldsymbol{\mathbf{x}}_i^\top \boldsymbol{\mathbf{\beta}})(1 - \sigma(-\boldsymbol{\mathbf{x}}_i^\top \boldsymbol{\mathbf{\beta}}))(-x_i^{(k)}) + (y_i x_i^{(j)} - x_i^{(j)})\sigma(\boldsymbol{\mathbf{x}}_i^\top \boldsymbol{\mathbf{\beta}})(1 - \sigma(\boldsymbol{\mathbf{x}}_i^\top \boldsymbol{\mathbf{\beta}})) x_i^{(k)} \\
+&amp;= \sum_{i=1}^n -y_ix_i^{(j)}x_i^{(k)} \sigma(\boldsymbol{\mathbf{x}}_i^\top \boldsymbol{\mathbf{\beta}})(1 - \sigma(\boldsymbol{\mathbf{x}}_i^\top \boldsymbol{\mathbf{\beta}})) + (y_i x_i^{(j)} x_i^{(k)} - x_i^{(j)} x_i^{(k)})\sigma(\boldsymbol{\mathbf{x}}_i^\top \boldsymbol{\mathbf{\beta}}) (1 - \sigma(\boldsymbol{\mathbf{x}}_i^\top \boldsymbol{\mathbf{\beta}}))\\
+&amp;= -\sum_{i=1}^n x_i^{(j)} x_i^{(k)} \sigma(\boldsymbol{\mathbf{x}}_i^\top \boldsymbol{\mathbf{\beta}})(1 - \sigma(\boldsymbol{\mathbf{x}}_i^\top \boldsymbol{\mathbf{\beta}}))
+\end{align}
+\]</span>
+This tells us that
+<span class="math display">\[
+[\nabla^2_{\boldsymbol{\mathbf{\beta}}} \ln p(\boldsymbol{\mathbf{y}}\mid \boldsymbol{\mathbf{\beta}})]_{kj} = -\sum_{i=1}^n x_i^{(j)} x_i^{(k)} \sigma(\boldsymbol{\mathbf{x}}_i^\top \boldsymbol{\mathbf{\beta}})(1 - \sigma(\boldsymbol{\mathbf{x}}_i^\top \boldsymbol{\mathbf{\beta}}))
+\]</span>
+Note that for a vector <span class="math inline">\(\boldsymbol{\mathbf{x}}_i :=(1, x_{i}^{(1)}, \ldots, x_{i}^{(p-1)})^\top\)</span> the <strong>outer product</strong> gives the following <strong>symmetric</strong> matrix
+<span class="math display">\[
+\boldsymbol{\mathbf{x}}_i \boldsymbol{\mathbf{x}}_i^\top =
+\begin{pmatrix}
+1 \\
+x_{i}^{(1)} \\
+\vdots \\
+x_{i}^{(p-1)}
+\end{pmatrix}
+\begin{pmatrix}
+1 &amp; x_{i}^{(1)} &amp; \cdots &amp; x_{i}^{(p-1)}
+\end{pmatrix} = 
+\begin{pmatrix}
+1 &amp; x_{i}^{(1)}  &amp; \cdots &amp; x_{i}^{(p-1)} \\
+x_{i}^{(1)} &amp; (x_{i}^{(1)})^2 &amp; \cdots &amp; x_{i}^{(1)} x_{i}^{(p-1)}\\
+\vdots &amp; \vdots &amp; \ddots &amp; \vdots\\
+x_{i}^{(p-1)} &amp; x_{i}^{(p-1)}x_i^{(1)} &amp; \cdots &amp; (x_{i}^{(p-1)})^2
+\end{pmatrix}
+\]</span>
+In particular <span class="math inline">\([\boldsymbol{\mathbf{x}}_i \boldsymbol{\mathbf{x}}_i^\top]_{kj} = x_i^{(j)}x_i^{(k)}\)</span> so that
+<span class="math display">\[
+- \nabla_{\boldsymbol{\mathbf{\beta}}}^2 \ln p(\boldsymbol{\mathbf{y}}\mid \boldsymbol{\mathbf{\beta}}) = \sum_{i=1}^n \sigma(\boldsymbol{\mathbf{x}}_i^\top \boldsymbol{\mathbf{\beta}})(1 - \sigma(\boldsymbol{\mathbf{x}}_i^\top \boldsymbol{\mathbf{\beta}})) \boldsymbol{\mathbf{x}}_i\boldsymbol{\mathbf{x}}_i^\top
+\]</span>
+Putting everything together we get
+<span class="math display">\[
+-\nabla_{\boldsymbol{\mathbf{\beta}}}^2 \ln p(\boldsymbol{\mathbf{\beta}}\mid \boldsymbol{\mathbf{y}}) = \boldsymbol{\mathbf{\Sigma}}_0^{-1} + \sum_{i=1}^n \sigma(\boldsymbol{\mathbf{x}}_i^\top \boldsymbol{\mathbf{\beta}})(1 - \sigma(\boldsymbol{\mathbf{x}}_i^\top \boldsymbol{\mathbf{\beta}})) \boldsymbol{\mathbf{x}}_i\boldsymbol{\mathbf{x}}_i^\top
+\]</span></p>
+</div>
+<div id="gradient-ascent-optimization-mle-no-regularization" class="section level3">
+<h3>Gradient Ascent Optimization (MLE, No Regularization)</h3>
+<p>The simplest way to find <span class="math inline">\(\boldsymbol{\mathbf{\beta}}\)</span> that maximizes the likelihood is to do <strong>gradient ascent</strong>. Remember that when working on the Laplace approximation we found the derivative of the log-likelihood with respect to the <span class="math inline">\(j^{th}\)</span> component of <span class="math inline">\(\boldsymbol{\mathbf{\beta}}\)</span>. We can rearrange such an expression to get a nicer form.
+<span class="math display">\[
+\begin{align}
+\frac{\partial}{\partial \beta_j} \ln p(\boldsymbol{\mathbf{y}}\mid \boldsymbol{\mathbf{\beta}}) &amp;= \sum_{i=1}^n y_ix_i^{(j)}\sigma(-\boldsymbol{\mathbf{x}}_i^\top \boldsymbol{\mathbf{\beta}}) + (y_i x_i^{(j)} - x_i^{(j)})\sigma(\boldsymbol{\mathbf{x}}_i^\top \boldsymbol{\mathbf{\beta}}) \\
+&amp;= \sum_{i=1}^n y_ix_i^{(j)}(1 - \sigma(\boldsymbol{\mathbf{x}}_i^\top \boldsymbol{\mathbf{\beta}})) + (y_i x_i^{(j)} - x_i^{(j)})\sigma(\boldsymbol{\mathbf{x}}_i^\top \boldsymbol{\mathbf{\beta}}) \\
+&amp;= \sum_{i=1}^n y_ix_i^{(j)} - y_ix_i^{(j)}\sigma(\boldsymbol{\mathbf{x}}_i^\top \boldsymbol{\mathbf{\beta}}) + y_i x_i^{(j)}\sigma(\boldsymbol{\mathbf{x}}_i^\top \boldsymbol{\mathbf{\beta}}) - x_i^{(j)}\sigma(\boldsymbol{\mathbf{x}}_i^\top \boldsymbol{\mathbf{\beta}}) \\
+&amp;= \sum_{i=1}^n \left[y_i - \sigma(\boldsymbol{\mathbf{x}}_i^\top \boldsymbol{\mathbf{\beta}})\right]x_i^{(j)}
+\end{align}
+\]</span>
+Therefore the full gradient is given by
+<span class="math display">\[
+\begin{align}
+\nabla_{\boldsymbol{\mathbf{\beta}}} \ln p(\boldsymbol{\mathbf{y}}\mid\boldsymbol{\mathbf{\beta}}) &amp;= \left(\frac{\partial}{\partial \beta_0} \ln p(\boldsymbol{\mathbf{y}}\mid \boldsymbol{\mathbf{\beta}}), \ldots, \frac{\partial}{\partial \beta_{p-1}} \ln p(\boldsymbol{\mathbf{y}}\mid \boldsymbol{\mathbf{\beta}})\right)^\top \\
+&amp;= \left(\sum_{i=1}^n(y_i - \sigma(\boldsymbol{\mathbf{x}}_i^\top \boldsymbol{\mathbf{\beta}}))x_i^{(0)}, \ldots, \sum_{i=1}^n(y_i - \sigma(\boldsymbol{\mathbf{x}}_i^\top \boldsymbol{\mathbf{\beta}}))x_i^{(p-1)}\right)^\top \\
+&amp;= \sum_{i=1}^n(y_i - \sigma(\boldsymbol{\mathbf{x}}_i^\top \boldsymbol{\mathbf{\beta}}))\left(x_i^{(0)}, \ldots, x_i^{(p-1)}\right) \\
+&amp;=  \sum_{i=1}^n(y_i - \sigma(\boldsymbol{\mathbf{x}}_i^\top \boldsymbol{\mathbf{\beta}})) \boldsymbol{\mathbf{x}}_i
+\end{align}
+\]</span>
+Gradient ascent then becomes
+<span class="math display">\[
+\boldsymbol{\mathbf{\beta}}_{k+1} \leftarrow \boldsymbol{\mathbf{\beta}}_{k} + \gamma \nabla_{\boldsymbol{\mathbf{\beta}}}\ln p(\boldsymbol{\mathbf{y}}\mid\boldsymbol{\mathbf{\beta}}) = \boldsymbol{\mathbf{\beta}}_k + \gamma \sum_{i=1}^n(y_i - \sigma(\boldsymbol{\mathbf{x}}_i^\top \boldsymbol{\mathbf{\beta}})) \boldsymbol{\mathbf{x}}_i
+\]</span>
+This can be <strong>vectorized</strong> when programming as follows
+<span class="math display">\[
+\boldsymbol{\mathbf{\beta}}_{k+1} \leftarrow \boldsymbol{\mathbf{\beta}}_k + \gamma X^\top(\boldsymbol{\mathbf{y}}- \sigma(X\boldsymbol{\mathbf{\beta}}))
+\]</span>
+where <span class="math inline">\(X\in\mathbb{R}^{n\times p}\)</span> is the design matrix.
+<span class="math display">\[
+X = 
+\begin{pmatrix}
+\boldsymbol{\mathbf{x}}_1^\top \\
+\vdots \\
+\boldsymbol{\mathbf{x}}_n^\top
+\end{pmatrix}
+\]</span></p>
+<p>One can change the <strong>step size</strong> at every iteration. One possible choice for <span class="math inline">\(\gamma_k\)</span> is as follows
+<span class="math display">\[
+\gamma_k = \frac{|(\boldsymbol{\mathbf{\beta}}_k - \boldsymbol{\mathbf{\beta}}_{k-1})^\top [\nabla \ln p(\boldsymbol{\mathbf{y}}\mid \boldsymbol{\mathbf{\beta}}_k) - \nabla\ln p(\boldsymbol{\mathbf{y}}\mid \boldsymbol{\mathbf{\beta}}_{k-1})]|}{\parallel\nabla\ln p(\boldsymbol{\mathbf{y}}\mid \boldsymbol{\mathbf{\beta}}_k) - \nabla \ln p(\boldsymbol{\mathbf{y}}\mid \boldsymbol{\mathbf{\beta}}_{k-1}\parallel^2}
+\]</span></p>
+</div>
+<div id="newtons-method-mle-no-regularization" class="section level3">
+<h3>Newton’s Method (MLE, No Regularization)</h3>
+<p>Again, during the Laplace approximation section we found that the Hessian is given by
+<span class="math display">\[
+\nabla_{\boldsymbol{\mathbf{\beta}}}^2 \ln p(\boldsymbol{\mathbf{y}}\mid \boldsymbol{\mathbf{\beta}}) = -\sum_{i=1}^n \sigma(\boldsymbol{\mathbf{x}}_i^\top \boldsymbol{\mathbf{\beta}})(1 - \sigma(\boldsymbol{\mathbf{x}}_i^\top \boldsymbol{\mathbf{\beta}})) \boldsymbol{\mathbf{x}}_i\boldsymbol{\mathbf{x}}_i^\top
+\]</span>
+This expression can be vectorized as follows
+<span class="math display">\[
+\nabla_{\boldsymbol{\mathbf{\beta}}}^2 \ln p(\boldsymbol{\mathbf{y}}\mid \boldsymbol{\mathbf{\beta}}) = - X^\top D X
+\]</span>
+where
+<span class="math display">\[
+D = \text{diag}(\sigma(X\boldsymbol{\mathbf{\beta}})(1 - \sigma(X\boldsymbol{\mathbf{\beta}}))) = 
+\begin{pmatrix}
+\sigma(\boldsymbol{\mathbf{x}}_1^\top\boldsymbol{\mathbf{\beta}})(1 - \sigma(\boldsymbol{\mathbf{x}}_1^\top\boldsymbol{\mathbf{\beta}})) &amp; 0 &amp; \ldots &amp; 0 \\
+0 &amp; \sigma(\boldsymbol{\mathbf{x}}_2^\top\boldsymbol{\mathbf{\beta}})(1 - \sigma(\boldsymbol{\mathbf{x}}_2^\top\boldsymbol{\mathbf{\beta}})) &amp; \ldots &amp; 0 \\
+\vdots &amp; \ldots &amp; \ddots &amp; \vdots \\
+0 &amp; 0 &amp; \ldots &amp;\sigma(\boldsymbol{\mathbf{x}}_n^\top\boldsymbol{\mathbf{\beta}})(1 - \sigma(\boldsymbol{\mathbf{x}}_n^\top\boldsymbol{\mathbf{\beta}})) 
+\end{pmatrix}
+\]</span>
+Newton’s method then updates the weights as follows (where <span class="math inline">\(\alpha\)</span> is a learning rate to control convergence)
+<span class="math display">\[
+\boldsymbol{\mathbf{\beta}}_{k+1} \leftarrow \boldsymbol{\mathbf{\beta}}_k +  \alpha(X^\top D X)^{-1} X^\top(\boldsymbol{\mathbf{y}}- \sigma(X\boldsymbol{\mathbf{\beta}}_k))
+\]</span></p>
+<p>Of course in practice we never invert the matrix but rather compute the direction <span class="math inline">\(\boldsymbol{\mathbf{d}}\)</span> by solving the linear system
+<span class="math display">\[
+X^\top D X\boldsymbol{\mathbf{d}}_k = \alpha X^\top(\boldsymbol{\mathbf{y}}- \sigma(X\boldsymbol{\mathbf{\beta}}_k))
+\]</span>
+and then we find the next iterate as
+<span class="math display">\[
+\boldsymbol{\mathbf{\beta}}_{k+1}\leftarrow \boldsymbol{\mathbf{\beta}}_k + \boldsymbol{\mathbf{d}}_k
+\]</span></p>
+</div>
+<div id="gradient-ascent-map-ridge-regularization" class="section level3">
+<h3>Gradient Ascent (MAP, Ridge Regularization)</h3>
+<p>We want to maximize
+<span class="math display">\[
+\ln p(\boldsymbol{\mathbf{\beta}}\mid \boldsymbol{\mathbf{y}}) = \ln p(\boldsymbol{\mathbf{y}}\mid \boldsymbol{\mathbf{\beta}}) + \ln p(\boldsymbol{\mathbf{\beta}}) = - \sum_{i=1}^n \ln\left(1 + \exp\left((1 - 2 y_i) \boldsymbol{\mathbf{x}}_i^\top \boldsymbol{\mathbf{\beta}}\right)\right) - \frac{1}{2\sigma^2_{\boldsymbol{\mathbf{\beta}}}}\boldsymbol{\mathbf{\beta}}^\top \boldsymbol{\mathbf{\beta}}
+\]</span>
+The gradient of the log posterior is given by
+<span class="math display">\[
+\nabla_{\boldsymbol{\mathbf{\beta}}} \ln p(\boldsymbol{\mathbf{\beta}}\mid \boldsymbol{\mathbf{y}}) = X^\top (\boldsymbol{\mathbf{y}}- \sigma(X\boldsymbol{\mathbf{\beta}})) - \frac{1}{\sigma^2_{\boldsymbol{\mathbf{\beta}}}}\boldsymbol{\mathbf{\beta}}
+\]</span>
+Thus gradient descent with regularization to do MAP becomes
+<span class="math display">\[
+\boldsymbol{\mathbf{\beta}}_{k+1}\leftarrow \boldsymbol{\mathbf{\beta}}_k + \gamma \left(\sigma^2_{\boldsymbol{\mathbf{\beta}}}X^\top (\boldsymbol{\mathbf{y}}- \sigma(X\boldsymbol{\mathbf{\beta}}_k)) - \boldsymbol{\mathbf{\beta}}_k\right)
+\]</span></p>
+</div>
+<div id="newtons-method-map-ridge-regularization" class="section level3">
+<h3>Newton’s Method (MAP, Ridge Regularization)</h3>
+<p>Similarly, we want to maximize <span class="math inline">\(\ln p(\boldsymbol{\mathbf{\beta}}\mid \boldsymbol{\mathbf{y}})\)</span>. The Hessian is given by
+<span class="math display">\[
+\nabla_{\boldsymbol{\mathbf{\beta}}}^2 \ln p(\boldsymbol{\mathbf{\beta}}\mid \boldsymbol{\mathbf{y}}) = - X^\top D X - \frac{1}{\sigma^2_{\boldsymbol{\mathbf{\beta}}}}I
+\]</span>
+therefore the Newton’s Method update formula becomes
+<span class="math display">\[
+\boldsymbol{\mathbf{\beta}}_{k+1} \leftarrow \boldsymbol{\mathbf{\beta}}_k + \alpha \left[\sigma^2_{\boldsymbol{\mathbf{\beta}}} X^\top D X + I\right]^{-1}\left(\sigma^2_{\boldsymbol{\mathbf{\beta}}} X^\top (\boldsymbol{\mathbf{y}}- \sigma(X\boldsymbol{\mathbf{\beta}}_k)) - \boldsymbol{\mathbf{\beta}}_k\right)
+\]</span></p>
+</div>
+<div id="iteratively-reweighted-least-squares" class="section level3">
+<h3>Iteratively Reweighted Least-Squares</h3>
+<p>We can manipulate the expression in Newton’s method by defining a new variable
+<span class="math display">\[
+\boldsymbol{\mathbf{z}}_k = X\boldsymbol{\mathbf{\beta}}_k + D^{-1}(\boldsymbol{\mathbf{y}}- \sigma(X\boldsymbol{\mathbf{\beta}}_k))
+\]</span>
+Then the updates take the form
+<span class="math display">\[
+\boldsymbol{\mathbf{\beta}}_{k+1}\leftarrow \boldsymbol{\mathbf{\beta}}_k + (X^\top D_k X)^{-1} X^\top D_k \boldsymbol{\mathbf{z}}_k
+\]</span>
+In practice we would follow these steps</p>
+<ul>
+<li>Evaluate <span class="math inline">\(\boldsymbol{\mathbf{\eta}}_k = X\boldsymbol{\mathbf{\beta}}_k\)</span> and <span class="math inline">\(D_k\)</span>.</li>
+<li>Solve the system <span class="math inline">\(D_k \boldsymbol{\mathbf{r}}_k = \boldsymbol{\mathbf{y}}- \sigma(\boldsymbol{\mathbf{\eta}}_k)\)</span> for <span class="math inline">\(\boldsymbol{\mathbf{r}}_k\)</span>.</li>
+<li>Compute <span class="math inline">\(\boldsymbol{\mathbf{z}}_k = \boldsymbol{\mathbf{\eta}}_k + \boldsymbol{\mathbf{r}}_k\)</span>.</li>
+<li>Solve the system <span class="math inline">\((X^\top D_k X)\boldsymbol{\mathbf{d}}_k = X^\top D_k \boldsymbol{\mathbf{z}}_k\)</span> for <span class="math inline">\(\boldsymbol{\mathbf{d}}_k\)</span>.</li>
+<li>Compute <span class="math inline">\(\boldsymbol{\mathbf{\beta}}_{k+1} \leftarrow \boldsymbol{\mathbf{\beta}}_k + \boldsymbol{\mathbf{d}}_k\)</span></li>
+</ul>
+<p>Alternatively, noticing that <span class="math inline">\(D_{ii}=\sigma(\boldsymbol{\mathbf{x}}_i^\top\boldsymbol{\mathbf{\beta}})(1 - \sigma(\boldsymbol{\mathbf{x}}_i^\top\boldsymbol{\mathbf{\beta}})) &gt; 0\)</span> one can take the square root of its elements and rewriting the problem as
+<span class="math display">\[
+(D^{1/2}_kX)^\top (D^{1/2}_k X) \boldsymbol{\mathbf{d}}_k = (D^{1/2}_k X)^\top (D^{1/2}_k \boldsymbol{\mathbf{z}}_k)
+\]</span>
+which is a simple least squares problem on the new variables <span class="math inline">\(\widetilde{X}_k = D^{1/2}_kX\)</span> and <span class="math inline">\(\widetilde{\boldsymbol{\mathbf{z}}}_k=D_k^{1/2}\boldsymbol{\mathbf{z}}_k\)</span>, and can be solve by using the QR decomposition of <span class="math inline">\(\widetilde{X} = QR\)</span> by solving the following system for <span class="math inline">\(\boldsymbol{\mathbf{d}}_k\)</span>
+<span class="math display">\[
+R \boldsymbol{\mathbf{d}}_k = Q^\top \widetilde{\boldsymbol{\mathbf{z}}}_k
+\]</span></p>
+</div>
+<div id="logistic-regression--1-1" class="section level1">
+<h1>Logistic Regression <span class="math inline">\(\{-1, 1\}\)</span></h1>
+<p>Notice that in the previous chapter we used <span class="math inline">\(y_i\in \{0, 1\}\)</span> with
+<span class="math display">\[
+\mathbb{P}(Y_i=y_i \mid \boldsymbol{\mathbf{x}}_i) = \sigma(\boldsymbol{\mathbf{x}}_i^\top \boldsymbol{\mathbf{\beta}})^{y_i}\sigma(-\boldsymbol{\mathbf{x}}_i^\top \boldsymbol{\mathbf{\beta}})^{1-y_i} = 
+\begin{cases}
+\sigma(-\boldsymbol{\mathbf{x}}_i^\top \boldsymbol{\mathbf{\beta}}) &amp;&amp; \text{if } y_i  =0\\
+\sigma(\boldsymbol{\mathbf{x}}_i^\top \boldsymbol{\mathbf{\beta}}) &amp;&amp; \text{if } y_i = 1
+\end{cases}
+\]</span>
+In particular
+<span class="math display">\[
+p(y_i = 1) = \sigma(\boldsymbol{\mathbf{x}}_i^\top \boldsymbol{\mathbf{\beta}})
+\]</span>
+This gave us the loss function
+<span class="math display">\[
+\sum_{i=1}^n\ln\left(1 + \exp((1 - 2y_i)\boldsymbol{\mathbf{x}}_i^\top\boldsymbol{\mathbf{\beta}})\right)
+\]</span>
+Now the key point is to notice that
+<span class="math display">\[
+1 - 2 y_i =
+\begin{cases}
+1 &amp;&amp; \text{if } y_i = 0\\
+-1 &amp;&amp; \text{if } y_i = 1
+\end{cases}
+\]</span>
+So that actually the mapping that makes <span class="math inline">\(\{0, 1\}\)</span>-Logistic Regression and <span class="math inline">\(\{-1, 1\}\)</span>-Logistic Regression equivalent is <span class="math inline">\(0 \mapsto 1\)</span> and <span class="math inline">\(1 \mapsto -1\)</span>.</p>
+<p>Now instead we have
+<span class="math display">\[
+p(z_i = -1) = \sigma(\boldsymbol{\mathbf{x}}_i^\top \boldsymbol{\mathbf{\beta}})
+\]</span></p>
+</div>

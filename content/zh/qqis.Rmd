@@ -1,0 +1,31 @@
+---
+title: Sorry, You've been Rick-Rolled
+author: Mauro Camara Escudero
+date: '2024-01-29'
+slug: qqis
+categories:
+  - rick
+  - roll
+  - never-gonna-give-you-up
+tags:
+  - rick
+  - roll
+  - never-gonna-give-you-up
+subtitle: 'Sadly, Chromium does not allow embedded links to be on autoplay unless they are on mute, so yes, technically you have not been Rick-rolled.'
+summary: ''
+authors: []
+lastmod: '2024-01-29T14:34:07+01:00'
+featured: no
+image:
+  caption: ''
+  focal_point: ''
+  preview_only: no
+projects: []
+---
+
+<iframe width="700" height="315"
+src="https://www.youtube.com/embed/dQw4w9WgXcQ?autoplay=1&mute=1">
+</iframe>
+
+Someone is being greedy. Come on, really, a $\mathcal{O}(1)$ algorithm? 
+

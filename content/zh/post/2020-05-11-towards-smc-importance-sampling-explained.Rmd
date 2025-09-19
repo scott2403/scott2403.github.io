@@ -1,0 +1,84 @@
+---
+title: 'Towards SMC: Importance Sampling Explained'
+author: Mauro
+date: '2020-05-11'
+slug: towards-smc-importance-sampling-explained
+categories:
+  - sampling
+  - monte-carlo
+  - importance-sampling
+  - smc
+  - sequential-monte-carlo
+  - sequential-importance-sampling
+  - bayesian-inference
+tags:
+  - importance-sampling
+  - sequential-monte-carlo
+  - sequential-importance-sampling
+  - bayesian-inference
+  - sampling
+subtitle: 'Simple Explanation of Importance Sampling for Sequential Monte Carlo (SMC)'
+summary: 'Importance Sampling as a first step towards Sequential Monte Carlo (SMC)'
+authors: []
+lastmod: '2020-05-12T11:40:54+01:00'
+featured: no
+image:
+  caption: ''
+  focal_point: ''
+  preview_only: no
+projects: []
+bibliography: biblio_is.bib
+nocite: |
+  @esmc, @smc_bf, @mcs_sc, @mcsm, @bda,@brml
+---
+
+\newcommand{\vect}[1]{\boldsymbol{\mathbf{#1}}}
+\newcommand{\vtheta}{\vect{\theta}}
+\newcommand{\vy}{\vect{y}}
+\newcommand{\Ebb}{\mathbb{E}}
+\newcommand{\vx}{\vect{x}}
+
+### Classic Importance Sampling
+Suppose that our aim is to compute the posterior expectation 
+$$
+\Ebb_{p(\vtheta\mid \vy)}[h(\vtheta)] = \int h(\vtheta)p(\vtheta\mid\vy) d\vtheta
+$$
+of some function $h(\vtheta)$ with respect to a posterior distribution
+
+\begin{align}
+p(\vtheta\mid \vy) = \frac{\widetilde{p}(\vtheta\mid \vy)}{Z_p} \qquad \text{and} \qquad Z_p = \int \widetilde{p}(\vtheta\mid \vy) d\vtheta.
+\end{align}
+
+Suppose also that it is impractical to sample directly from $p(\vtheta\mid \vy)$. In Importance Sampling we choose an **importance distribution** $q(\vtheta)$ from which it is easier to sample from, and rewrite the expectation above as an expectation with respect to $q(\vtheta)$ so that we can use its samples instead
+$$
+\begin{align}
+  \Ebb_{p(\vtheta\mid \vy)}[h(\vtheta)] 
+  &= \int h(\vtheta)p(\vtheta\mid\vy) d\vtheta \\
+  &= \int h(\vtheta)\frac{\widetilde{p}(\vtheta\mid \vy)}{Z_p}d\vtheta\\
+  &= \frac{1}{Z_p}\int h(\vtheta) \frac{\widetilde{p}(\vtheta\mid \vy)}{q(\vtheta)} q(\vtheta) d\vtheta \\
+  &= \frac{\int h(\vtheta) \frac{\widetilde{p}(\vtheta\mid \vy)}{q(\vtheta)} q(\vtheta) d\vtheta}{\int \frac{\widetilde{p}(\vtheta\mid \vy)}{q(\vtheta)} q(\vtheta)d\vtheta} \\
+  &= \frac{\Ebb_{q(\vtheta)}\left[\frac{\widetilde{p}(\vtheta\mid \vy)}{q(\vtheta)}h(\vtheta)\right]}{\Ebb_{q(\vtheta)}\left[\frac{\widetilde{p}(\vtheta\mid \vy)}{q(\vtheta)}\right]}.
+\end{align}
+$$
+Now we approximate this expectation using Monte Carlo using $\vtheta^{(1)}, \ldots, \vtheta^{(N)}\sim q(\vtheta)$
+\begin{align}
+  \Ebb_{p(\vtheta\mid \vy)}[h(\vtheta)] 
+  &= \frac{\Ebb_{q(\vtheta)}\left[\frac{\widetilde{p}(\vtheta\mid \vy)}{q(\vtheta)}h(\vtheta)\right]}{\Ebb_{q(\vtheta)}\left[\frac{\widetilde{p}(\vtheta\mid \vy)}{q(\vtheta)}\right]} \\
+  &\approx \frac{\frac{1}{N}\sum_{i=1}^N \frac{\widetilde{p}(\vtheta^{(i)}\mid \vy)}{q(\vtheta^{(i)})}h(\vtheta^{(i)})}{\frac{1}{N}\sum_{i=1}^N \frac{\widetilde{p}(\vtheta^{(i)}\mid \vy)}{q(\vtheta^{(i)})}} \\
+  &= \sum_{i=1}^N \left[\frac{\frac{\widetilde{p}(\vtheta^{(i)}\mid \vy)}{q(\vtheta^{(i)})}}{\sum_{j=1}^N \frac{\widetilde{p}(\vtheta^{(j)}\mid \vy)}{q(\vtheta^{(j)})}}\right] h(\vtheta^{(i)}) \\
+  &= \sum_{i=1}^N \left[\frac{\widetilde{w}(\vtheta^{(i)})}{\sum_{j=1}^N \widetilde{w}(\vtheta^{(j)})}\right]h(\vtheta^{(i)}) \\
+  &= \sum_{i=1}^N w(\vtheta^{(i)}) h(\vtheta^{(i)})
+\end{align}
+
+where we have defined $w(\vtheta^{(i)})$ and $\widetilde{w}(\vtheta^{(i)})$ are called **normalized importance weights** and unnormalized importance weights respectively and are defined below
+$$
+\widetilde{w}(\vtheta^{(i)}) = \frac{\widetilde{p}(\vtheta^{(i)}\mid \vy)}{q(\vtheta^{(i)})} \qquad \text{and} \qquad w(\vtheta^{(i)}) = \frac{\widetilde{w}(\vtheta^{(i)})}{\sum_{j=1}^N \widetilde{w}(\vtheta^{(j)}) }
+$$
+
+### Properties of Classic Importance Sampling
+
+- For the variance of the estimator of $\Ebb_{p(\vtheta\mid \vy)}[h(\vtheta)]$ to be finite we require $\text{supp}(q) \supset \text{supp}(p)$.
+- Notice that the vector of weights $\vect{w} = (w(\vtheta^{(1)}), \ldots, w(\vtheta^{(N)}))^\top$ tells us how well $q(\vtheta)$ fits $p(\vtheta\mid\vy)$. In particular when $q\equiv p$ we have $\vect{w} = \left(\frac{1}{N}, \ldots, \frac{1}{N}\right)^\top$, i.e. a vector of uniform weights. So the more uniform the weights, the better the fit. In practice, there will be only few dominant weights, and if $q$ badly fits $p$ then the vast majority of weights will be neglegible, and one or two weights will dominate. 
+
+
+# Bibliography

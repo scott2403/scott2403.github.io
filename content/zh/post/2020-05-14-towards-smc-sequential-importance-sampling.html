@@ -1,0 +1,67 @@
+---
+title: 'Towards SMC: Sequential Importance Sampling'
+author: Mauro Camara Escudero
+date: '2020-05-14'
+slug: towards-smc-sequential-importance-sampling
+categories:
+  - sequential-importance-sampling
+  - sequential-monte-carlo
+  - sequential-data
+tags:
+  - sequential-data
+  - sequential-monte-carlo
+  - sequential-importance-sampling
+subtitle: 'Sequential Importance Sampling tutorial for Sequential Monte Carlo (SMC)'
+summary: 'Sequential Importance Sampling intuition simply explained for SMC'
+authors: []
+lastmod: '2020-05-14T14:06:20+01:00'
+featured: no
+image:
+  caption: ''
+  focal_point: ''
+  preview_only: no
+projects: []
+---
+
+
+
+
+<div id="review-of-importance-sampling-for-sequential-data" class="section level3">
+<h3>Review of Importance Sampling for Sequential Data</h3>
+<p>At time <span class="math inline">\(t=1\)</span> we receive data <span class="math inline">\(x_1\)</span>, and at time <span class="math inline">\(t&gt;1\)</span> we receive data <span class="math inline">\(x_t\)</span>. Let <span class="math inline">\(\boldsymbol{\mathbf{x}}_t=(x_1, \ldots, x_t)\)</span>. Suppose that at each time <span class="math inline">\(t\)</span> our aim is to do inference based on the current posterior distribution <span class="math inline">\(\gamma_t(\boldsymbol{\mathbf{x}}_t)\)</span>. Such inference could, for instance, be to approximate the current posterior expectation of a function of <span class="math inline">\(h(\boldsymbol{\mathbf{x}}_t)\)</span>, i.e. <span class="math inline">\(\mathbb{E}_{\gamma_t(\boldsymbol{\mathbf{x}}_t)}[h(\boldsymbol{\mathbf{x}}_t)]\)</span>. Importance sampling works as follows:</p>
+<ul>
+<li>Sample <span class="math inline">\(\boldsymbol{\mathbf{x}}_t^{(i)}\)</span> from an <strong>importance distribution</strong> <span class="math inline">\(q_t(\boldsymbol{\mathbf{x}}_t)\)</span> for <span class="math inline">\(i=1, \ldots, N\)</span>.</li>
+<li>Compute the unnormalized importance weights and normalize them, to find the <strong>normalized importance weights</strong>
+<span class="math display">\[
+\widetilde{w}_t(\boldsymbol{\mathbf{x}}_t^{(i)}) = \frac{\widetilde{\gamma_t}(\boldsymbol{\mathbf{x}}_t^{(i)})}{q_t(\boldsymbol{\mathbf{x}}^{(i)})}\qquad \qquad \text{and} \qquad\qquad w_t(\boldsymbol{\mathbf{x}}_t^{(i)}) = \frac{\widetilde{w}_t(\boldsymbol{\mathbf{x}}_t^{(i)})}{\sum_{j=1}^N \widetilde{w}_t(\boldsymbol{\mathbf{x}}_t^{(i)})}  \quad \text{for } i=1, \ldots, N
+\]</span></li>
+<li>Use the importance weghts to <strong>approximate the expectation</strong>.
+<span class="math display">\[
+\mathbb{E}_{\gamma_t(\boldsymbol{\mathbf{x}}_t)}[h(\boldsymbol{\mathbf{x}}_t)] \approx \sum_{i=1}^N w_t(\boldsymbol{\mathbf{x}}_t^{(i)}) h(\boldsymbol{\mathbf{x}}_t^{(i)})
+\]</span></li>
+</ul>
+</div>
+<div id="sequential-importance-sampling" class="section level3">
+<h3>Sequential Importance Sampling</h3>
+<p>Sequential Importance Sampling has two main differences with respect to Importance Sampling for sequential data.</p>
+<ul>
+<li>Importance distribution is <strong>autoregressive</strong>:
+<span class="math display">\[
+q_t(\boldsymbol{\mathbf{x}}_t) = \underbrace{q_{t-1}(x_{1:t-1})}_{\substack{\text{Importance} \\ \text{ Distribution} \\ \text{at time } t-1}} q_t(x_t \mid x_{1:t-1})
+\]</span></li>
+<li>Samples at time <span class="math inline">\(t\)</span> are found <strong>recursively</strong> using the samples at time <span class="math inline">\(t-1\)</span>. Previously, at each time <span class="math inline">\(t\)</span> we were sampling <span class="math inline">\(\boldsymbol{\mathbf{x}}_t^{(1)}, \ldots, \boldsymbol{\mathbf{x}}_t^{(N)}\)</span> from <span class="math inline">\(q(\boldsymbol{\mathbf{x}}_t)= q_t(x_1, \ldots, x_t)\)</span>. Essentially, when we were sampling <span class="math inline">\(\boldsymbol{\mathbf{x}}_t^{(i)}\)</span>, we were sampling <em>each component</em> <span class="math inline">\(x_1^{(i)}, \ldots, x_t^{(i)}\)</span> from time <span class="math inline">\(1\)</span> to <span class="math inline">\(t\)</span>. In Sequential Importance Sampling, instead, at each time step <span class="math inline">\(t\)</span> we are sampling <span class="math inline">\(x_t^{(1)}, \ldots, x_t^{(N)}\)</span> from <span class="math inline">\(q_t(x_t \mid \boldsymbol{\mathbf{x}}_{t-1})\)</span>, and append these values to <span class="math inline">\(\boldsymbol{\mathbf{x}}_{t-1}^{(1)},\ldots, \boldsymbol{\mathbf{x}}_{t-1}^{(N)}\)</span>. In other words, for each sample <span class="math inline">\(i\)</span> we are sampling only the <span class="math inline">\(t^{\text{th}}\)</span> component <span class="math inline">\(x_t^{(i)}\)</span> rather than the whole history.</li>
+<li>Importance weights are also computed <strong>recursively</strong>.
+<span class="math display">\[\begin{align}
+\widetilde{w}_t(\boldsymbol{\mathbf{x}}_t^{(i)}) 
+&amp;= \frac{\widetilde{\gamma}_t(\boldsymbol{\mathbf{x}}_t^{(i)})}{q_t(\boldsymbol{\mathbf{x}}_t^{(i)})} \\
+&amp;= \frac{\widetilde{\gamma}_t(\boldsymbol{\mathbf{x}}_t^{(i)})}{q_{t-1}(\boldsymbol{\mathbf{x}}_{t-1}^{(i)}) q_t(x_t^{(i)}\mid \boldsymbol{\mathbf{x}}_{t-1}^{(i)})} &amp;&amp; \text{Def of conditional probability}\\
+&amp;= \frac{\widetilde{\gamma}_t(\boldsymbol{\mathbf{x}}_t^{(i)})}{q_{t-1}(\boldsymbol{\mathbf{x}}_{t-1}^{(i)}) q_t(x_t^{(i)}\mid \boldsymbol{\mathbf{x}}_{t-1}^{(i)})} \cdot \frac{\widetilde{\gamma}_{t-1}(\boldsymbol{\mathbf{x}}_{t-1}^{(i)})}{\widetilde{\gamma}_{t-1}(\boldsymbol{\mathbf{x}}_{t-1}^{(i)})} &amp;&amp; \text{Multiplying by } 1\\
+&amp;= \frac{\widetilde{\gamma}_{t-1}(\boldsymbol{\mathbf{x}}_{t-1}^{(i)})}{q_{t-1}(\boldsymbol{\mathbf{x}}_{t-1}^{(i)})}\frac{\widetilde{\gamma}_t(\boldsymbol{\mathbf{x}}_t^{(i)})}{\widetilde{\gamma}_{t-1}(\boldsymbol{\mathbf{x}}_{t-1}^{(i)})q_t(x_t^{(i)}\mid \boldsymbol{\mathbf{x}}_{t-1}^{(i)})} &amp;&amp; \text{Rearranging terms} \\
+&amp;= \widetilde{w}_{t-1}(\boldsymbol{\mathbf{x}}_{t-1}^{(i)}) \cdot \frac{\widetilde{\gamma}_t(\boldsymbol{\mathbf{x}}_t^{(i)})}{\widetilde{\gamma}_{t-1}(\boldsymbol{\mathbf{x}}_{t-1}^{(i)})q_t(x_t^{(i)}\mid \boldsymbol{\mathbf{x}}_{t-1}^{(i)})} &amp;&amp; \text{Def of } \widetilde{w}_{t-1}(\boldsymbol{\mathbf{x}}_{t-1}^{(i)})
+\end{align}\]</span></li>
+</ul>
+<p>Basically to obtain the next set of weights <span class="math inline">\(\widetilde{w}_t(\boldsymbol{\mathbf{x}}_t^{(i)})\)</span> we “extend” the posterior in the numerator to include <span class="math inline">\(x_t^{(i)}\)</span> by multiplying the previous weight by <span class="math inline">\(\frac{\widetilde{\gamma}_t(\boldsymbol{\mathbf{x}}_t^{(i)})}{\widetilde{\gamma}_{t-1}(\boldsymbol{\mathbf{x}}_{t-1}^{(i)})}\)</span>, and we “move” the importance distribution on the denominagor one step ahead by multiplying it by <span class="math inline">\(q_t(x_t^{(i)}\mid \boldsymbol{\mathbf{x}}_{t-1}^{(i)})\)</span>.</p>
+<blockquote>
+<p><strong>SIS Issue</strong>: One issue with Sequential Importance Sampling is that in practice as <span class="math inline">\(t\)</span> grows, all normalized weights tend to <span class="math inline">\(0\)</span> except for one large weight which tends to <span class="math inline">\(1\)</span>. In these cases then the approximation is quite poor because it is essentially approximated using one sample (i.e. the sample of the non-degenerate weight). This effect is known as <strong>weight degeneracy</strong>. This issue is solve by Sequential Monte Carlo (SMC).</p>
+</blockquote>
+</div>

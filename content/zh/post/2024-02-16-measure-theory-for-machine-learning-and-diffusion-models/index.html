@@ -1,0 +1,599 @@
+---
+title: Measure Theory for ML, AI and Diffusion Models
+author: Mauro Camara Escudero
+date: '2024-02-16'
+slug: []
+categories: []
+tags: []
+subtitle: 'A summary of measure theory required for machine learning and artificial intelligence.'
+summary: 'Measure Theory for Machine Learning from Scratch'
+authors: []
+lastmod: '2024-02-16T13:46:31Z'
+featured: no
+image:
+  caption: ''
+  focal_point: ''
+  preview_only: no
+projects: []
+---
+
+
+
+<p><strong>Table of Contents</strong></p>
+<ul>
+<li><a href="#randomness">Randomness, Mathematics, and Intuition</a></li>
+<li><a href="#sigma-algebras">Sigma Algebras</a></li>
+<li><a href="#measures">Measures</a></li>
+<li><a href="#random-variables">Random Variables</a></li>
+<li><a href="#comparing-random-variables">Comparing Random Variables</a></li>
+<li><a href="#mathematical-spaces">Topology</a></li>
+<li><a href="#integration">Integration</a></li>
+<li><a href="#expectations">Expectations</a></li>
+<li><a href="#lebesgue-measure">Lebesgue Measure</a></li>
+<li><a href="#density-functions">Density Functions</a></li>
+<li><a href="#change-of-variables">Change of Variables and Jacobians</a></li>
+<li><a href="#markov-kernels">Markov Kernels</a></li>
+<li><a href="#conditional-expectations">Conditional Expectations</a></li>
+<li><a href="#stochastic-processes">Stochastic Processes</a></li>
+</ul>
+<div id="introduction" class="section level1">
+<h1>Introduction</h1>
+<p>In this post, I will cover enough measure theory so that the reader will be able to understand the theory behind Denoising Diffusion Models, and more generally Machine Learning and Artificial Intelligence. To understand measure theory in full, a lot of background mathematical knowledge is required and inevitable, but I will try my best to make things intuitive and yet precise, while assuming <strong>very few prerequisites</strong>. Most importantly, I will always aim to show examples within Probability, Statistics, or Machine Learning, as to keep things on theme. After this post is complete, the plan is to make another one about Stochastic Calculus and SDEs for Machine Learning and Diffusion Models.</p>
+<p>If you find any mistake, typo or for anything else, don’t hesitate to contact me.</p>
+<hr />
+<p><a name="randomness"></a></p>
+</div>
+<div id="randomness-mathematics-and-intuition" class="section level1">
+<h1>Randomness, Mathematics, and Intuition</h1>
+<p>In everyday language, we sometimes use the expression “the probability of/that”. For instance,</p>
+<blockquote>
+<p>The <span style="color:darkorange">probability</span> of <span style="color:deepskyblue">rolling a six</span> is <span style="color:#D81159"><span class="math inline">\(1/6\)</span></span>.</p>
+</blockquote>
+<p>I have emphasized in three different colors the key components of that sentence. Measure theory can be used to define each of those three terms rigorously. Specifically, it can answer these questions:</p>
+<ol style="list-style-type: decimal">
+<li>What is a probability? (<span style="color:darkorange">orange</span> and <span style="color:#D81159">magenta</span>)</li>
+<li>What “things” can have an associated probability? (<span style="color:deepskyblue">blue</span>)</li>
+</ol>
+<p>All we need are <strong>sets</strong> and <strong>functions</strong>.</p>
+<hr />
+<div id="what-this-is-all-about" class="section level2">
+<h2>What this is all about</h2>
+<p>Until we have built enough measure theory to talk about machine learning, I will often talk about this very simple scenario: A person rolling a six-sided die and observing which number comes out on top. This is a classic and straightforward scenario considered in probability theory, but will allow me to talk about various notions in measure theory without getting lost in the details. I will assume:</p>
+<ul>
+<li>The die will <em>always</em> land with exactly one face up, meaning that it will never get stuck in any crack or height difference. Imagine the die is roll on an infinitely long and perfectly flat surface.</li>
+<li>The person will <em>always</em> be able to observe which number comes out on top.</li>
+</ul>
+<p>Basically, I am making this super easy: the person rolls the die and observes either <span class="math inline">\(1\)</span>, <span class="math inline">\(2\)</span>, <span class="math inline">\(3\)</span>, <span class="math inline">\(4\)</span>, <span class="math inline">\(5\)</span>, or <span class="math inline">\(6\)</span> written on top. This is known as an <strong>experiment</strong> in probability. I know, rolling a die is hardly an experiment, but the choice of this word is very fitting. It is called an experiment because, <strong>before performing it, we do not know what the outcome of the experiment will be</strong> (otherwise, if the die would always roll a <span class="math inline">\(1\)</span>, we would not roll it and board games would be a lot less fun).</p>
+<p>Rolling a die and observing the number on top is just a specific “experiment”. The concept of experiment is central to probability theory because whenever we talk about probabilities, we have in mind some sort of experiment, which will result in exactly one outcome, and we are interested in figuring out what is the probability of <strong>some</strong> of these outcomes. I say some because at times we are not interested in the probability of a single outcome, but in the probability of some outcomes. For instance, we may be interested in the probability of <span style="color:deepskyblue">rolling an even number</span>. As we will see soon, we can call <strong>event</strong> the collection of all the “outcomes” that we are interested in.</p>
+</div>
+<div id="intuition-behind-probabilities" class="section level2">
+<h2>Intuition behind probabilities</h2>
+<p>A probability of something happening is a numeric value that tells us how likely that something is to happen (if this seems circular, that’s good, because it is). Ideally, we would like to have a <strong>maximum</strong> probability value for things that are <strong>certain</strong> and a <strong>minimum</strong> probability value for things that are <strong>impossible</strong>. We could choose any two values, but historically, mathematicians have settled for <span class="math inline">\(1\)</span> and <span class="math inline">\(0\)</span> respectively. It makes sense to construct a <strong>function</strong> that takes a “thing” as input and outputs the probability of that thing happening, which is a value in <span class="math inline">\([0, 1]\)</span>.</p>
+</div>
+<div id="intuition-behind-events" class="section level2">
+<h2>Intuition behind events</h2>
+<p>What “things” can we assign a probability to? Imagine that measure theory has not been developed yet and you find yourself wanting to write the statement above mathematically. What mathematical object can represent the words <span style="color:deepskyblue">rolling a six</span>? A first attempt could be to set it to the number six
+<span class="math display">\[
+\underbrace{\textcolor{deepskyblue}{\text{rolling a six}}}_{\text{everyday language}} = \underbrace{6}_{\text{mathematics}}
+\]</span>
+This approach doesn’t seem to bad because it works seamlessly for other numbers, for instance “rolling a one” would simply be <span class="math inline">\(1\)</span> and so on. However, this approach breaks down when we consider more complicated expressions, for instance, it is not clear how one should “encode”</p>
+<blockquote>
+<p>Rolling an even number (i.e. either 2, 4, or 6)</p>
+</blockquote>
+<p>using this convention. There are infinitely many natural numbers, so one could potentially encode this and many more complicated expressions for larger and larger numbers. For instance, <span style="color:deepskyblue">rolling an even number</span> could be represented as <span class="math inline">\(7\)</span>, and <span style="color:deepskyblue">rolling an odd number</span> could be represented as <span class="math inline">\(8\)</span>. There are various issues with this approach, but perhaps the most intuitive to understand is that this way we would have to manually encode each “thing” into a number. Thankfully, there is a better approach.</p>
+<p>After attempting to represents “things” with numbers, one may switch to sets. Consider again the task of rolling a six-sided die and observing which number comes on top. We assume that the die cannot get stuck anywhere and always lands on one face or the other, and that we can always observe the number on top. The possible outcomes of this task are that we observe <span class="math inline">\(1\)</span>, <span class="math inline">\(2\)</span>, <span class="math inline">\(3\)</span>, <span class="math inline">\(4\)</span>, <span class="math inline">\(5\)</span>, or <span class="math inline">\(6\)</span>. No other outcome is possible. The phrase <span style="color:deepskyblue">rolling a six</span> could then be encoded as a set
+<span class="math display">\[
+\underbrace{\textcolor{deepskyblue}{\text{rolling a six}}}_{\text{everyday language}} = \underbrace{\{6\}}_{\text{mathematics}}.
+\]</span>
+You may think that we have not improved the situation by much, since in this set there is only a single element (we say <span class="math inline">\(\{6\}\)</span> is a singleton set). However, this makes talking about more complex “things” a lot easier. For instance, <span style="color:deepskyblue">rolling an even number</span> can be represented by the set containing all the even numbers, and similarly for <span style="color:deepskyblue">rolling an odd number</span>
+<span class="math display">\[
+\underbrace{\textcolor{deepskyblue}{\text{rolling an even number}}}_{\text{everyday language}} = \underbrace{\{2, 4, 6\}}_{\text{mathematics}}.
+\]</span>
+Sometimes in board games you will need to roll a number above a certain value. This can also be represented easily, for instance
+<span class="math display">\[
+\underbrace{\textcolor{deepskyblue}{\text{rolling a number larger than three}}}_{\text{everyday language}} = \underbrace{\{4, 5, 6\}}_{\text{mathematics}}.
+\]</span>
+It turns out, sets are <strong>very flexible</strong> and a great candidate to represent “things” that we want to assign a probability to. Speaking of, all the phrases I have colored in <span style="color:deepskyblue">blue</span> are called <strong>events</strong>.</p>
+<blockquote>
+<p>If we can talk about the probability of “something” happening, that something is known as an <strong>event</strong>.</p>
+</blockquote>
+<p>Something that may come as a shock, is that not every set is an event. There are sets for which we cannot talk about their “probability”, we will talk more about that later.</p>
+</div>
+<div id="intuition-behind-relationship-of-probabilities-and-events" class="section level2">
+<h2>Intuition behind relationship of probabilities and events</h2>
+<p>Okay, we can represent events as sets and it seems to be a sensible choice. Now, what does it mean that a certain event has a probability? We need to define the <strong>probability function</strong>. As we expect, this should take <em>sets</em> as inputs and return a value between <span class="math inline">\(0\)</span> and <span class="math inline">\(1\)</span>, the higher the value, the more likely the event represented by the set, is to happen. Since the function takes sets as inputs, one may think that its domain is the <em>power set of all possible outcomes</em>. In other words, if we collect together all outcomes into a single set, which we call the <strong>sample space</strong>
+<span class="math display">\[
+\Omega := \left\{1, 2, 3, 4, 5, 6\right\}
+\]</span>
+then an event is any subset <span class="math inline">\(\mathsf{E}\subseteq \Omega\)</span>. It turns out that when we have finitely many possible outcomes (such as in the die example) this is true, but when we have infinitely many, not all subsets are valid events. In either case, we call <strong>event space</strong> the set of all valid events. By definition, we know that this is a set whose elements are subsets of <span class="math inline">\(\Omega\)</span>, but not necessarily <em>all</em> subsets. Typically, the event space is denoted by <span class="math inline">\(\mathcal{F}\)</span>. In our six-sided die example, <span class="math inline">\(\mathcal{F}\)</span> contains all the subsets (since <span class="math inline">\(\Omega\)</span> has finitely many elements)
+<span class="math display">\[
+\mathcal{F} = 2^\Omega.
+\]</span>
+For example, <span class="math inline">\(\{2, 4, 6\}\in\mathcal{F}\)</span>.</p>
+<hr />
+<p><a name="sigma-algebras"><a/></p>
+</div>
+</div>
+<div id="sigma-algebras" class="section level1">
+<h1>Sigma Algebras</h1>
+<p>The sigma algebra is the set of all events, i.e. all sets to which we can (and wish) to assign a measure to. One interpretation of a sigma algebra that is helpful for stochastic processes is that a sigma algebra represents information. I will write <span class="math inline">\(2^{\Omega}\)</span> as the <em>power set</em> of a set <span class="math inline">\(\Omega\)</span>, which is the set of all of its subsets (that’s a mouthful).</p>
+<blockquote>
+<p><strong>Sigma Algebra</strong>: Let <span class="math inline">\(\Omega\)</span> be a non-empty set. A set <span class="math inline">\(\mathcal{F}\subseteq 2^\Omega\)</span> is a sigma algebra over <span class="math inline">\(\Omega\)</span> if it satisfies:<br />
+1. <span class="math inline">\(\Omega\in\mathcal{F}\)</span><br />
+2. Closure under the complementation operation
+<span class="math display">\[
+\mathsf{A}\in\mathcal{F} \implies \Omega\backslash\mathsf{A} \in\mathcal{F}
+\]</span>
+3. Closure under countable unions
+<span class="math display">\[
+\mathsf{A}_i \in \mathcal{F} \,\,\,\,\,\forall\, i\in\mathcal{I}, \text{ with }|\mathcal{I}|\leq \aleph_0 \implies \bigcup_{i\in\mathcal{I}} \mathsf{A}_i \in\mathcal{F}
+\]</span></p>
+</blockquote>
+<p>Given a non-empty set <span class="math inline">\(\Omega\)</span>, we can build several different sigma algebras on it. Some sigma algebras may be contained within larger sigma algebras. In that case, we refer to the smaller sigma algebra as a sub-sigma algebra. In the interpretation of stochastic processes, a sub-sigma algebra represents less information because it contains fewer events. Sub-sigma algebras are generally used for conditioning: they typically represent partial or conditional information. A common nomenclature is to call smaller sigma algebras <em>coarser</em> and larger sigma algebras <em>finer</em>.</p>
+<blockquote>
+<p><strong>Sub-Sigma Algebras</strong>: Let <span class="math inline">\(\Omega\)</span> be a set and <span class="math inline">\(\mathcal{F}\)</span> and <span class="math inline">\(\mathcal{G}\)</span> be two sigma algebras on it. If <span class="math inline">\(\mathcal{G}\subseteq \mathcal{F}\)</span> then we call <span class="math inline">\(\mathcal{G}\)</span> a sub-sigma algebra of <span class="math inline">\(\mathcal{F}\)</span>.</p>
+</blockquote>
+<p>The intersection of sigma algebras, is itself a sigma algebra. This is true both for a countable and uncountable number of sigma algebras. The intuition is that the intersection of sigma algebras represents the common or mutual information.</p>
+<blockquote>
+<p><strong>Intersection of Sigma Algebras</strong>: Let <span class="math inline">\(\Omega\)</span> be a non-empty set, <span class="math inline">\(\mathcal{I}\)</span> be <em>any</em> set and <span class="math inline">\(\{\mathcal{F}_i\,:\, i\in\mathcal{I}\}\)</span> be a collection of sigma algebras on <span class="math inline">\(\Omega\)</span>. The intersection of these sigma algebras
+<span class="math display">\[
+\bigcap_{i\in\mathcal{I}} \mathcal{F}_i
+\]</span>
+is a sigma algebra over <span class="math inline">\(\Omega\)</span>.</p>
+</blockquote>
+<p>Given a bunch of subsets of <span class="math inline">\(\Omega\)</span>, it is typically possible to construct several sigma algebras containing all of these subsets. Out of all of these sigma algebras, there is one that is the smallest (or coarser). This is found as the intersection of all possible sigma algebras containing this collection of subsets. The way I make sense of this is that given a bunch of <em>potential</em> events, it is possible to find the smallest sigma algebra such that they are <em>actually</em> valid events.</p>
+<blockquote>
+<p><strong>Sigma algebra generated by a collection of sets</strong>: Let <span class="math inline">\(\Omega\)</span> be a non-empty set and <span class="math inline">\(\mathcal{C}\)</span> be a collection of subsets of <span class="math inline">\(\Omega\)</span>. Then the collection <span class="math inline">\(\mathcal{C}\)</span> induces a sigma algebra on <span class="math inline">\(\Omega\)</span>, which we call the sigma algebra generated by <span class="math inline">\(\mathcal{C}\)</span>, and denote <span class="math inline">\(\sigma(\mathcal{C})\)</span>. This sigma algebra is the intersection of all sigma algebras containing <span class="math inline">\(\mathcal{C}\)</span>
+<span class="math display">\[
+\sigma(\mathcal{C}) = \bigcap_{\substack{\mathcal{C}\in\mathcal{F} \\\text{sigma algebra}}} \mathcal{F}
+\]</span>
+and it is the <em>smallest</em> sigma algebra containing <span class="math inline">\(\mathcal{C}\)</span>.</p>
+</blockquote>
+<p>Since we almost always work with a set <span class="math inline">\(\Omega\)</span> and a sigma algebra on it, for convenience we give a name to the pair <span class="math inline">\((\Omega, \mathcal{F})\)</span>.</p>
+<blockquote>
+<p><strong>Measurable Space</strong>: Let <span class="math inline">\(\Omega\)</span> be a non-empty set and <span class="math inline">\(\mathcal{F}\subset 2^\Omega\)</span> be a sigma algebra on it. The pair <span class="math inline">\((\Omega, \mathcal{F})\)</span> is called a measurable space, and any set <span class="math inline">\(\mathsf{A}\in\mathcal{F}\)</span> is called <span class="math inline">\(\mathcal{F}\)</span>-measurable.</p>
+</blockquote>
+<hr />
+<p><a name="measures"><a/></p>
+</div>
+<div id="measures" class="section level1">
+<h1>Measures</h1>
+<p>Measures themselves have nothing to do, per se, with statistics. They are just functions that measure the size (or volume) of something. That something is a set in a sigma algebra. The size of something must be non-negative and if we measure the size of separate things, we should be able to sum them up with no problem. For a bit, I will call a measure <span class="math inline">\(\mathbb{M}\)</span>.</p>
+<blockquote>
+<p><strong>Measure</strong>: Let <span class="math inline">\((\Omega, \mathcal{F})\)</span> be a measurable space. A function <span class="math inline">\(\mathbb{M}:\mathcal{F}\to [0, +\infty]\)</span> is called a measure if it satisfies<br />
+1. <span class="math inline">\(\mathbb{M}(\emptyset) = 0\)</span><br />
+2. Countable additivity: If <span class="math inline">\(\{\mathsf{A}_i\,:\,i\in\mathcal{I}\}\)</span> with <span class="math inline">\(|\mathcal{I}|\leq \aleph_0\)</span> is a countable collection of <em>pairwise disjoint</em> sets then
+<span class="math display">\[
+\mathbb{M}\left(\bigcup_{i\in\mathcal{I}} \mathsf{A}_i\right) = \sum_{i\in\mathcal{I}} \mathbb{M}(\mathsf{A}_i)
+\]</span></p>
+</blockquote>
+<p>Again, as mathematicians we like to give names to things. Just as we typically work with measurable space <span class="math inline">\((\Omega, \mathcal{F})\)</span>, we typically assume that on this measurable space there is a measure <span class="math inline">\(\mathbb{M}\)</span>, and hence for brevity call <span class="math inline">\((\Omega, \mathcal{F}, \mathbb{M})\)</span> a measurable space. Basically, it’s just a space where I have a systematic and coherent way of assigning a “size” value to subsets.</p>
+<blockquote>
+<p><strong>Measure Space</strong>: A triplet <span class="math inline">\((\Omega, \mathcal{F}, \mathbb{M})\)</span> is called a measure space if <span class="math inline">\(\mathbb{M}\)</span> is a measure on the measurable space <span class="math inline">\((\Omega, \mathcal{F})\)</span>.</p>
+</blockquote>
+<p>So far, we have talked about measures as assigning “size” to sets. The key intuition that makes measure theory such a wonderful tool for probability theory, is that a probability is fundamentally the size of something <em>relative to the whole</em>. What does it mean? It means that the whole space <span class="math inline">\(\Omega\)</span> has a finite size, and so a probability measure assigns to any set <span class="math inline">\(\mathsf{A}\in\mathcal{F}\)</span> its relative size to the whole <span class="math inline">\(\Omega\)</span>.</p>
+<blockquote>
+<p><strong>Finite Measure</strong>: Let <span class="math inline">\((\Omega, \mathcal{F}, \mathbb{M})\)</span> be a measure space. We say <span class="math inline">\(\mathbb{M}\)</span> is <em>finite</em> if <span class="math inline">\(\mathbb{M}(\Omega) &lt; \infty\)</span>. We say <span class="math inline">\(\mathbb{M}\)</span> is <span class="math inline">\(\sigma\)</span>-finite if there exists a countable partition <span class="math inline">\(\{\Omega_n\,:\, n\in\mathbb{N}\}\)</span> of <span class="math inline">\(\Omega\)</span> (meaning they are mutually disjoint and their union covers all of <span class="math inline">\(\Omega\)</span>) such that <span class="math inline">\(\mathbb{M}(\Omega_n) &lt; \infty\)</span> for each <span class="math inline">\(n\in\mathsf{N}\)</span>.</p>
+</blockquote>
+<p>Any finite measure can be turned into a probability measure by normalization. Often, for a general probability measure I will use the symbol <span class="math inline">\(\mathbb{P}\)</span> rather than <span class="math inline">\(\mathbb{M}\)</span>.</p>
+<blockquote>
+<p><strong>Probability Measure</strong>: Let <span class="math inline">\((\Omega, \mathcal{F}, \mathbb{P})\)</span> be a measurable space with <span class="math inline">\(\mathbb{P}\)</span> being a finite measure. If <span class="math inline">\(\mathbb{P}(\mathsf{X}) = 1\)</span> we say that <span class="math inline">\(\mathbb{P}\)</span> is a probability measure. Notice that given any finite measure <span class="math inline">\(\mathbb{M}\)</span>, one can define a corresponding probability measure by normalization <span class="math inline">\(\mathbb{P} := \mathbb{M} / \mathbb{M}(\Omega)\)</span>.</p>
+</blockquote>
+<p>Above, I have define <span class="math inline">\(\sigma\)</span>-finite measures. What is this property useful for? Typically, this is used for the Radon-Nikodym theorem and Fubini’s theorem, which we will see later. In simpler language: we require <span class="math inline">\(\sigma\)</span>-finite measures when we need to work with probability density functions or we need to exchange integrals.</p>
+<hr />
+<p><a name="random-variables"><a/></p>
+</div>
+<div id="random-variables-and-distributions" class="section level1">
+<h1>Random Variables and Distributions</h1>
+<p>A random variable is a well-behaved function that grabs possible outcomes of an experiments, and maps them to values that are relevant for the problem at hand, and on which we can perform maths. For instance, when flipping a coin, the possible outcomes may be <span class="math inline">\(\Omega = \left\{\text{Head}, \text{Tail}\right\}\)</span>, and we note that the two outcomes are <em>words</em> and not numbers, in this particular example (in fact, they are not words, but sides of the coin itself). A random variable is a way to <em>encode</em> this information more appropriately. In this case, one could map <span class="math inline">\(\text{Head}\)</span> to <span class="math inline">\(0\)</span> and <span class="math inline">\(\text{Tail}\)</span> to <span class="math inline">\(1\)</span> (or vice-versa).</p>
+<blockquote>
+<p><strong>Random Variable</strong>: Let <span class="math inline">\((\Omega, \mathcal{F})\)</span> and <span class="math inline">\((\mathsf{X}, \mathcal{X})\)</span> be two measurable spaces. A function <span class="math inline">\(\mathrm{X}:\Omega\to\mathsf{X}\)</span> is <span class="math inline">\(\mathcal{F}\)</span>-measurable if for every set <span class="math inline">\(\mathsf{B}\in\mathcal{X}\)</span> its preimage <span class="math inline">\(\mathrm{X}^{-1}(\mathsf{B})\)</span> is <span class="math inline">\((\mathcal{F},\mathcal{X})\)</span>-measurable
+<span class="math display">\[
+\mathrm{X}^{-1}(\mathsf{B}) \in\mathcal{F} \qquad\forall\, \mathsf{B}\in\mathcal{X}.
+\]</span>
+If on the measurable space <span class="math inline">\((\Omega, \mathcal{F})\)</span> there is a <em>probability measure</em> <span class="math inline">\(\mathbb{P}\)</span>, then the <span class="math inline">\((\mathcal{F}, \mathcal{X})\)</span>-measurable function <span class="math inline">\(\mathrm{X}\)</span> is called a random variable.</p>
+</blockquote>
+<p>In most situations, we will just write <span class="math inline">\(\mathcal{F}\)</span>-measurable and not mention <span class="math inline">\(\mathcal{X}\)</span>, although (as explained in the next note), it can be important to be precise in some contexts. Earlier, I said that a random variable encodes information <em>appropriately</em>. What do I mean by that? The sigma algebra <span class="math inline">\(\mathcal{X}\)</span> encodes information in terms of subsets of <span class="math inline">\(\mathsf{X}\)</span> (in the case of the coin toss, in terms of <span class="math inline">\(\mathsf{X} = \{0, 1\}\)</span>), whereas <span class="math inline">\(\mathcal{F}\)</span> encodes information in terms of the outcomes themselves. A function is a random variable then, whenever the information between these two spaces is <em>compatible</em>: Given any piece of information (event) in <span class="math inline">\(\mathcal{X}\)</span>, there corresponds a piece of information (again, an event) in <span class="math inline">\(\mathcal{F}\)</span>.</p>
+<p>I need to make a very important point which is often used implicitly in the theory of stochastic processes but, for me, was not obvious at first.</p>
+<blockquote>
+<p><strong>Measurability of Random Variables defines them</strong>: Let <span class="math inline">\((\Omega, \mathcal{F}, \mathbb{P})\)</span> be a probability space, <span class="math inline">\((\mathsf{X}, \mathcal{X})\)</span> be a measurable space and <span class="math inline">\(\mathrm{X}:\Omega\to\mathsf{X}\)</span> be a random variable. For <span class="math inline">\(\mathrm{X}\)</span> to be a random variable, we require that it is <span class="math inline">\((\mathcal{F}, \mathcal{X})\)</span>-measurable, meaning that <strong>for any</strong> set <span class="math inline">\(\mathsf{A}\in\mathcal{X}\)</span> we <strong>must have</strong> <span class="math inline">\(\mathrm{X}^{-1}(\mathsf{A})\in\mathcal{F}\)</span>. I have highlighted those expressions because when we say <span class="math inline">\(\mathrm{X}:\Omega\to\mathsf{X}\)</span> is <span class="math inline">\((\mathcal{F}, \mathcal{X})\)</span>-measurable, we are automatically saying that <span class="math inline">\(\mathcal{F}\)</span> is the largest sigma algebra for which this happens (there can be smaller ones, as we will see later) <strong>given that we are working with <span class="math inline">\(\mathcal{X}\)</span></strong>. This is fundamental to understand. If we have already defined <span class="math inline">\(\mathrm{X}\)</span> being <span class="math inline">\((\mathcal{F}, \mathcal{X})\)</span>-measurable and then we grab a large sigma algebra <span class="math inline">\(\mathcal{G}\supset \mathcal{F}\)</span>, it cannot be that <span class="math inline">\(\mathrm{X}\)</span> is strictly <span class="math inline">\((\mathcal{G}, \mathcal{X})\)</span>-measurable <strong>unless we extend the codomain</strong> of <span class="math inline">\(\mathrm{X}\)</span>. In this case, the codomain is <span class="math inline">\(\mathsf{X}\)</span> or, more broadly, the measurable space <span class="math inline">\((\mathsf{X}, \mathcal{X})\)</span>. The definition of <span class="math inline">\(\mathrm{X}\)</span> tells us that any set in <span class="math inline">\(\mathcal{X}\)</span> has preimage in <span class="math inline">\(\mathcal{F}\)</span>, which means that no set in <span class="math inline">\(\mathcal{X}\)</span> has preimage in <span class="math inline">\(\mathcal{G}\backslash \mathcal{F}\)</span>. One could, potentially, extend the sigma algebra on <span class="math inline">\(\mathcal{X}\)</span> so that some of its sets have preimage in <span class="math inline">\(\mathcal{G}\backslash \mathcal{F}\)</span>, but I am not aware of a context where this is done.</p>
+</blockquote>
+<p>The <em>only</em> difference between a measurable function and a random variable is that for a measurable function to be <em>called</em> a random variable, we require the original space to have an associated probability measure. This is because the whole point of creating a random variable is so that we can study/sample/work with its <em>distribution</em>, which we define next. At first, the distribution of a random variable seems quite cryptic, especially if you have never seen pushforward measures before. The idea, is very simple though. A random variable requires an initial probability space <span class="math inline">\((\Omega, \mathcal{F}, \mathbb{P})\)</span>, however we have not said anything about whether or not we have any measure at all on <span class="math inline">\((\mathsf{X}, \mathcal{X})\)</span>, the space where the random variable <span class="math inline">\(\mathrm{X}\)</span> takes values. It turns out that, we can <em>construct</em> a probability measure on <span class="math inline">\((\mathsf{X}, \mathcal{X})\)</span>: for any set <span class="math inline">\(\mathsf{A}\in\mathcal{X}\)</span> we first find its preimage with <span class="math inline">\(\mathrm{X}\)</span> and then measure its size with <span class="math inline">\(\mathbb{P}\)</span>, this size is the size that the constructed probability measure will assign to it. Notice what we are doing: we are measuring sets in <span class="math inline">\(\mathcal{X}\)</span> using the size of sets in <span class="math inline">\(\mathcal{F}\)</span>. This new probability measure is called a <strong>probability distribution</strong> (or just distribution).</p>
+<blockquote>
+<p><strong>Distribution</strong>: Let <span class="math inline">\((\Omega, \mathcal{F}, \mathbb{P})\)</span> be a probability space, <span class="math inline">\((\mathsf{X}, \mathcal{X})\)</span> be a measurable space and <span class="math inline">\(\mathrm{X}:\Omega\to\mathsf{X}\)</span> be a random variable. Then <span class="math inline">\(\mathsf{X}\)</span> induces a probability measure on <span class="math inline">\((\mathsf{X}, \mathcal{X})\)</span>, called the (probability) distribution of <span class="math inline">\(\mathrm{X}\)</span> and defined as the <em>pushforward</em> of <span class="math inline">\(\mathbb{P}\)</span> by <span class="math inline">\(\mathrm{X}\)</span>
+<span class="math display">\[
+\mathbb{P}^\mathrm{X} := \mathbb{P}\circ\mathrm{X}^{-1}.
+\]</span>
+For any measurable set <span class="math inline">\(\mathsf{A}\in\mathcal{X}\)</span> we write <span class="math inline">\(\mathbb{P}^{\mathrm{X}}(\mathsf{A}) = \mathbb{P}(\mathrm{X}^{-1}(\mathsf{A})) = \mathbb{P}(\mathrm{X}\in\mathsf{A})\)</span>.</p>
+</blockquote>
+<p>Notice that this is not just a measure: it is a <em>probability</em> measure, since <span class="math inline">\(\mathbb{P}^{\mathrm{X}}(\mathsf{X}) = \mathbb{P}(\Omega) = 1\)</span>. A very neat property, which allows us to derive all sorts of things in probability very easily is that given any probability measure <span class="math inline">\(\mathbb{P}\)</span> and a function <span class="math inline">\(f\)</span> one can always write <span class="math inline">\(\mathbb{P} = \left(\mathbb{P}^{f}\right)^{f^{-1}}\)</span>. In other words, the pushforwards cancel each other out. Alternatively, one can also write <span class="math inline">\(\mathbb{P}^{f\circ f^{-1}}\)</span> to save space.</p>
+<p>Measure theory is nice because when you don’t have something, it gives you the recipe to create it. Remember how before we took any collection of subsets and generated the (smallest) sigma-algebra containing them? Well, given <em>any function</em> we can turn it into a measurable function. The trick is that we put into a bag all the preimages of that function and then generate the smallest sigma algebra from this bag. The resulting sigma algebra is then <em>the smallest (coarser) sigma algebra such that the function is measurable</em>.</p>
+<blockquote>
+<p><strong>Sigma Algebra generated by a function</strong>: Let <span class="math inline">\((\mathsf{Y}, \mathcal{Y})\)</span> be a measurable space, <span class="math inline">\(\mathsf{X}\)</span> be a non-empty set and <span class="math inline">\(f:\mathsf{X}\to\mathsf{Y}\)</span> be a function (not necessarily measurable). Then <span class="math inline">\(f\)</span> induces a sigma algebra on <span class="math inline">\(\mathsf{X}\)</span>, denoted <span class="math inline">\(\sigma(f)\)</span>
+<span class="math display">\[
+\sigma(f) := \left\{f^{-1}(\mathsf{A})\,:\, \mathsf{A}\in\mathcal{Y}\right\},
+\]</span>
+which is the <em>smallest</em> sigma algebra on <span class="math inline">\(\mathsf{X}\)</span> such that <span class="math inline">\(f\)</span> is measurable relative to it, indeed by definition <span class="math inline">\(f\)</span> is <span class="math inline">\(\sigma(f)\)</span>-measurable. Therefor one could write <span class="math inline">\(\sigma(f) = \sigma\left(\left\{f^{-1}(\mathsf{A})\,:\, \mathsf{A}\in\mathcal{Y}\right\}\right)\)</span>.</p>
+</blockquote>
+<p>Finally, just a remark. In the definition of measurable function <span class="math inline">\(\mathrm{X}\)</span>, I have called it <span class="math inline">\(\mathcal{F}\)</span>-measurable, specifying the sigma algebra on the domain. However, most times it will be clear from context (or just not that important) which sigma algebra <span class="math inline">\(\mathrm{X}\)</span> will be measurable with respect to. Nonetheless, I will try my best to always specify the sigma algebra. I am aware this makes notation a bit heavier, but in some cases, it may make it more precise and therefore easier to understand.</p>
+<hr />
+<p><a name="comparing-random-variables"><a/></p>
+</div>
+<div id="comparing-random-variables" class="section level1">
+<h1>Comparing Random Variables</h1>
+<p>Suppose we have a probability space <span class="math inline">\((\Omega, \mathcal{F}, \mathbb{P})\)</span> a measurable space <span class="math inline">\((\mathsf{X}, \mathcal{X})\)</span> and two random variables <span class="math inline">\(\mathrm{X}_1, \mathrm{X}_2:\Omega\to\mathsf{X}\)</span>. The following event
+<span class="math display">\[
+\left\{\omega\in\Omega\,:\, \mathrm{X}_1(\omega) = \mathrm{X}_2(\omega) \right\}
+\]</span>
+gathers all the outcomes such that the two random variables have the same value. It could be that two random variables always take on the same value because they are <strong>identical</strong>, and we would expect the probability of this event happening being one. It can also happen, however, that these random variables take on the same values often enough that the set of outcomes where they do not take on the same value has measure zero. In probability we do not work with certainty, but with “almost” certainty. If the complement event (which is always in the sigma algebra) has measure zero, then that’s all we care about because it means that our event has measure one. For this reason, when
+<span class="math display">\[
+\mathbb{P}\left(\left\{\omega\in\Omega\,:\, \mathrm{X}_1(\omega) = \mathrm{X}_2(\omega) \right\}\right) = 1,
+\]</span>
+we say that <span class="math inline">\(\mathrm{X}_1 = \mathrm{X}_2\)</span> <strong>almost surely</strong> or <strong>with probability one</strong>, and typically write <span class="math inline">\(\mathbb{P}(\mathrm{X}_1 = \mathrm{X}_2) = 1\)</span>, or abbreviate <span class="math inline">\(\mathrm{X}_1 = \mathrm{X}_2\)</span> a.s.</p>
+<hr />
+<p><a name="mathematical-spaces"><a/></p>
+</div>
+<div id="mathematical-spaces" class="section level1">
+<h1>Mathematical Spaces</h1>
+<p>Unfortunately, there is no way we can proceed forward without talking about topology. At the most practical level, it is because we need to make sense of <span class="math inline">\((\mathbb{R}^n, \mathcal{B}(\mathbb{R}^n))\)</span>, but at the more theoretical level it is needed to be able to define expectations and probability density functions appropriately. I will do my best to keep it intuitive and minimalist. The aim of this section is not to understand everything here, but just to connect the pieces together.</p>
+<p>First, we need to have some intuition about what a <em>topology</em> is. Given a set <span class="math inline">\(\mathsf{X}\)</span>, a topology on <span class="math inline">\(\mathsf{X}\)</span> is basically a bunch of subsets with some special properties. Mathematicians will hate me but <strong>you don’t need to remember these properties at all</strong> for machine learning. They are helpful to read before dwelling into a proof, but all you need to know is that these subsets represent a notion of <strong>“closeness”</strong> between the elements of <span class="math inline">\(\mathsf{X}\)</span>. This is not closeness in the “numerical” sense, we are not given any value telling us how close things are. However, these subsets represent <strong>neighborhoods</strong>.</p>
+<blockquote>
+<p><strong>Topology</strong>: Given a set <span class="math inline">\(\mathsf{X}\)</span>, a topology on it is a collection of its subsets <span class="math inline">\(\tau\subseteq 2^{\mathsf{X}}\)</span> such that<br />
+1. Contains the empty set and the set itself: <span class="math inline">\(\emptyset,\mathsf{X}\in\tau\)</span><br />
+2. Closed under countable and <em>uncountable</em> unions.
+3. Closed under <em>finite</em> intersection.
+The elements of <span class="math inline">\(\tau\)</span>, which are subsets of <span class="math inline">\(\mathsf{X}\)</span>, are known as <strong>open sets</strong>.</p>
+</blockquote>
+<p>We call <span class="math inline">\((\mathsf{X}, \tau)\)</span> a <strong>topological space</strong>. There may be many topologies that one can define on <span class="math inline">\(\mathsf{X}\)</span>. Rather than listing all the subsets contained in a topology, sometimes one can find a smaller subset <span class="math inline">\(\mathsf{B}\subset\tau\)</span> such that every set in <span class="math inline">\(\tau\)</span> can be constructed by taking the union of sets in <span class="math inline">\(\mathsf{B}\)</span>. The hope is that <span class="math inline">\(\mathsf{B}\)</span> is easier to characterize/describe, and so we can identify a topology by specifying <span class="math inline">\(\mathsf{B}\)</span> rather than <span class="math inline">\(\tau\)</span>. Since we can use <span class="math inline">\(\mathsf{B}\)</span> to <em>generate</em> <span class="math inline">\(\tau\)</span>, we steal the nomenclature from linear algebra and call <span class="math inline">\(\mathsf{B}\)</span> a basis or a base.</p>
+<blockquote>
+<p><strong>Base</strong>: Let <span class="math inline">\((\mathsf{X}, \tau)\)</span> be a topological space and <span class="math inline">\(\mathsf{B}\subseteq\tau\)</span>. We say that <span class="math inline">\(\mathsf{B}\)</span> is a base (or basis) for <span class="math inline">\(\tau\)</span> if for any set <span class="math inline">\(\mathsf{A}\in\tau\)</span> there exists a collection <span class="math inline">\(\mathcal{S}\subseteq\mathsf{B}\)</span> such that
+<span class="math display">\[
+\mathsf{A} = \bigcup_{\mathsf{S}\in\mathcal{S}} \mathsf{S}
+\]</span></p>
+</blockquote>
+<p>Lots of notation, but again, don’t try to remember all of this. Just absorb the concept that a basis is all you need to generate a topology. We will almost always work with topological spaces in machine learning. Their usefulness is that, given a topology we can use it to generate a sigma algebra (after all, the topology is simply a collection of subsets). This sigma algebra is special and it has a name, the Borel sigma algebra.</p>
+<blockquote>
+<p><strong>Borel sigma-algebra</strong>: Let <span class="math inline">\((\mathsf{X}, \tau)\)</span> be a topological space, and <span class="math inline">\(\sigma(\tau)\)</span> be the sigma algebra generated by <span class="math inline">\(\tau\)</span>. We call <span class="math inline">\(\sigma(\tau)\)</span> the Borel sigma algebra on <span class="math inline">\(\mathsf{X}\)</span>.</p>
+</blockquote>
+<p>At first sight, a topology and a sigma algebra look quite similar. Mathematically, they both contain <span class="math inline">\(\emptyset\)</span> and <span class="math inline">\(\mathsf{X}\)</span>, and they are closed under finite unions and intersections, but the difference is that the topology is closed under <strong>uncountable</strong> unions (whereas a sigma algebra only countable), and the sigma algebra is closed under <strong>countable</strong> intersections. Another important difference, perhaps the most important, is that a sigma algebra is closed under complementation, but there is no such requirement in a topology. They are superficially similar objects, but the devil is in the details. Okay, cool, but intuitively what does this mean?<br />
+I have to admit, I struggle to find a valid intuition that is not rooted in mathematical details. However, one way I like to think about it, is that a topology gives you a notion of <em>closeness</em> of elements of <span class="math inline">\(\mathsf{X}\)</span>, while a sigma algebra gives you the notion of relative sizes of subsets of <span class="math inline">\(\mathsf{X}\)</span>. The Borel sigma algebra connects these two concepts. Being generated by the topology, means that every subset in the topology is also an element of the sigma algebra, meaning that we now have both notions! Always think that <span class="math inline">\(\mathcal{B}(\mathsf{X})\)</span> is typically much, much bigger than <span class="math inline">\(\tau\)</span>.</p>
+<p>A topology represents a notion of <strong>closeness</strong>, but there is no “numeric” value to this closeness. A <strong>vector space</strong> (over a field <span class="math inline">\(\mathsf{F}\)</span>) is a space whose elements can be <strong>added together</strong> and <strong>rescaled</strong>, and satisfy the usual properties that we would expect (e.g. associativity, commutativity, distributivity, etc). If we equip a vector space with a norm <span class="math inline">\(\|\cdot\|\)</span>, we obtain (surprise surprise) a <strong>normed vector space</strong>, where now we have the notion of <strong>length</strong> of vectors (for nerds: in reality, we also need to equip its field with a norm). Yes, this is a numeric value. Automatically, this also gives us a notion of <strong>distance</strong>, since it can be interpreted as the length of the difference of two vectors. In mathematical language we say that the norm <strong>induces a metric</strong>
+<span class="math display">\[
+d(x, y) := \|x - y\|,
+\]</span>
+meaning that even if we didn’t specify a metric, having a norm allows us to create one. This is now a notion of closeness that is numeric. If we equip a vector space with an inner product <span class="math inline">\(\langle \cdot, \cdot\rangle\)</span>, we get an <strong>inner product space</strong> where now we additionally have the notion of <strong>orientation</strong> of vectors. Any inner product space is also a normed space, since the inner product <strong>induces</strong> a norm
+<span class="math display">\[
+\|v\| = \sqrt{\langle v, v \rangle}.
+\]</span>
+A <strong>Banach</strong> space is a <strong>complete</strong> normed space. To understand the word “complete” requires a course in analysis, but for our purposes it simply means that we can perform calculus on it, e.g. take limits. A <strong>Hilbert</strong> space is a complete inner product space. One more thing, a metric induces a topology! Here’s a summary (and the only thing you should try understand, really, the rest can be forgotten)
+<span class="math display">\[
+\langle \cdot, \cdot \rangle \text{ induces } \|\cdot\| \text{ induces } d(\cdot, \cdot) \text{ induces } \tau.
+\]</span>
+If we know about their orientation, we know about their size. If we know about their size, we know about their distance. If we know about their distance, we know about their closeness. This is helpful because if we are given a Banach space <span class="math inline">\((\mathsf{X}, \|\cdot\|_\mathsf{X})\)</span> then we automatically know that there is an induced topology <span class="math inline">\(\tau_{\mathsf{X}}\)</span> and therefore we can use it to generate a Borel sigma algebra <span class="math inline">\(\mathcal{B}(\mathsf{X})\)</span>.</p>
+<blockquote>
+<p><strong>Banach-Borel space</strong>: From now on, given a Banach space <span class="math inline">\((\mathsf{X}, \|\cdot\|_\mathsf{X})\)</span> where the norm induces a metric, which induces a topology <span class="math inline">\(\tau_\mathsf{X}\)</span> which is used to generate the Borel sigma algebra <span class="math inline">\(\mathcal{B}(\mathsf{X})\)</span>, I will call <span class="math inline">\((\mathsf{X}, \mathcal{B}(\mathsf{X}), \|\cdot\|_\mathsf{X})\)</span> a Banach-Borel space. I don’t think this is common, I just came up with it, but it summarises its main features.</p>
+</blockquote>
+<hr />
+<p><a name="integration"><a/></p>
+</div>
+<div id="integration" class="section level1">
+<h1>Integration</h1>
+<p>Before talking about expectations, we need to recall a few notions about integrals. There are many ways to talk about integrals, some more and some less general. To my knowledge, it is not possible to talk about integrability given <em>any</em> measure space <span class="math inline">\((\Omega, \mathcal{F}, \mathbb{M})\)</span> and <em>any</em> measurable space <span class="math inline">\((\mathsf{X}, \mathcal{X})\)</span>. Instead, we need to give more structure and talk about more specific scenarios. Perhaps the most <strong>useful</strong> definition of an integral is found when <span class="math inline">\(\mathsf{X}\)</span> is a Banach space with norm <span class="math inline">\(\|\cdot\|_{\mathsf{X}}\)</span> and it is equipped with the Borel sigma algebra <span class="math inline">\(\mathcal{B}(\mathsf{X})\)</span>. This is the most useful one because it is very close to the situation where <span class="math inline">\((\mathsf{X}, \mathcal{X}) = (\mathbb{R}^n, \mathcal{B}(\mathbb{R}^n))\)</span>, which you will almost always encounter in machine learning.</p>
+<blockquote>
+<p><strong>Bochner space</strong>: Let <span class="math inline">\((\Omega, \mathcal{F}, \mathbb{M})\)</span> be a measure space, <span class="math inline">\((\mathsf{X}, \|\cdot\|_\mathsf{X})\)</span> be a Banach space. The norm <span class="math inline">\(\|\cdot\|_{\mathsf{X}}\)</span> induces a metric <span class="math inline">\(d_{\mathsf{X}}(x, y) := \|x - y\|_{\mathsf{X}}\)</span> which induces a topology <span class="math inline">\(\tau_\mathsf{X}\)</span> which generates the Borel sigma algebra <span class="math inline">\(\mathcal{B}(\mathsf{X}) = \sigma(\tau_{\mathsf{X}})\)</span>, so that <span class="math inline">\((\mathsf{X}, \mathcal{B}(\mathsf{X}))\)</span> is a measurable space. We can then define <span class="math inline">\(L^p\)</span> spaces
+<span class="math display">\[
+L^p(\Omega, \mathcal{F}, \mathbb{M}; \mathsf{X}) := \left\{f:\Omega\to\mathsf{X}\left| f \text{ is } \mathcal{F}\text{-measurable and } \left(\int \|f(\omega)\|_{\mathsf{X}}^p \, \mathbb{M}(d\omega)\right)^{1/p} &lt; \infty \right.\right\}, \qquad p\geq 1.
+\]</span>
+If <span class="math inline">\(f\in L^p(\Omega, \mathcal{F}, \mathbb{M}; \mathsf{X})\)</span>, we say that it is <span class="math inline">\(L^p\)</span>-integrable and if <span class="math inline">\(p=1\)</span> we say <span class="math inline">\(f\)</span> is Bochner integrable.</p>
+</blockquote>
+<p>A few comments are helpful to understand these spaces:</p>
+<ol style="list-style-type: decimal">
+<li><p>As the notation for the Bochner space suggests, a very important special case of Bochner spaces is found when <span class="math inline">\(\mathsf{X}\)</span> is finite-dimensional, in which case we recover the usual <span class="math inline">\(L^p\)</span> spaces.</p></li>
+<li><p>The Bochner spaces <span class="math inline">\(L^p(\Omega, \mathcal{F}, \mathbb{M}; \mathsf{X})\)</span> are <strong>Banach spaces</strong> with norm
+<span class="math display">\[
+\|f\|_{L^p(\Omega, \mathcal{F}, \mathbb{M}; \mathsf{X})} := \left(\int \|f(\omega)\|_{\mathsf{X}}^p \, \mathbb{M}(d\omega)\right)^{1/p}, \qquad\qquad f\in L^p(\Omega, \mathcal{F}, \mathbb{M}; \mathsf{X}).
+\]</span></p></li>
+<li><p>If <span class="math inline">\(\mathsf{X}\)</span> is not just a Banach space, but also a Hilbert space with inner product <span class="math inline">\(\langle \cdot, \cdot \rangle_{\mathsf{X}}\)</span> then also <span class="math inline">\(L^p(\Omega, \mathcal{F}, \mathbb{M}; \mathsf{X})\)</span> is a Hilbert space with inner product
+<span class="math display">\[
+\langle f, g \rangle_{L^p(\Omega, \mathcal{F}, \mathbb{M}; \mathsf{X})} := \int_{\Omega} \langle f(\omega), g(\omega)\rangle_{\mathsf{X}} \,\mathbb{M}(d\omega), \qquad\qquad f,g\in L^p(\Omega, \mathcal{F}, \mathbb{M}; \mathsf{X}).
+\]</span></p></li>
+<li><p>When <span class="math inline">\(\mathbb{M}\)</span> is a finite measure, then the spaces are nested <span class="math inline">\(L^q \subset L^p \subset L^1\)</span> for <span class="math inline">\(1 \leq p \leq q &lt; \infty\)</span>. Most times, we will only care about <span class="math inline">\(p=1\)</span> or <span class="math inline">\(p=2\)</span>.</p></li>
+</ol>
+<p>Typically, we will write the integral of a function <span class="math inline">\(f\in L^1(\Omega, \mathcal{F}, \mathbb{M};\mathsf{X})\)</span> with respect to <span class="math inline">\(\mathbb{M}\)</span> as <span class="math inline">\(\mathbb{M}(f)\)</span>. This notation is handy for various reasons, but one cute reason is that for any set <span class="math inline">\(\mathsf{A}\in\mathcal{B}(\mathsf{X})\)</span> we can write <span class="math inline">\(\mathbb{M}(\mathsf{A})\)</span> as an integral of the indicator function
+<span class="math display">\[
+1_{\mathsf{A}}(\omega) = \begin{cases}
+    1 &amp; \omega\in\mathsf{A} \\
+    0 &amp; \omega\notin \mathsf{A}.
+\end{cases}
+\]</span>
+Indeed this function is <span class="math inline">\(\mathcal{F}\)</span>-measurable and one can write
+<span class="math display">\[
+\mathbb{M}(1_{\mathsf{A}}) = \int_{\Omega} 1_{\mathsf{A}}(\omega) \, \mathbb{M}(d\omega) = \int_{\mathsf{A}} \mathbb{M}(d\omega) = \mathbb{M}(\mathsf{A}).
+\]</span></p>
+<hr />
+<p><a name="expectations"><a/></p>
+</div>
+<div id="expectations" class="section level1">
+<h1>Expectations</h1>
+<p>Now that we understand integration in general, we can use it to define expectations when <span class="math inline">\(\mathbb{M}\)</span> is a probability measure <span class="math inline">\(\mathbb{P}\)</span>. Indeed, it only makes sense to talk about expectations on a probability space (or perhaps, in a finite measure space) since the expected value tells us the average value that a random variable takes over the possible outcomes, according to their probability of occurring, given by <span class="math inline">\(\mathbb{P}\)</span>.</p>
+<blockquote>
+<p><strong>Expected value</strong>: Let <span class="math inline">\((\Omega, \mathcal{F}, \mathbb{P})\)</span> be a probability space, <span class="math inline">\((\mathsf{X}, \|\cdot\|_\mathsf{X})\)</span> be a Banach space and <span class="math inline">\((\mathsf{X}, \mathcal{B}(\mathsf{X}))\)</span> be a measurable space with <span class="math inline">\(\mathcal{B}(\mathsf{X})\)</span> being the Borel sigma algebra on <span class="math inline">\(\mathsf{X}\)</span> induced by <span class="math inline">\(\|\cdot\|_{\mathsf{X}}\)</span>. Additionally, let <span class="math inline">\(\mathrm{X}:\Omega\to\mathsf{X}\)</span> be a random variable such that <span class="math inline">\(\mathrm{X}\in L^1(\Omega, \mathcal{F}, \mathbb{P}; \mathsf{X})\)</span>. Then the expected value of <span class="math inline">\(\mathrm{X}\)</span> is the Bochner integral of <span class="math inline">\(\mathrm{X}\)</span> with respect to <span class="math inline">\(\mathbb{P}\)</span>
+<span class="math display">\[
+\mathbb{E}[\mathrm{X}] := \int_{\Omega} X(\omega) \mathbb{P}(d\omega).
+\]</span></p>
+</blockquote>
+<p>By definition, the expectation only exists when the conditions of <span class="math inline">\(L^1\)</span> are satisfied. Suppose you have a random variable <span class="math inline">\(\mathrm{X}\)</span> and you apply a transformation to it, what is the distribution of the new random variable? The answer to this question is fundamental for Normalizing Flows and a lot of the more theoretical generative modelling literature.</p>
+<hr />
+<p><a name="lebesgue-measure"><a/></p>
+</div>
+<div id="lebesgue-measure" class="section level1">
+<h1>Lebesgue Measure</h1>
+<p>Remember the integrals we used to solve in high-school?
+<span class="math display">\[
+\int f(x) dx
+\]</span>
+These appear much more commonly in the Machine Learning literature than the ones written in the last two sections, but it turns out that the notation <span class="math inline">\(dx\)</span> is just a shortcut for a very specific measure (or rather, class of measures): the <strong>Lebesgue measure</strong>. Like all measures, Lebesgue measures are defined on measurable spaces, but in this case on very specific measurable spaces: <span class="math inline">\((\mathbb{R}^n, \mathcal{B}(\mathbb{R}^n))\)</span>. Before giving an intuition for the Lebesgue measure, we need to have some understanding for these spaces that always pop up in machine learning.</p>
+<p>Let’s start with <span class="math inline">\((\mathbb{R}, \mathcal{B}(\mathbb{R}))\)</span>. As the notation suggests, <span class="math inline">\(\mathcal{B}(\mathbb{R})\)</span> is the Borel sigma algebra on <span class="math inline">\(\mathbb{R}\)</span>, so the first question should be: what topology was used to generate this sigma algebra? The answer is the <strong>standard topology</strong> on <span class="math inline">\(\mathbb{R}\)</span>. I know, not very helpful, but I will give some intuition. The standard topology on <span class="math inline">\(\mathbb{R}\)</span> has, as base, the set of all open intervals
+<span class="math display">\[
+\mathsf{B} = \left\{\left\{x\in\mathbb{R}\,:\, a &lt; x &lt; b\right\}\,:\, a, b\in\mathbb{R} \text{ with } a &lt; b\right\}.
+\]</span>
+Anything that you can create by the union of these open intervals is in the topology. It turns out, this generates everything that we usually need to work with in <span class="math inline">\(\mathbb{R}\)</span>. To understand <span class="math inline">\(\mathcal{B}(\mathbb{R}^n)\)</span> we need to remember that this is the Cartesian product of <span class="math inline">\(n\)</span> identical copies of <span class="math inline">\(\mathbb{R}\)</span>
+<span class="math display">\[
+\mathbb{R}^n := \underbrace{\mathbb{R} \times \cdots \times \mathbb{R}}_{n \text{ times }},
+\]</span>
+so the question reduces to: can we use the standard topology on <span class="math inline">\(\mathbb{R}\)</span> to generate the standard topology on <span class="math inline">\(\mathbb{R}^n\)</span>? The answer is yes. It turns out that given two topological spaces, one can create a new one over their Cartesian product in a very simple and intuitive way.</p>
+<blockquote>
+<p><strong>Product Topology</strong>: Let <span class="math inline">\((\mathsf{X}, \tau_\mathsf{X})\)</span> and <span class="math inline">\((\mathsf{Y}, \tau_{\mathsf{Y}})\)</span> be two topological spaces with bases <span class="math inline">\(\mathsf{B}_\mathsf{X}\)</span> and <span class="math inline">\(\mathsf{B}_\mathsf{Y}\)</span> respectively. Then <span class="math inline">\(\mathsf{X}\times\mathsf{Y}\)</span> can be equipped with a topology. We call
+<span class="math display">\[
+\mathsf{B}_{\mathsf{X}\times\mathsf{Y}} := \left\{\mathsf{A}_\mathsf{X}\times\mathsf{A}_{\mathsf{Y}}\,:\, \mathsf{A}_\mathsf{X}\in\mathsf{X}, \mathsf{A}_\mathsf{Y}\in\mathsf{Y}\right\}
+\]</span>
+the set of open rectangles, and it contains the Cartesian products of any two elements of the bases. The set <span class="math inline">\(\mathsf{B}_{\mathsf{X}\times\mathsf{Y}}\)</span> forms a base for the product topology <span class="math inline">\(\tau_{\mathsf{X}\times\mathsf{Y}}\)</span> on <span class="math inline">\(\mathsf{X}\times\mathsf{Y}\)</span> and we call <span class="math inline">\((\mathsf{X}\times\mathsf{Y}, \tau_{\mathsf{X}\times\mathsf{Y}})\)</span> the produt topological space.</p>
+</blockquote>
+<p>I have written the product of two topologies but in reality this works for any finite number of topologies. This gives us a simple recipe to construct a topology on <span class="math inline">\(\mathbb{R}^n\)</span>, which will then generate <span class="math inline">\(\mathcal{B}(\mathbb{R}^n))\)</span>.</p>
+<p>The Lebesgue measure is the most common measure that people use on <span class="math inline">\((\mathbb{R}^n, \mathcal{B}(\mathbb{R}^n)))\)</span> and in fact it is the measure used when dealing with integrals with the symbol <span class="math inline">\(dx\)</span>. The Lebesgue measure on <span class="math inline">\((\mathbb{R}, \mathcal{B}(\mathbb{R}))\)</span> is typically written as <span class="math inline">\(\text{Leb}_{\mathbb{R}}\)</span> and a precise definition is beyond the scope of this post (and perhaps a bit useless for most machine learning applications). What you need to know, is that this measure gives the <strong>standard notion of length, area and volume</strong>. The size of an interval <span class="math inline">\([a, b]\)</span> in <span class="math inline">\(\mathbb{R}\)</span> is exactly what we would expect
+<span class="math display">\[
+\text{Leb}_{\mathbb{R}}([a, b]) = b - a.
+\]</span>
+This measure is clearly not finite, since <span class="math inline">\(\text{Leb}_{\mathbb{R}}(\mathbb{R})\)</span> cannot possibly be finite. However, it is <span class="math inline">\(\sigma\)</span>-finite. The Lebesgue measure on <span class="math inline">\(\mathbb{R}^n\)</span> is simply the extension of this and for <span class="math inline">\(n=2\)</span> computes areas, for <span class="math inline">\(n=3\)</span> computes volumes. Finally, a bit about notation. Suppose we have a (<span class="math inline">\(\sigma\)</span>-finite) measure space <span class="math inline">\((\mathbb{R}^n, \mathcal{B}(\mathbb{R}^n), \text{Leb}_{\mathbb{R}^n})\)</span>, a Banach measurable space <span class="math inline">\((\mathsf{X}, \mathcal{B}(\mathsf{X}))\)</span> and a <span class="math inline">\(\mathcal{B}(\mathbb{R}^n)\)</span>-measurable Bochner integrable function <span class="math inline">\(f:\mathbb{R}^n\to\mathsf{X}\)</span>. Then sometimes people write
+<span class="math display">\[
+\int_{\mathbb{R}^n} f(x) \text{Leb}_{\mathbb{R}^n}(dx) = \int_{\mathbb{R}^n} f(x) dx.
+\]</span></p>
+<hr />
+<p><a name="density-functions"><a/></p>
+</div>
+<div id="density-functions" class="section level1">
+<h1>Density Functions</h1>
+<p>In most machine learning papers, people do not work with distributions but with <em>probability density functions (pdf)</em>, or we can just call them density functions. A distribution is <strong>not</strong> a density function, they are entirely different things, although related. The distribution of a random variable tells you <em>the probability of events</em> filtered through the lens of <span class="math inline">\(X\)</span>. A density function tells you the <strong>relationship</strong> between two measures.</p>
+<p>Very common in machine learning, is a normal density function with mean <span class="math inline">\(\mu\in\mathbb{R}\)</span> and scale <span class="math inline">\(\sigma &gt; 0\)</span>
+<span class="math display">\[
+p(x; \mu, \sigma) = \frac{1}{\sqrt{2\pi}\sigma}\exp\left(-\frac{(x - \mu)^2}{2\sigma^2}\right),\qquad\qquad x\in\mathbb{R}
+\]</span>
+We often say that a random variable <span class="math inline">\(\mathrm{X}\)</span> has a Gaussian distribution and then immediately think of the expression above, but we know that it cannot be a distribution, since it doesn’t take sets as input, but rather points in <span class="math inline">\(\mathbb{R}\)</span>. What does the expression above mean in measure-theoretic language?</p>
+<p>Suppose <span class="math inline">\((\Omega, \mathcal{F}, \mathbb{P})\)</span> is a probability space, and <span class="math inline">\(\mathrm{X}:\Omega\to\mathbb{R}\)</span> is a random variable from that space to <span class="math inline">\((\mathbb{R}, \mathcal{B}(\mathbb{R}))\)</span>. We have seen that the distribution of <span class="math inline">\(\mathrm{X}\)</span> is the probability measure <span class="math inline">\(\mathbb{P}^{\mathrm{X}}\)</span> on <span class="math inline">\((\mathbb{R}, \mathcal{B}(\mathbb{R}))\)</span>. The probability density function tells us how this distribution is different from the Lebesgue measure <span class="math inline">\(\text{Leb}_{\mathbb{R}}\)</span>. Notice that density functions are not inherently connected to Lebesgue measures: density functions can represent the change between any two appropriate measures, but the reason why people write expressions such as the one above is that in most machine learning examples, one will be using a Lebesgue measure.</p>
+<p>I mentioned that a density function represents change between <strong>appropriate</strong> measures. What requirements do we need? It should be make sense that if any of the two measures is not finite, then the “change” between them is a bit meaningless. What is the change between something finite and something infinite? It turns out, that we can do slightly better than that, we need <span class="math inline">\(\sigma\)</span>-finite measures. Another thing that we don’t want to happen is if the measure that we are comparing against, assigns measure zero to a set, but the other one doesn’t. It would create the same sort of awkwardness that we have when a denominator is zero. To avoid this scenario, we give a name to this type of relationship</p>
+<blockquote>
+<p><strong>Absolute Continuity</strong> Let <span class="math inline">\((\Omega, \mathcal{F})\)</span> be a measurable space and <span class="math inline">\(\mathbb{M}_1\)</span> and <span class="math inline">\(\mathbb{M}_2\)</span> be two measures on it. We say that <span class="math inline">\(\mathbb{M}_1\)</span> is absolutely continuous with respect to <span class="math inline">\(\mathbb{M}_2\)</span>, which we write <span class="math inline">\(\mathbb{M}_1\ll \mathbb{M}_2\)</span> if
+<span class="math display">\[
+\mathbb{M}_2(\mathsf{A}) = 0 \implies \mathbb{M}_1(\mathsf{A}) = 0, \qquad\qquad \forall\, \mathsf{A}\in\mathcal{F}.
+\]</span></p>
+</blockquote>
+<p>We say that <span class="math inline">\(\mathbb{M}_2\)</span> <strong>dominates</strong> <span class="math inline">\(\mathbb{M}_1\)</span>. All it means is that whenever <span class="math inline">\(\mathbb{M}_2\)</span> gives measure zero to a set, then also <span class="math inline">\(\mathbb{M}_1\)</span> does. The intuitive way to think about absolute continuity is that it tells us that we can, in some abstract sense, construct fractions <span class="math inline">\(\mathbb{M}_1 / \mathbb{M}_2\)</span>. This is made more precise in the following theorem.</p>
+<blockquote>
+<p><strong>Radon-Nikodym Theorem</strong>: Let <span class="math inline">\((\Omega, \mathcal{F})\)</span> be a measurable space and let <span class="math inline">\(\mathbb{M}_1\)</span> and <span class="math inline">\(\mathbb{M}_2\)</span> be two <span class="math inline">\(\sigma\)</span>-finite measures on it, such that <span class="math inline">\(\mathbb{M}_1 \ll \mathbb{M}_2\)</span>. Then, there exists a <span class="math inline">\(\mathcal{F}\)</span>-measurable function
+<span class="math display">\[
+\frac{d\mathbb{M}_1}{d\mathbb{M}_2}:\Omega\to [0, \infty)
+\]</span>
+in <span class="math inline">\(L^1(\Omega, \mathcal{F}, \mathbb{M}_2; \mathbb{R}_{\geq 0})\)</span> such that its integral with respect to <span class="math inline">\(\mathbb{M}_2\)</span> exists, and
+<span class="math display">\[
+\int_{\mathsf{A}} d\mathbb{M}_1 = \int_\mathsf{A} \frac{d\mathbb{M}_1}{d\mathbb{M}_2} d\mathbb{M}_2 \qquad\qquad\forall\,\, \mathsf{A}\in\mathcal{F}.
+\]</span>
+We call the function <span class="math inline">\(d\mathbb{M}_1 / d\mathbb{M}_2\)</span> the Radon-Nikodym derivative of <span class="math inline">\(\mathbb{M}_1\)</span> with respect to <span class="math inline">\(\mathbb{M}_2\)</span> or simply the density of <span class="math inline">\(\mathbb{M}_1\)</span> with respect to <span class="math inline">\(\mathbb{M}_2\)</span>.</p>
+</blockquote>
+<p>I remember seeing this and being incredibly confused. Partly because I was thinking “of course it does, the denominator cancels out!” while at the same time thinking “why is there <span class="math inline">\(d\)</span> in the fraction”? Let’s go through the theorem slowly. The theorem says that under those two conditions, there <strong>always</strong> exists a measurable function with a special property. We have <em>decided</em> to call this measurable function with the symbol
+<span class="math display">\[
+\frac{d\mathbb{M}_1}{d\mathbb{M}_2}
+\]</span>
+but we could have chosen <span class="math inline">\(f\)</span>, <span class="math inline">\(g\)</span> or your favorite symbol. However, this notation is <strong>very</strong> handy, because of the special property of this measurable function (notice it is measurable, but not necessarily a random variable, since we have not specified a probability measure on <span class="math inline">\((\Omega, \mathcal{F})\)</span>). The special property is that under the integral we can “change” from <span class="math inline">\(d\mathbb{M}_1\)</span> to a function times <span class="math inline">\(d\mathbb{M}_2\)</span>. For this reason, this property is often referred to as <strong>change of measure</strong>. Basically, all this property is saying is that the expectation of the density times the indicator function of a measurable set <span class="math inline">\(\mathsf{A}\)</span>, taken with respect to <span class="math inline">\(\mathbb{M}_2\)</span>, is just the size of that set under <span class="math inline">\(\mathbb{M}_1\)</span>.</p>
+<p>We can now start to understand what we mean when a random variable has a (univariate) Gaussian distribution.</p>
+<blockquote>
+<p><strong>Gaussian distribution</strong>: Let <span class="math inline">\((\Omega, \mathcal{F}, \mathbb{P})\)</span> be a probability space and consider <span class="math inline">\((\mathbb{R}, \mathcal{B}(\mathbb{R}))\)</span> equipped with <span class="math inline">\(\text{Leb}_{\mathbb{R}}\)</span>. Let <span class="math inline">\(\mathrm{X}:\Omega\to\mathbb{R}\)</span> be a random variable with distribution <span class="math inline">\(\mathbb{P}^{\mathrm{X}}\)</span> and assume <span class="math inline">\(\mathbb{P}^{\mathrm{X}}\ll \text{Leb}_{\mathbb{R}}\)</span>. We say that <span class="math inline">\(\mathrm{X}\)</span> is a Gaussian random variable and that <span class="math inline">\(\mathbb{P}^{\mathrm{X}}\)</span> is a Gaussian distribution if for <span class="math inline">\(\mu\in\mathbb{R}\)</span> and <span class="math inline">\(\sigma &gt; 0\)</span> we have
+<span class="math display">\[
+\frac{d\mathbb{P}^{\mathrm{X}}}{d\text{Leb}_{\mathbb{R}}}(x) = \frac{1}{\sqrt{2\pi}\sigma}\exp\left(-\frac{(x - \mu)^2}{2\sigma^2}\right)\qquad\qquad x\in\mathbb{R}.
+\]</span></p>
+</blockquote>
+<p>One last thing, there are two main ways of writing a Radon-Nikodym derivative. They look similar, but each emphasizes something different. The first way, shown above, emphasizes that it is a function, whereas another way
+<span class="math display">\[
+\frac{\mathbb{M}_1(d\omega)}{\mathbb{M}_2(d\omega)}
+\]</span>
+emphasizes the usage of the Radon-Nikodym theorem, since they it is “easier” to think about cancelling the denominator with another term of the form <span class="math inline">\(\mathbb{M}_2(d\omega)\)</span>.</p>
+<hr />
+<p><a name="change-of-variables"><a/></p>
+</div>
+<div id="change-of-variables" class="section level1">
+<h1>Change of Variables</h1>
+<p>One of the most important tricks that we can use to manipulate integrals, which will be fundamental for Normalizing Flows, is the change of variables formula. You may already be familiar with a simplified version of this result from standard calculus. The idea is that if we are taking the expectation of a function <span class="math inline">\(f\)</span> with respect to <span class="math inline">\(\mathbb{M}^g\)</span> (the pushforward of a measure by a function) then this is equivalent to computing the expectation of <span class="math inline">\(f\circ g\)</span> with respect to <span class="math inline">\(\mathbb{M}\)</span>.</p>
+<blockquote>
+<p><strong>Change of variables and Jacobians</strong>: Let <span class="math inline">\((\Omega, \mathcal{F}, \mathbb{M})\)</span> be a measure space, <span class="math inline">\((\mathsf{X}, \mathcal{B}(\mathsf{X}))\)</span> be a Banach space equipped with the Borel sigma algebra induced by the norm. Let <span class="math inline">\(f, g:\Omega\to\mathsf{X}\)</span> be any two functions. Then <span class="math inline">\(f\in L^1(\mathsf{X}, \mathcal{B}(\mathsf{X}), \mathbb{M}^g; \mathsf{X})\)</span> <strong>if and only if</strong> <span class="math inline">\((f\circ g)\in L^1(\Omega, \mathcal{F}, \mathbb{M}; \mathsf{X})\)</span> in which case
+<span class="math display">\[
+\mathbb{M}^g(f) = \mathbb{M}(f\circ g),
+\]</span>
+where <span class="math inline">\(\mathbb{M}^g\)</span> denotes the pushforward of <span class="math inline">\(\mathbb{M}\)</span> by <span class="math inline">\(g\)</span> (defined when <span class="math inline">\(g\)</span> is measurable).</p>
+</blockquote>
+<p>We can use this to talk about the usual change of variables encountered in basic probability. It’s going to be a bit involved, but bear with me.</p>
+<blockquote>
+<p><strong>Jacobians</strong>: Let <span class="math inline">\((\Omega, \mathcal{F}, \mathbb{P})\)</span> be a probability and consider on <span class="math inline">\((\mathbb{R}^n, \mathcal{B}(\mathbb{R}^n), \text{Leb}_{\mathbb{R}^n})\)</span> a random variable <span class="math inline">\(\mathrm{X}:\Omega\to\mathbb{R}^n\)</span> with distribution <span class="math inline">\(\mathbb{P}^{\mathrm{X}}\)</span>. Now, let <span class="math inline">\(f:\mathbb{R}^n\to\mathbb{R}^n\)</span> a diffeomorphism and define the random variable <span class="math inline">\(\mathrm{Y} := f\circ\mathrm{X}\)</span>, with distribution <span class="math inline">\(\mathbb{P}^{\mathrm{Y}}\)</span>. We wish to find an expression for the density function of the random variable <span class="math inline">\(\mathrm{Y}\)</span> with respect to the Lebesgue measure. On one hand, we have for any <span class="math inline">\(\mathsf{A}\in\mathcal{B}(\mathbb{R}^n)\)</span>
+<span class="math display">\[
+\mathbb{P}^{\mathrm{Y}}(\mathsf{A}) = \int_{\mathsf{A}} d\mathbb{P}^{\mathrm{Y}} = \int_{\mathsf{A}} \frac{d\mathbb{P}^{\mathrm{Y}}}{d\text{Leb}_{\mathbb{R}^n}}(y) \text{Leb}_{\mathbb{R}^n}(dy),
+\]</span>
+while on the other hand, using the change of variables formula
+<span class="math display">\[
+\begin{align}
+\mathbb{P}^{\mathrm{Y}}(\mathsf{A})
+&amp;= \int_{\mathbb{R}^n} 1_{\mathsf{A}}(y) \mathbb{P}^{f\circ X}(dy) \\
+&amp;= \int_{\mathbb{R}^n} 1_{\mathsf{A}}(f(x)) d\mathbb{P}^{X}(dx) &amp;&amp; \text{change of variables} \\
+&amp;= \int_{\mathbb{R}^n} 1_{\mathsf{A}}(f(x)) \frac{d\mathbb{P}^{X}}{d\text{Leb}_{\mathbb{R}^n}}(x) \text{Leb}_{\mathbb{R}^n}(dx) &amp;&amp; \text{Radon-Nikodym theorem} \\
+&amp;= \int_{\mathbb{R}^n} 1_{\mathsf{A}}(f(x)) \frac{d\mathbb{P}^{X}}{d\text{Leb}_{\mathbb{R}^n}}(x) \text{Leb}_{\mathbb{R}^n}^{f^{-1}\circ f}(dx) \\
+&amp;= \int_{\mathsf{A}} \frac{d\mathbb{P}^{X}}{d\text{Leb}_{\mathbb{R}^n}}(f^{-1}(y)) \text{Leb}_{\mathbb{R}^n}^{f}(dy) &amp;&amp; \text{change of variables} \\
+&amp;= \int_{\mathsf{A}} \frac{d\mathbb{P}^{X}}{d\text{Leb}_{\mathbb{R}^n}}(f^{-1}(y)) \frac{d\text{Leb}_{\mathbb{R}^n}^{f}}{d\text{Leb}_{\mathbb{R}^n}}(y)\text{Leb}_{\mathbb{R}^n}(dy) &amp;&amp; \text{Radon-Nikodym theorem}
+\end{align}
+\]</span>
+Putting these two facts together tells us
+<span class="math display">\[
+\frac{d\mathbb{P}^{\mathrm{Y}}}{d\text{Leb}_{\mathbb{R}^n}}(y) = \frac{d\mathbb{P}^{X}}{d\text{Leb}_{\mathbb{R}^n}}(f^{-1}(y)) \frac{d\text{Leb}_{\mathbb{R}^n}^{f}}{d\text{Leb}_{\mathbb{R}^n}}(y).
+\]</span>
+What a horrible-looking equation, but if you squint, it should look familiar. For simplicity, let’s write <span class="math inline">\(p_\mathrm{Y}(\cdot)\)</span> for the density of the distribution of <span class="math inline">\(\mathrm{Y}\)</span> with respect to the Lebesgue and similarly <span class="math inline">\(p_\mathrm{X}\)</span>. Then we have
+<span class="math display">\[
+p_{\mathrm{Y}}(y) = p_{\mathrm{X}}(f^{-1}(y)) \frac{d\text{Leb}_{\mathbb{R}^n}^{f}}{d\text{Leb}_{\mathbb{R}^n}}(y).
+\]</span>
+This looks almost exactly like the change of variables formula we find in basic probability courses. In fact, it’s exactly the same formula, because it turns out that the Radon-Nikodym derivative of the pushforward of the Lebesgue measure by the Lebesgue measure is the absolute value of the determinant of the Jacobian of <span class="math inline">\(f^{-1}\)</span>, in other words
+<span class="math display">\[
+\frac{d\text{Leb}_{\mathbb{R}^n}^{f}}{d\text{Leb}_{\mathbb{R}^n}}(y) = \left|\det \mathrm{J}_{f^{-1}}(y)\right|.
+\]</span></p>
+</blockquote>
+<p>Another great application of the change of variables theorem is being able to write expectations as we usually do in an undergraduate course in probability, using <span class="math inline">\(dx\)</span> and <span class="math inline">\(p(x)\)</span>, the density of the random variable.</p>
+<blockquote>
+<p><strong>Undergraduate expectations</strong>: Let <span class="math inline">\((\Omega, \mathcal{F}, \mathbb{P})\)</span> be a probability space, <span class="math inline">\(\mathrm{X}:\Omega\to\mathbb{R}\)</span> be a random variable from that space to <span class="math inline">\((\mathbb{R}, \mathcal{B}(\mathbb{R}))\)</span>, with distribution <span class="math inline">\(\mathbb{P}^\mathrm{X}\)</span> which has density with respect to <span class="math inline">\(\text{Leb}_\mathbb{R}\)</span> given by <span class="math inline">\(p(x)\)</span>. Then we can write
+<span class="math display">\[
+\int_{\Omega} \mathrm{X}(\omega) \mathbb{P}(d\omega) = \int_{\Omega} \mathrm{X}(\omega) \mathbb{P}^{\mathrm{X}^{-1} \circ \mathrm{X}}(d\omega) =
+\int_\mathsf{X}x \frac{\mathbb{P}^\mathrm{X}(dx)}{\text{Leb}_\mathbb{R}(dx)}\text{Leb}_\mathbb{R}(dx) = \int_\mathsf{X}x p(x) dx.
+\]</span></p>
+</blockquote>
+<p>Very often people will write <span class="math inline">\(\mathbb{P}(\mathrm{X}\in\mathsf{A})\)</span> rather than <span class="math inline">\(\mathbb{P}^\mathrm{X}(\mathsf{A})\)</span>. It is straightforward to verify that they are indeed the same thing, once we define the notation <span class="math inline">\(\mathrm{X}\in\mathsf{A}\)</span>.</p>
+<blockquote>
+<p><strong>Cute notation for <span class="math inline">\(\mathbb{P}^\mathrm{X}(\mathsf{A})\)</span></strong>: Let <span class="math inline">\((\Omega, \mathcal{F}, \mathbb{P})\)</span> be a probability space, <span class="math inline">\((\mathsf{X}, \mathcal{B}(\mathsf{X}), \|\cdot\|_\mathsf{X})\)</span> be a Banach-Borel space and <span class="math inline">\(\mathrm{X}:\Omega\to\mathsf{X}\)</span> be a random variable in <span class="math inline">\(L^1(\Omega, \mathcal{F}, \mathbb{P}; \mathsf{X})\)</span>. The distribution of <span class="math inline">\(\mathrm{X}\)</span> is, by definition the measure <span class="math inline">\(\mathbb{P}^\mathrm{X}(\mathsf{A}) = \mathbb{P}(X^{-1}(\mathsf{A}))\)</span> for any <span class="math inline">\(\mathsf{A}\in\mathcal{B}(\mathsf{X})\)</span>. To obtain the <strong>cute</strong> notation we define
+<span class="math display">\[
+\{\mathrm{X}\in \mathsf{A}\} := X^{-1}(\mathsf{A})
+\]</span>
+and often drop the parentheses <span class="math inline">\(\mathbb{P}^\mathrm{X}(\mathsf{A}) = \mathbb{P}(\{\mathrm{X}\in\mathsf{A}\}) = \mathbb{P}(\mathrm{X}\in\mathsf{A})\)</span>.</p>
+</blockquote>
+<p>Now that we have this notation, we can understand a bit better the following intuition about random variables, which is fundamental for stochastic processes.</p>
+<blockquote>
+<p><strong>Intuition for measurability</strong>: The intuition that I like to have about <span class="math inline">\(\mathrm{X}\)</span> being <span class="math inline">\((\mathcal{F}, \mathcal{X})\)</span>-measurable is that <span class="math inline">\(\mathcal{F}\)</span> contains information in the form of events, and <span class="math inline">\(\mathrm{X}\)</span> reveals information contained in <span class="math inline">\(\mathcal{F}\)</span> through its values in <span class="math inline">\(\mathsf{X}\)</span>. Suppose that we wish to know the probability that the random variable <span class="math inline">\(\mathrm{X}\)</span> takes values in <span class="math inline">\(\mathsf{A}\in\mathcal{X}\)</span>. By construction, we know that this is <span class="math inline">\(\mathbb{P}(X^{-1}(\mathsf{A}))\)</span>, i.e. we actually compute the probability of the preimage of <span class="math inline">\(\mathsf{A}\)</span> under <span class="math inline">\(\mathrm{X}\)</span>. Therefore, when we observe <span class="math inline">\(\mathrm{X}\in \mathsf{A}\)</span> we are really observing the event <span class="math inline">\(\{\omega\in\Omega\,:\, \mathrm{X}(\omega)\in\mathsf{A}\}\)</span> which is in <span class="math inline">\(\mathcal{F}\)</span>. Observing the random variable, we are really observing the events that we truly care about, the ones made out of the true underlying outcomes.</p>
+</blockquote>
+<hr />
+<p><a name="markov-kernels"><a/></p>
+</div>
+<div id="markov-kernels" class="section level1">
+<h1>Markov Kernels</h1>
+<p>Markov Kernels are fundamental to obtain the measure-theoretic generalization of a conditional distribution and as such they find application all over machine learning. A Markov kernel is a function of two arguments, a point and a set, and we typically write <span class="math inline">\(K(x, \mathsf{A})\)</span>. When you see this, just think of something like this <span class="math inline">\(K(\mathsf{A} \mid x)\)</span> meaning that we are conditioning on the first argument, and evaluating a probability measure in the second argument. We need two conditions to make sure <span class="math inline">\(K(x, \mathsf{A})\)</span> is a valid Markov kernel. The first one is that <span class="math inline">\(K(\cdot \mid x)\)</span> should always be a probability measure. This makes sense, no matter what we are conditioning on, we want to have a “conditional” probability measure. The second one, is perhaps less intuitive, and it helps to think of it as just adding regularity that is needed for later notions in this post. This second property is that when you fix the set <span class="math inline">\(\mathsf{A}\)</span>, then <span class="math inline">\(K(\mathsf{A} \mid \cdot)\)</span> should be a measurable function. I will <strong>not</strong> use the notation <span class="math inline">\(K(\mathsf{A}\mid x)\)</span> but it helps remembering this form and reading “from <span class="math inline">\(x\)</span> to <span class="math inline">\(\mathsf{A}\)</span>”.</p>
+<blockquote>
+<p><strong>Markov Kernel</strong>: Let <span class="math inline">\((\mathsf{X}, \mathcal{X})\)</span> and <span class="math inline">\((\mathsf{Y}, \mathcal{Y})\)</span> be two measurable spaces and let <span class="math inline">\(K:\mathsf{X}\times\mathcal{Y}\to [0, 1]\)</span> be a function satisfying<br />
+1. The function <span class="math inline">\(K(\cdot, \mathsf{A})\)</span> is <span class="math inline">\(\mathcal{X}\)</span>-measurable for any <span class="math inline">\(\mathsf{A}\in\mathcal{Y}\)</span> fixed.<br />
+2. The function <span class="math inline">\(K(x, \cdot)\)</span> is a probability measure on <span class="math inline">\((\mathsf{Y}, \mathcal{Y})\)</span> for every <span class="math inline">\(x\in\mathsf{X}\)</span> fixed.</p>
+</blockquote>
+<p>Markov kernels have various properties. The first one we explore is that they can be composed.</p>
+<blockquote>
+<p><strong>Composition of Markov Kernels</strong>: Let <span class="math inline">\((\mathsf{X}, \mathcal{X})\)</span>, <span class="math inline">\((\mathsf{Y}, \mathcal{Y})\)</span> and <span class="math inline">\((\mathsf{Z}, \mathcal{Z})\)</span> be measurable spaces and <span class="math inline">\(K:\mathsf{X}\times\mathcal{Y}\to[0,1]\)</span> and <span class="math inline">\(L:\mathsf{Y}\times\mathcal{Z}\to [0, 1]\)</span> be Markov kernels. Then the composition
+<span class="math display">\[
+(L\circ K)(x, \mathsf{A}) = \int_{\mathsf{Y}} L(y, \mathsf{A}) K(x, dy), \qquad\qquad x\in\mathsf{X}, \mathsf{A}\in\mathcal{Z}
+\]</span>
+is also a Markov kernel.</p>
+</blockquote>
+<p>Notice that the composition kernel is defined as an expectation and it always exist because <span class="math inline">\(L(\cdot, \mathsf{A})\)</span> is a bounded function for any <span class="math inline">\(\mathsf{A}\in\mathcal{Z}\)</span> and it is integrated on a set of finite measure, since <span class="math inline">\(K(\mathsf{Y}, x) = 1\)</span> for any <span class="math inline">\(x\in\mathsf{X}\)</span>, which means <span class="math inline">\(L(\cdot, \mathsf{A})\)</span> is integrable over <span class="math inline">\(\mathsf{Y}\)</span>. The intuition behind these Markov kernels is that going from <span class="math inline">\(x\)</span> to the set <span class="math inline">\(\mathcal{C}\)</span> can be obtained by splitting the trajectory in half: go from <span class="math inline">\(x\)</span> to some other set <span class="math inline">\(\mathsf{B}\in\mathcal{Y}\)</span> and then from that set to the final set <span class="math inline">\(\mathsf{A}\in\mathcal{Z}\)</span>. We need to integrate out the sets in <span class="math inline">\(\mathcal{Y}\)</span> because we could potentially go over any such set. This composition property is <strong>associative</strong>, meaning that for suitable kernels
+<span class="math display">\[
+M \circ (L \circ K) = (M \circ L) \circ K
+\]</span>
+which is why one often hears about Markov kernel forming a semigroup. This will be useful in the study of stochastic processes.</p>
+<hr />
+<p><a name="conditional-expectations"><a/></p>
+</div>
+<div id="conditional-expectations" class="section level1">
+<h1>Conditional Expectations</h1>
+<p>As I mentioned before, a sigma algebra represents <strong>information</strong> since it contains events for which we can talk about probabilities. In line with this interpretation, we can use this information to perform <strong>conditioning</strong>. Suppose that we have some random variable <span class="math inline">\(\mathrm{X}\)</span> that is measurable with respect to a sigma algebra <span class="math inline">\(\mathcal{F}\)</span>, which represents information. Now, the expected value <span class="math inline">\(\mathbb{E}[\mathrm{X}]\)</span> is in some sense <strong>relative to</strong> <span class="math inline">\(\mathcal{F}\)</span>, because the random variable is measurable with respect to this information, it is compatible with it. Now, given fewer information <span class="math inline">\(\mathcal{G}\subseteq\mathcal{F}\)</span> we wish to define an expectation that is <strong>relative</strong> to this lesser amount of information. In symbols, we could write <span class="math inline">\(\mathbb{E}[\mathrm{X}]\)</span> as <span class="math inline">\(\mathbb{E}[\mathrm{X}\mid \mathcal{F}]\)</span> and we wish to define <span class="math inline">\(\mathbb{E}[\mathrm{X}\mid \mathcal{G}]\)</span>. The symbols give away the fact that different amounts of information should allow us to <strong>condition</strong> on them.</p>
+<p>This is the aim of the next definition/theorem, it says that under certain conditions, there exists <span class="math inline">\(\mathbb{E}[\mathrm{X}\mid \mathcal{G}]\)</span>.</p>
+<blockquote>
+<p><strong>Conditional Expectation with respect to a sub-sigma algebra</strong>: Let <span class="math inline">\((\Omega, \mathcal{F}, \mathbb{P})\)</span> be a probability space, <span class="math inline">\((\mathsf{E}, \mathcal{B}(\mathsf{E}), \|\cdot\|_\mathsf{E})\)</span> be a Banach-Borel space, and <span class="math inline">\(\mathrm{X}:\Omega\to\mathsf{E}\)</span> be a random variable such that <span class="math inline">\(\mathbb{E}[\|\mathrm{X}\|_\mathsf{E}] &lt;\infty\)</span>. Let <span class="math inline">\(\mathcal{G}\subseteq\mathcal{F}\)</span> be a sub-sigma algebra of <span class="math inline">\(\mathcal{F}\)</span>. Then, <strong>there exists</strong> a <span class="math inline">\(\mathcal{G}\)</span>-measurable function <span class="math inline">\(\mathrm{Y}:\Omega\to\mathsf{E}\)</span> with <span class="math inline">\(\mathbb{E}[\|\mathrm{Y}\|_\mathsf{E}] &lt; \infty\)</span> such that
+<span class="math display">\[
+\int_{\mathrm{G}} \mathrm{Y}\, d\mathbb{P}= \int_{\mathsf{G}} \mathrm{X}\, d\mathbb{P}\qquad\qquad \mathsf{G}\in\mathcal{G}.
+\]</span>
+If there exists another random variable <span class="math inline">\(\tilde{\mathrm{Y}}\)</span> satisfying these properties then <span class="math inline">\(\mathbb{P}(\tilde{\mathrm{Y}} = \mathrm{Y}) = 1\)</span>, and we call any random variable with these properties a <strong>version</strong> of the conditional expectation of <span class="math inline">\(\mathrm{X}\)</span> given <span class="math inline">\(\mathcal{G}\)</span> and write <span class="math inline">\(\mathrm{Y}= \mathbb{E}[\mathrm{X}\mid \mathcal{G}]\)</span> almost surely.</p>
+</blockquote>
+<p>Given fewer information <span class="math inline">\(\mathcal{G}\subseteq\mathcal{F}\)</span>, the conditional expectation <span class="math inline">\(\mathbb{E}[\mathrm{X}\mid\mathcal{G}]\)</span> is any random variable whose expectation on sets <span class="math inline">\(\mathsf{G}\in\mathcal{G}\)</span> agrees with that of <span class="math inline">\(\mathrm{X}\)</span>. This makes sense: if the set <span class="math inline">\(\mathsf{G}\)</span> is in the sub-sigma algebra that we are conditioning on, that information is available, and so conditioning is useless and we fall back to the standard expectation of <span class="math inline">\(\mathrm{X}\)</span>. Notice that the conditional expectation is not unique, there may be multiple versions.</p>
+<hr />
+</div>
+<div id="pi-systems-and-lambda-systems" class="section level1">
+<h1><span class="math inline">\(\pi\)</span>-Systems and <span class="math inline">\(\lambda\)</span>-Systems</h1>
+<blockquote>
+<p><strong><span class="math inline">\(\pi\)</span>-system</strong>: Let <span class="math inline">\(\mathsf{P}\)</span> be a non-empty set that is closed under finite intersections, meaning that if <span class="math inline">\(\mathsf{A}, \mathsf{B}\in\mathsf{P}\)</span> then <span class="math inline">\(\mathsf{A}\cap\mathsf{B} \in \mathsf{P}\)</span> and by induction for any <span class="math inline">\(n\in\mathbb{N}\)</span> we have
+<span class="math display">\[
+\bigcap_{i=1}^n \mathsf{A}_i \in \mathsf{P} \qquad \text{ where } \mathsf{A}_i\in\mathsf{P} \,\,\forall\, i=1, \ldots, n
+\]</span></p>
+</blockquote>
+<blockquote>
+<p><strong><span class="math inline">\(\pi\)</span>-system over a set</strong>: Let <span class="math inline">\(\mathsf{X}\)</span> be a non-empty set and <span class="math inline">\(\mathsf{P}\subseteq \mathcal{P}(\mathsf{X})\)</span> be a <span class="math inline">\(\pi\)</span>-system whose elements are all subsets of <span class="math inline">\(\mathsf{X}\)</span>. Then <span class="math inline">\(\mathsf{P}\)</span> is a <span class="math inline">\(\pi\)</span>-system over <span class="math inline">\(\mathsf{X}\)</span>.</p>
+</blockquote>
+<p>Of course, since <span class="math inline">\(\mathsf{P}\)</span> is a collection of subsets of <span class="math inline">\(\mathsf{X}\)</span>, one can use it to generate a sigma algebra, <span class="math inline">\(\sigma(\mathsf{P})\)</span> over <span class="math inline">\(\mathsf{X}\)</span>.</p>
+<blockquote>
+<p><strong><span class="math inline">\(\lambda\)</span>-system over a set</strong>: Let <span class="math inline">\(\mathsf{X}\)</span> be a non-empty set and <span class="math inline">\(\mathcal{L}\subseteq \mathcal{P}(\mathsf{X})\)</span> be a collection of subsets of <span class="math inline">\(\mathsf{X}\)</span>. Then <span class="math inline">\(\mathsf{L}\)</span> is a <span class="math inline">\(\lambda\)</span>-system if<br />
+1. Contains <span class="math inline">\(\mathsf{X}\)</span>: <span class="math inline">\(\mathsf{X}\in\mathsf{L}\)</span><br />
+2. Closed under complementation: <span class="math inline">\(\mathsf{A}\in\mathsf{L} \implies \mathsf{X} \backslash \mathsf{A} \in \mathsf{L}\)</span>.<br />
+3. Closed under countable <em>disjoint</em> unions: If <span class="math inline">\(\mathsf{A}_i \in \mathsf{L}\)</span> for <span class="math inline">\(i\in\mathcal{I}\)</span> with <span class="math inline">\(|\mathcal{I}|\leq \aleph_0\)</span> and <span class="math inline">\(A_i \cap A_j = \emptyset\)</span> for <span class="math inline">\(i \neq j\)</span> then
+<span class="math display">\[
+\bigcup_{i\in\mathcal{I}} \mathsf{A}_i \in \mathsf{L}.
+\]</span></p>
+</blockquote>
+<p>Importantly, if <span class="math inline">\(\mathcal{S}\)</span> is both a <span class="math inline">\(\pi\)</span>-system and a <span class="math inline">\(\lambda\)</span>-system over the non-empty set <span class="math inline">\(\mathsf{X}\)</span>, then automatically <span class="math inline">\(\mathcal{S}\)</span> is a sigma-algebra over <span class="math inline">\(\mathsf{X}\)</span>. The next theorem, tells us that the sigma algebra generated by a <span class="math inline">\(\pi\)</span>-system that is strictly contained inside a <span class="math inline">\(\lambda\)</span>-system, is itself strictly contained into the very same <span class="math inline">\(\lambda\)</span>-system.</p>
+<blockquote>
+<p><strong><span class="math inline">\(\pi\)</span>-<span class="math inline">\(\lambda\)</span> theorem</strong>: Let <span class="math inline">\(\mathsf{X}\)</span> be a non-empty set, <span class="math inline">\(\mathsf{P}\subset\mathsf{L}\)</span> be a <span class="math inline">\(\pi\)</span>-system and a <span class="math inline">\(\lambda\)</span>-system over <span class="math inline">\(\mathsf{X}\)</span> respectively, then <span class="math inline">\(\sigma(\mathsf{P}) \subset \mathsf{L}\)</span>.</p>
+</blockquote>
+<p>The usefulness of this theorem is that if two probability measures agree on a <span class="math inline">\(\pi\)</span>-system, then these measures agree on the sigma algebra generated by it.</p>
+<blockquote>
+<p><strong>Uniqueness of measures on <span class="math inline">\(\pi\)</span>-system</strong>: Let <span class="math inline">\(\mathbb{P}\)</span> and <span class="math inline">\(\mathbb{Q}\)</span> be two probability measures on <span class="math inline">\((\mathsf{X}, \sigma(\mathsf{P}))\)</span>, where <span class="math inline">\(\mathsf{P}\)</span> is a <span class="math inline">\(\pi\)</span>-system over <span class="math inline">\(\mathsf{X}\)</span>. Then
+<span class="math display">\[
+\mathbb{P}(\mathsf{A}) = \mathbb{Q}(\mathsf{A}) \,\,\, \forall\,\mathsf{A}\in\mathsf{P} \implies \mathbb{P}(\mathsf{A}) = \mathbb{Q}(\mathsf{A}) \,\,\,\forall\, \mathsf{A}\in\sigma(\mathsf{P}).
+\]</span></p>
+</blockquote>
+<p>An important application of this is used to motivate the fact that two random variables are <em>equal in distribution</em> whenever they have the same cumulative distribution function. We express this below</p>
+<blockquote>
+<p><strong>Same CDF implies same distribution</strong>: Let <span class="math inline">\((\Omega, \mathcal{F}, \mathbb{P})\)</span> be a probability space, <span class="math inline">\((\mathsf{X}, \mathcal{X})\)</span> be a measurable space with <span class="math inline">\((\mathsf{X}, \leq)\)</span> being totally ordered, and <span class="math inline">\(\mathrm{X}_1, \mathrm{X}_2:\Omega\to \mathsf{X}\)</span> be two random variables with distributions <span class="math inline">\(\mathbb{P}^{\mathrm{X}_1}\)</span> and <span class="math inline">\(\mathbb{P}^{\mathrm{X}_2}\)</span> respectively. Then the collection of sets
+<span class="math display">\[
+\mathsf{P} := \left\{ \{y\in\mathsf{X} \, : \, y\leq x\} \,:\, x\in\mathsf{X}\right\}
+\]</span>
+forms a <span class="math inline">\(\pi\)</span>-system, and if we define the Cumulative Distribution Function (CDF) as
+<span class="math display">\[
+\mathrm{F}_{\mathrm{X}_i}(x) := \mathbb{P}_{\mathrm{X}_i}\left(\{y\in\mathsf{X}\,:\,y\leq x\}\right) = \mathbb{P}\left(\left\{\omega\in\Omega\,:\, \mathrm{X}_i(\omega) \leq x\right\}\right) =: \mathbb{P}(\mathrm{X}_i \leq x) \qquad \forall\, x\in\mathsf{X}, \,\, i=1,2,
+\]</span>
+then by the <span class="math inline">\(\pi\)</span>-<span class="math inline">\(\lambda\)</span> theorem, if <span class="math inline">\(\mathrm{X}_1\)</span> and <span class="math inline">\(\mathrm{X}_2\)</span> have the same CDFs, then <span class="math inline">\(\mathbb{P}^{\mathrm{X}_1}\)</span> and <span class="math inline">\(\mathbb{P}^{\mathrm{X}_2}\)</span> agree on the <span class="math inline">\(\pi\)</span>-system described above and thus they also agree on <span class="math inline">\(\sigma(\mathsf{P})\)</span>. Therefore, as long as we choose <span class="math inline">\(\mathcal{X} \equiv \sigma(\mathsf{P})\)</span> then we are done.</p>
+</blockquote>
+<blockquote>
+<p><strong>Cylinder sets</strong>:</p>
+</blockquote>
+<hr />
+<p><a name="stochastic-processes"><a/></p>
+</div>
+<div id="stochastic-processes" class="section level1">
+<h1>Stochastic Processes</h1>
+<p>A stochastic process is a sequence of random variables, indexed by an index set <span class="math inline">\(\mathsf{T}\)</span>, defined on the same probability space and that take values on the same space <span class="math inline">\((\mathsf{X}, \mathcal{X})\)</span>.</p>
+<blockquote>
+<p><strong>Stochastic Process</strong>: Let <span class="math inline">\((\Omega, \mathcal{F}, \mathbb{P})\)</span> be a probability space, <span class="math inline">\((\mathsf{X}, \mathcal{X})\)</span> be a measurable space, and <span class="math inline">\((\mathsf{T}, \leq)\)</span> be any totally-ordered set. The collection <span class="math inline">\(\{\mathrm{X}_t\,:\, t\in\mathsf{T}\}\)</span> of random variables <span class="math inline">\(\mathrm{X}_t:\Omega\to\mathsf{X}\)</span> each of them being <span class="math inline">\((\mathcal{F}_t, \mathcal{X})\)</span>-measurable for <strong>some</strong> sub-sigma algebra <span class="math inline">\(\mathcal{F}_t\subseteq\mathcal{F}\)</span> is called a stochastic process. If <span class="math inline">\(\mathsf{T}\)</span> is uncountable, then it is a continuous-time stochastic process, if <span class="math inline">\(\mathsf{T}\)</span> is countable then it is a discrete-time stochastic process.</p>
+</blockquote>
+<p>Notice that I have not mentioned any relationship between the sub-sigma algebras <span class="math inline">\(\mathcal{F}_t\)</span>. All I require is that they are valid (but not necessarily strict) sub-sigma algebras <span class="math inline">\(\mathcal{F}_t\subseteq\mathcal{F}\)</span>. Typically, we introduce stochastic processes in a time-context where as time progresses, the process evolves and we receive more information. A filtration is the mathematical object that is used to model a increasing sequence of “information”. A filtration is a sequence of (nested) sigma algebras that grows larger and larger. Think of it as being a historical record of information, where the <span class="math inline">\(t^{\text{th}}\)</span> sigma algebra tells you the information available at time <span class="math inline">\(t\)</span> (we call it time because usually the index is time). As time progresses, we gain more information.</p>
+<blockquote>
+<p><strong>Filtration</strong>: Let <span class="math inline">\((\Omega, \mathcal{F}, \mathbb{P})\)</span> be a probability space, and <span class="math inline">\((\mathsf{T}, \leq)\)</span> be a totally-ordered set, which we call an index set. A filtration <span class="math inline">\(\{\mathcal{F}_t\,:\, t\in\mathsf{T}\}\)</span> induced by <span class="math inline">\((\mathsf{T}, \leq)\)</span> is a collection of sub-sigma algebras of <span class="math inline">\(\mathcal{F}\)</span> such that <span class="math inline">\(\mathcal{F}_q\subseteq\mathcal{F}_s\)</span> when <span class="math inline">\(q\leq s\)</span>.</p>
+</blockquote>
+<p>Again, we love naming things in mathematics, so we call <span class="math inline">\((\Omega, \mathcal{F}, \mathbb{P}, \{\mathcal{F}_t\}_{t\in\mathsf{T}})\)</span> a <strong>filtered probability space</strong>, whenever <span class="math inline">\(\{\mathcal{F}_t\}_{t\in\mathsf{T}}\)</span> is a filtration as defined above. Now, we have introduced filtrations because, in general, we would like to have a stochastic process where each random variable is measurable with respect to the corresponding sub-sigma algebra in the filtration. Recall that when we specify <span class="math inline">\(\mathrm{X}_t\)</span> by saying that it is <span class="math inline">\((\mathcal{F}_t, \mathcal{X})\)</span> measurable, we are effectively saying that <span class="math inline">\(\mathcal{F}_t\)</span> is the largest sigma algebra, and so while <span class="math inline">\(\mathrm{X}_t\)</span> can reveal information about <span class="math inline">\(\mathcal{F}_t\)</span> it cannot reveal information about any <span class="math inline">\(\mathcal{F}_{\tau}\)</span> with <span class="math inline">\(\tau &gt; t\)</span>. The result is a stochastic process where each random variable cannot reveal information about the future and therefore the process is <strong>non-anticipating</strong>. We call such a stochastic process <strong>adapted</strong> to the filtration.</p>
+<blockquote>
+<p><strong>Adapted Process</strong>: Let <span class="math inline">\((\mathsf{T}, \leq)\)</span> be a totally-ordered set, <span class="math inline">\((\Omega, \mathcal{F}, \mathbb{P}, \{\mathcal{F}_t\}_{t\in\mathsf{T}})\)</span> be a filtered probability space, <span class="math inline">\((\mathsf{X}, \mathcal{X})\)</span> be a measurable space, and <span class="math inline">\(\{\mathrm{X}_t\}_{t\in\mathsf{T}}\)</span> be a stochastic process where each random variable <span class="math inline">\(\mathrm{X}_t:\Omega\to\mathsf{X}\)</span> is <span class="math inline">\((\mathcal{F}_t,\mathcal{X})\)</span>-measurable. Then we say <span class="math inline">\(\{\mathrm{X}_t\,:\, t\in\mathsf{T}\}\)</span> is <strong>adapted</strong> to the filtration <span class="math inline">\(\{\mathcal{F}_t\,:\, t\in\mathsf{T}\}\)</span>.</p>
+</blockquote>
+<p>One can construct many different filtrations, but there is one that is very natural once you take into account the various intuitions that we have been building so far. Since each random variable reveals information contained in the corresponding sigma algebra, it makes sense that the <span class="math inline">\(t^{\text{th}}\)</span> sigma algebra is generated by all the preceding random variables. This filtration is called the <strong>natural</strong> filtration.</p>
+<blockquote>
+<p><strong>Natural Filtration</strong>: Let <span class="math inline">\((\mathsf{T}, \leq)\)</span> be a totally-ordered set, <span class="math inline">\((\Omega, \mathcal{F}, \mathbb{P})\)</span> be a probability space, <span class="math inline">\((\mathsf{X}, \mathcal{X})\)</span> be a measurable space and <span class="math inline">\(\{\mathrm{X}_t\,:\, t\in\mathsf{T}\}\)</span> be a collection of random variables, where we don’t specify yet which sub-sigma algebra they are measurable with respect to. Notice that, sequentially, one can build a filtration as follow
+<span class="math display">\[
+\mathcal{F}_\tau^\mathrm{X}:= \sigma\left(\left\{\mathrm{X}_t^{-1}(\mathsf{B}) \,:\, t\leq \tau, \mathsf{B}\in\mathcal{X}\right\}\right), \qquad \forall\, \tau\in\mathsf{T}.
+\]</span>
+This is called the natural filtration and the stochastic process is automatically adapted to it.</p>
+</blockquote>
+<blockquote>
+<p><strong>Path</strong>: For <span class="math inline">\(\omega\in\Omega\)</span> <strong>fixed</strong> then <span class="math inline">\(t\mapsto \mathrm{X}_t(\omega)\)</span> is a function which we call the path of <span class="math inline">\(\mathrm{X}_t\)</span>.</p>
+</blockquote>
+<p>In fact, to each <span class="math inline">\(\omega\in\Omega\)</span> there corresponds a function <span class="math inline">\(t\mapsto \mathrm{X}_t(\omega)\)</span>, so that we can put <span class="math inline">\(\Omega\)</span> on a one-to-one correspondence with the space <span class="math inline">\(\mathsf{X}^\mathsf{T}\)</span> of functions from <span class="math inline">\(\mathsf{T}\)</span> to <span class="math inline">\(\mathsf{X}\)</span>.</p>
+<hr />
+</div>
+<div id="martingales" class="section level1">
+<h1>Martingales</h1>
+<blockquote>
+<p><strong>Martingale</strong>: Let <span class="math inline">\((\mathsf{T}, \leq)\)</span> be a totally ordered set, <span class="math inline">\((\Omega, \mathcal{F}, \mathbb{P}, \{\mathcal{F}_t\}_{t\in\mathsf{T}})\)</span> be a filtered complete probability space, <span class="math inline">\((\mathsf{X}, \mathcal{X})\)</span> be a measurable space and <span class="math inline">\(\{\mathrm{X}_t\}_{t\in\mathsf{T}}\)</span> be a stochastic process adapted to <span class="math inline">\(\{\mathcal{F}_t\}_{t\in\mathsf{T}}\)</span>. We say that a stochastic process is a martingale with respect to <span class="math inline">\(\{\mathcal{F}_t\}_{t\in\mathsf{T}}\)</span> and <span class="math inline">\(\mathbb{P}\)</span> if<br />
+1. <span class="math inline">\(\mathbb{E}[|\mathrm{X}_t|] &lt; \infty\)</span> for every <span class="math inline">\(t\)</span> (meaning <span class="math inline">\(\mathrm{X}_t\)</span> is integrable)<br />
+2. <span class="math inline">\(\mathrm{X}_s = \mathbb{E}[\mathrm{X}_t \mid \mathcal{F}_s]\)</span> for <span class="math inline">\(s &lt; t\)</span> (meaning our best guess for <span class="math inline">\(\mathrm{X}_t\)</span> given information up to time <span class="math inline">\(s\)</span> is <span class="math inline">\(\mathrm{X}_s\)</span>)</p>
+</blockquote>
+</div>

@@ -1,0 +1,161 @@
+---
+title: Visualizing Measure Theory for Markov Chains
+author: Mauro Camara Escudero
+date: '2020-03-04'
+slug: visualizing-measure-theory-for-markov-chains
+categories:
+  - visualization
+  - mcmc
+  - markov-chains
+  - markov-chain-monte-carlo
+  - measure-theory
+tags:
+  - visualization
+  - mcmc
+  - markov-chains
+  - markov-chains-monte-carlo
+  - measure-theory
+  - diagrams
+subtitle: 'Visualizing Push-Forward Measures and Transition Kernels with Diagrams'
+summary: 'Measure-theoretic concepts underpinning the development of Markov Chains and Markov Chains Monte Carlo (MCMC) via insightful diagrams.'
+authors: [Mauro Camara Escudero]
+lastmod: '2020-03-04T23:14:47Z'
+featured: no
+image:
+  caption: ''
+  focal_point: ''
+  preview_only: no
+projects: []
+---
+
+
+
+<div id="sample-space" class="section level1">
+<h1>Sample Space</h1>
+<p>The sample space <span class="math inline">\(\Omega\)</span> is the <strong>set</strong> of all <strong>outcomes</strong> of our probabilistic experiment.</p>
+<p><img src="/sample_space.png" alt="sample space" width="200"/></p>
+<p>For instance:</p>
+<ul>
+<li>Experiment: A single toss of a coin.</li>
+<li>Possible Outcomes: <span class="math inline">\(\omega_1 = \text{Head}\)</span> and <span class="math inline">\(\omega_2 = \text{Tail}\)</span>.</li>
+<li>Sample Space: <span class="math inline">\(\Omega := \{\omega_1, \omega_2\} = \{\text{Head}, \text{Tail}\}\)</span></li>
+</ul>
+</div>
+<div id="event-space" class="section level1">
+<h1>Event Space</h1>
+<p>The event space is a <strong>sigma-algebra</strong> on the sample space. It is a subset of the power set of <span class="math inline">\(\Omega\)</span> whose elements, called <strong>events</strong>, satisfy some regularity conditions. When <span class="math inline">\(\Omega\)</span> is finite and discrete, the power set <span class="math inline">\(\mathcal{P}(\Omega)\)</span> is a valid sigma algebra that can be used as the event space.</p>
+<p><img src="/event_space.png" alt="event space" width="600"/></p>
+<p>Practically <span class="math inline">\(\mathcal{F}\subseteq \mathcal{P}(\Omega)\)</span> satisfying</p>
+<ul>
+<li><span class="math inline">\(\Omega \in \mathcal{F}\)</span> The sample space is an event (called the “sure” event).</li>
+<li><span class="math inline">\(A\in \mathcal{F} \quad \implies \quad A^c\in\mathcal{F}\)</span> Closed under <strong>complementation</strong>.</li>
+<li><span class="math inline">\(A_1, A_2, \ldots\in\mathcal{F} \quad \implies \quad \cup_iA_i \in \mathcal{F}\)</span> Closed under <strong>countable unions</strong>.</li>
+</ul>
+<p>A pair <span class="math inline">\((\Omega, \mathcal{F})\)</span> of a set and its sigma algebra (in this case of the sample space and the event space) is called a <strong>measurable space</strong>. This is because we can define a function that “measures” the size of the elements of <strong>all</strong> the elements of <span class="math inline">\(\mathcal{F}\)</span>. Indeed, any element of a sigma algebra <span class="math inline">\(B\in\mathcal{F}\)</span> is called a <strong>measurable</strong> set.</p>
+</div>
+<div id="probability-measure-and-probability-space" class="section level1">
+<h1>Probability Measure and Probability Space</h1>
+<p>After you’ve defined the sigma-algebra called Event Space, the next step is to define a <strong>probability space</strong>. A probability space is a triplet <span class="math inline">\((\Omega, \mathcal{F}, \mathbb{P})\)</span>, i.e. it is composed of three elements, two of which we already know.</p>
+<ul>
+<li>A sample space <span class="math inline">\(\Omega\)</span>.</li>
+<li>An event space <span class="math inline">\(\mathcal{F}\)</span> which is a sigma-algebra on <span class="math inline">\(\Omega\)</span>.</li>
+<li>A <strong>probability measure</strong> <span class="math inline">\(\mathbb{P}\)</span>.</li>
+</ul>
+<p>A probability measure is a special case of a <strong>measure</strong>. Suppose you have a measurable space <span class="math inline">\((\Omega, \mathcal{F})\)</span> (also referred to as <span class="math inline">\(\Omega\times\mathcal{F})\)</span>). Then a function
+<span class="math display">\[
+\mathbb{P}: \mathcal{F} \to [0, +\infty)
+\]</span>
+is called a <strong>measure</strong> on <span class="math inline">\((\Omega, \mathcal{F})\)</span> if it gives a size of zero to the empty set and if it is countably additive:</p>
+<ul>
+<li><span class="math inline">\(\mathbb{P}(\emptyset) = 0\)</span></li>
+<li><span class="math inline">\(\mathbb{P}\left(\bigcup_i A_i\right) = \sum_i \mathbb{P}(A_i) \qquad \text{for } A_i\in\mathcal{F}\)</span></li>
+</ul>
+<p>Notice how the measure takes elements of <span class="math inline">\(\mathcal{F}\)</span> and not elements of the sample space! That is, it maps <strong>events</strong> not outcomes. A probability measure is just a measure, as above, with the additional property that it maps to <span class="math inline">\([0, 1]\)</span> rather than to <span class="math inline">\([0, +\infty)\)</span>. In order words, it assigns probabilities to events, hence the name.</p>
+<p><img src="/probability_space.png" alt="probability space" width="400"/></p>
+<p>We can see in the diagram above how the probability measure maps the empty set to zero, the sample space to <span class="math inline">\(1\)</span> and any other event to some number in <span class="math inline">\([0, 1]\)</span>.</p>
+</div>
+<div id="random-variable" class="section level1">
+<h1>Random Variable</h1>
+<p>A random variable is also called a <strong>measurable function</strong>. Suppose you have two measurable spaces. One could be the pair of sample space and event space <span class="math inline">\((\Omega, \mathcal{F})\)</span>, and the other one could be some other arbitrary pair of a set and of its sigma algebra <span class="math inline">\((\mathsf{E}, \mathcal{E})\)</span>, although usually we choose <span class="math inline">\(\mathsf{E} = \mathbb{R}\)</span> and <span class="math inline">\(\mathcal{E} = \mathcal{B}(\mathbb{R})\)</span>. Then a measurable function is a function that maps elements in <span class="math inline">\(\Omega\)</span> to elements in <span class="math inline">\(\mathsf{E}\)</span> with some additional properties. Notice how this function maps outcomes to elements of <span class="math inline">\(\mathsf{E}\)</span>, it does not map events.</p>
+<p>What property should this map satisfy? Imagine that we knew our sample space and event space, as in the coin tossing example. It might be a bit unhelpful to work on the actual sample space and event space, so instead we map them to alternative ones, that we are more comfortable using. For instance <span class="math inline">\(\mathbb{R}\)</span> and <span class="math inline">\(\mathcal{B}(\mathbb{R})\)</span>. Then, it’s clear that we want our mapping to have a property that can guarantee us a sort of correspondence between the events in our original event space <span class="math inline">\(\mathcal{F}\)</span> and our transformed event space <span class="math inline">\(\mathcal{E}\)</span>. For this reason, we require our measureable function, or random variable
+<span class="math display">\[
+X: \Omega \to \mathsf{E}
+\]</span>
+to be such that the preimage <span class="math inline">\(X^{-1}(B)\)</span> of any <span class="math inline">\(\mathcal{E}\)</span>-measurable set <span class="math inline">\(B\in\mathcal{E}\)</span> is a <span class="math inline">\(\mathcal{F}\)</span>-measurable set.
+<span class="math display">\[
+X^{-1}(B) = \{\omega\in \Omega \, :\, X(\omega) \in B \} \in \mathcal{F} \qquad \forall \, B \in \mathcal{E}
+\]</span></p>
+<p><img src="/random_variable.png" alt="random variable" width="600"/></p>
+<p>In the diagram above we can see how the set <span class="math inline">\(B\)</span>, which is an element of <span class="math inline">\(\mathcal{E}\)</span> has a pre-image, which we call <span class="math inline">\(X^{-1}(B)\)</span>, which is an element of <span class="math inline">\(\mathcal{F}\)</span>!</p>
+</div>
+<div id="probability-distribution" class="section level1">
+<h1>Probability Distribution</h1>
+<p>A probability distribution is also called a <strong>pushforward measure</strong> of the probability measure <span class="math inline">\(\mathbb{P}\)</span> via the random variable <span class="math inline">\(X\)</span>. Suppose we have a probability space <span class="math inline">\((\Omega, \mathcal{F}, \mathbb{P})\)</span>. This means we can assign probabilities to events in <span class="math inline">\(\mathcal{F}\)</span>. Now suppose we have a measurable spae <span class="math inline">\((\mathsf{E}, \mathcal{E})\)</span> but we don’t yet have a probability measure to measure events in it. How can we go about measuring sets in <span class="math inline">\(\mathcal{E}\)</span>?</p>
+<p>The key idea is that, given a set <span class="math inline">\(B\)</span> in <span class="math inline">\(\mathcal{E}\)</span>, we can use a random variable <span class="math inline">\(X\)</span> to find the pre-image of such set in the event space <span class="math inline">\(\mathcal{F}\)</span> and then measure this set via the probability measure <span class="math inline">\(\mathcal{P}\)</span>. This will then be our probability measurament also for <span class="math inline">\(B\)</span>, as shown in the figure below.</p>
+<p><img src="/probability_distribution.png" alt="probability distribution" width="700"/></p>
+<p>The probability distribution, or pushforward, is then denoted as <span class="math inline">\(X_*\mathbb{P}\)</span> or <span class="math inline">\(\mathbb{P} \circ X^{-1}\)</span>. The probability distribution is therefore a function mapping sets in <span class="math inline">\(\mathcal{E}\)</span> into <span class="math inline">\([0, 1]\)</span>:
+<span class="math display">\[
+X^*\mathbb{P}: \mathcal{E} \to [0, 1]
+\]</span>
+In practice one often uses <span class="math inline">\((\mathsf{E}, \mathcal{E}) = (\mathbb{R}^n, \mathcal{B}(\mathbb{R}^n))\)</span> so we have
+<span class="math display">\[
+X^*\mathbb{P}: \mathcal{B}(\mathbb{R}^n) \to [0, 1]
+\]</span></p>
+</div>
+<div id="probability-density-function" class="section level1">
+<h1>Probability Density Function</h1>
+<p>Consider <span class="math inline">\((\mathbb{R}^n, \mathcal{B}(\mathbb{R}^n))\)</span>. Suppose we have the usual Lebesgue measure <span class="math inline">\(\lambda^n\)</span> on such a measurable space. This would assign to each set <span class="math inline">\(A\in\mathcal{B}(\mathbb{R}^n)\)</span> our usual idea of size. However, now we have the random variable <span class="math inline">\(X\)</span> and we would like to “weight” the size of a set <span class="math inline">\(A\in\mathcal{B}(\mathbb{R}^n)\)</span> based on the “likelihood” of it happening. To do so, we assign a density to every point in <span class="math inline">\(\mathbb{R}^n\)</span> and to compute the new measure of <span class="math inline">\(A\)</span> according to <span class="math inline">\(X_*\mathbb{P}\)</span> we simply take the average of its density at all points in <span class="math inline">\(A\)</span> according to the Lebesgue measure
+<span class="math display">\[
+X_*\mathbb{P}(A) = \int_AdX_*\mathbb{P} = \int_A f d\lambda^n \qquad \forall A\in\mathcal{B}(\mathbb{R}^n)
+\]</span>
+Essentially the density is almost like a derivative in the sense that it describes the rate of change of density of <span class="math inline">\(dX_*\mathbb{P}\)</span> with respect to <span class="math inline">\(\lambda^n\)</span>. For this reason, we denote the density <span class="math inline">\(f\)</span> as follows
+<span class="math display">\[
+f = \frac{d X_*\mathbb{P}}{d \lambda^n}.
+\]</span>
+This is called the Radon-Nikodym derivative. Using this notation is very convenient because we can use it to change the measure we are using to integrate.
+<span class="math display">\[
+X_*\mathbb{P}(A) = \int_A d X_*\mathbb{P} = \int_A \frac{dX_*\mathbb{P}}{d \lambda^n} d\lambda^n = \int_Af d\lambda^n
+\]</span>
+The function <span class="math inline">\(f\)</span> is called the <strong>probability density function</strong> of the random variable <span class="math inline">\(X\)</span>. Notice how one can express the probability distribution also in terms of the original probability measure
+<span class="math display">\[
+p(A) = X_*\mathbb{P}(A) = \int_A d\mathbb{P}\circ X^{-1} = \int_{X^{-1}(A)}d \mathbb{P}
+\]</span></p>
+</div>
+<div id="expectation-change-of-variable-and-law-of-the-unconscious-statistician" class="section level1">
+<h1>Expectation, Change of Variable and Law of the Unconscious Statistician</h1>
+<p>The expectation of the random variable <span class="math inline">\(X\)</span> is given by the following Lebesgue integral
+<span class="math display">\[
+\mathbb{E}_{\mathbb{P}}[X] = \int_{\Omega} X d\mathbb{P} = \int_{\Omega}X(\omega) d\mathbb{P}(\omega)
+\]</span>
+There is an important theorem called <strong>change of variable</strong> formula (i.e. LOTUS) that tells us that we can write the expectation of a tranformed random variable <span class="math inline">\(g \circ X: \Omega \to \mathbb{R}^n\)</span> where <span class="math inline">\(g:\mathbb{R}^n \to \mathbb{R}^n\)</span> in terms of the Lebesgue measure as follows
+<span class="math display">\[
+\mathbb{E}_{\mathbb{P}}[g \circ X] = \int_{\Omega} g \circ X \, d\mathbb{P} = \int_{\mathbb{R}^n} g \, dX_*\mathbb{P} = \int_{\mathbb{R}^n} g \frac{d X_*\mathbb{P}}{d\lambda^n} d\lambda^n = \int_{\mathbb{R}^n}g f \, d\lambda^n  = \int_{\mathbb{R}^n} g(x) f(x) dx
+\]</span>
+Importantly notice how the initial integral as over <span class="math inline">\(\Omega\)</span> and now it’s over <span class="math inline">\(X(\Omega) = \mathbb{R}^n\)</span>.</p>
+</div>
+<div id="markov-transition-kernel" class="section level1">
+<h1>Markov Transition Kernel</h1>
+<p>Let <span class="math inline">\((S, \mathcal{S})\)</span> and <span class="math inline">\((T, \mathcal{T})\)</span> be two measurable spaces. A Markov Kernel is a map
+<span class="math display">\[
+K: S \times \mathcal{T} \to [0, 1]
+\]</span>
+satisfying the following properties:</p>
+<ul>
+<li><span class="math inline">\(K(x, \cdot): \mathcal{T} \to [0, 1]\)</span> is a probability measure for every <span class="math inline">\(x\in S\)</span>. In practice this means that <span class="math inline">\(K(x, \cdot)\)</span> measures the probability of jumping from <span class="math inline">\(X\in S\)</span> to any point <span class="math inline">\(y\in A\in \mathcal{T}\)</span>.</li>
+<li><span class="math inline">\(K(\cdot, A): S\to [0,1]\)</span> is a measurable function. This means that given a set <span class="math inline">\(A\)</span> to jump to, the function that maps a point to the probability of jumping to any point in <span class="math inline">\(A\)</span> is measurable, i.e. a random variable.</li>
+</ul>
+<p>The Markov Kernel defines two operators:</p>
+<ul>
+<li><p>It operates on the <strong>left</strong> with <strong>measures</strong>: Let <span class="math inline">\(\mu\)</span> be a measure on <span class="math inline">\((S, \mathcal{S})\)</span>. Then <span class="math inline">\(\mu K\)</span> is a measure on <span class="math inline">\((T, \mathcal{T})\)</span>
+<span class="math display">\[
+\mu K(A) = \int_S \mu(dx) K(x, A) \qquad \qquad A\in\mathcal{T}
+\]</span>
+Basically <span class="math inline">\(\mu K\)</span> gives you the average probability of jumping to some point <span class="math inline">\(y\in A\)</span> where <span class="math inline">\(A\in\mathcal{T}\)</span> if you start from point with measure <span class="math inline">\(\mu\)</span>. Indeed, if we define <span class="math inline">\(K_A: S \to [0, 1]\)</span> as <span class="math inline">\(K_A(x) = K(x, A)\)</span> then we can write
+<span class="math display">\[
+\mu K(A) = \mathbb{E}_\mu[K_A] = \int_S K_A d\mu = \int_S K_A(x) d\mu(x) = \int_S K(x, A) \mu(dx)
+\]</span></p></li>
+<li><p>It operates on the <strong>right</strong> with <strong>measurable functions</strong></p></li>
+</ul>
+<p>This is heavily influenced by <a href="https://www.randomservices.org/random/expect/Kernels.html" class="uri">https://www.randomservices.org/random/expect/Kernels.html</a>.</p>
+<p><img src="/markov_transition_kernel.png" alt="Markov Transition Kernel" width="700"/></p>
+</div>

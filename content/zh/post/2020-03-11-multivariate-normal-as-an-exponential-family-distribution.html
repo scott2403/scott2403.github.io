@@ -1,0 +1,248 @@
+---
+title: Multivariate Normal as an Exponential Family Distribution
+author: Mauro Camara Escudero
+date: '2020-03-11'
+slug: multivariate-normal-as-an-exponential-family-distribution
+categories:
+  - statistics
+tags:
+  - multivariate-normal
+  - multivariate-gaussian
+  - exponential-family
+subtitle: ''
+summary: 'How to rewrite a Multivariate Normal distribution as a member of the Exponential Family.'
+authors: []
+lastmod: '2020-03-11T13:35:34Z'
+featured: no
+image:
+  caption: ''
+  focal_point: ''
+  preview_only: no
+projects: []
+---
+
+
+
+
+<div id="exponential-family-of-distributions" class="section level3">
+<h3>Exponential Family of Distributions</h3>
+<p>A density <span class="math inline">\(f(\boldsymbol{\mathbf{x}})\)</span> belongs to the exponential family of distributions if we can write it as
+<span class="math display">\[
+f(\boldsymbol{\mathbf{x}}; \boldsymbol{\mathbf{\theta}}) = \exp\left\{\langle\boldsymbol{\mathbf{\theta}}, \phi(\boldsymbol{\mathbf{x}})\rangle  - A(\boldsymbol{\mathbf{\theta}})\right\}
+\]</span>
+we call <span class="math inline">\(\boldsymbol{\mathbf{\theta}}\)</span> its natural parameters, while we call <span class="math inline">\(\mathbb{E}_f[\phi(\boldsymbol{\mathbf{X}})]\)</span> its mean parameters.</p>
+</div>
+<div id="multivariate-normal-distribution" class="section level3">
+<h3>Multivariate Normal Distribution</h3>
+<p>A pdf <span class="math inline">\(f\)</span> is a multivariate normal distribution if
+<span class="math display">\[
+f(\boldsymbol{\mathbf{x}}) = (2\pi)^{-\frac{d}{2}}\text{det}(\boldsymbol{\mathbf{\Sigma}})^{-\frac{1}{2}}\exp\left\{-\frac{1}{2}(\boldsymbol{\mathbf{x}}- \boldsymbol{\mathbf{\mu}})^\top \boldsymbol{\mathbf{\Sigma}}^{-1}(\boldsymbol{\mathbf{x}}- \boldsymbol{\mathbf{\mu}})\right\}
+\]</span></p>
+<p>This can be rearranged as
+<span class="math display">\[
+f(\boldsymbol{\mathbf{x}}) = \exp\left\{\boldsymbol{\mathbf{x}}^\top\boldsymbol{\mathbf{\Sigma}}^{-1}\boldsymbol{\mathbf{\mu}}-\frac{1}{2}\boldsymbol{\mathbf{x}}^\top\boldsymbol{\mathbf{\Sigma}}^{-1}\boldsymbol{\mathbf{x}}-\frac{1}{2}\left[d\log2\pi + \log|\boldsymbol{\mathbf{\Sigma}}| +\boldsymbol{\mathbf{\mu}}^\top\boldsymbol{\mathbf{\Sigma}}^{-1}\boldsymbol{\mathbf{\mu}}\right]\right\}
+\]</span></p>
+</div>
+<div id="frobenius-inner-product" class="section level3">
+<h3>Frobenius Inner Product</h3>
+<p>Notice that we can write the second term as
+<span class="math display">\[
+-\frac{1}{2}\boldsymbol{\mathbf{x}}^\top \boldsymbol{\mathbf{\Sigma}}^{-1}\boldsymbol{\mathbf{x}}= -\frac{1}{2}\sum_{k=1}^d \sum_{j=1}^d x_k\Sigma_{kj}^{-1}x_j
+\]</span>
+similarly, the following expression can be written in the same way
+<span class="math display">\[
+\begin{align}
+\text{tr}\left[-\frac{1}{2}\boldsymbol{\mathbf{\Sigma}}^{-1}\boldsymbol{\mathbf{x}}\boldsymbol{\mathbf{x}}^\top\right] &amp;= 
+-\frac{1}{2}\text{tr}\left[
+\begin{pmatrix}
+\Sigma_{11}^{-1} &amp; \cdots &amp; \Sigma_{1d}^{-1} \\
+\vdots &amp; \ddots &amp; \vdots \\
+\Sigma_{d1}^{-1} &amp; \cdots &amp; \Sigma_{dd}^{-1} 
+\end{pmatrix}
+\begin{pmatrix}
+x_1^2 &amp; \cdots &amp; x_1x_d\\
+\vdots &amp; \ddots &amp; \vdots\\
+x_dx_1 &amp; \cdots &amp; x_d^2
+\end{pmatrix}
+\right]\\
+&amp;= 
+-\frac{1}{2}\text{tr}\left[
+\begin{pmatrix}
+\sum_{j=1}^d\Sigma_{1j}^{-1}x_jx_1 &amp; \cdots &amp; \sum_{j=1}\Sigma_{1j}^{-1}x_jx_d \\
+ \vdots &amp; \ddots &amp; \vdots \\
+\sum_{j=1}^d \Sigma_{dj}^{-1}x_jx_1 &amp; \cdots &amp; \sum_{j=1}^d \Sigma_{dj}^{-1}x_jx_d
+\end{pmatrix}
+\right]\\
+&amp;= -\frac{1}{2}\sum_{k=1}^d\sum_{j=1}^d x_{k}\Sigma_{kj}^{-1}x_j
+\end{align}
+\]</span>
+Now notice that this is nothing but the Frobenius inner product between two <strong>real</strong> and <strong>symmetric</strong> matrices (which can be written both in terms of a trace and in terms of <span class="math inline">\(\text{vec}\)</span>-torizing operations)
+<span class="math display">\[
+\begin{align}
+\left\langle -\frac{1}{2}\boldsymbol{\mathbf{\Sigma}}^{-1}, \boldsymbol{\mathbf{x}}\boldsymbol{\mathbf{x}}^\top\right\rangle_F 
+&amp;= \text{tr}\left(-\frac{1}{2}\boldsymbol{\mathbf{\Sigma}}^{-1}\boldsymbol{\mathbf{x}}\boldsymbol{\mathbf{x}}^\top\right) \\
+&amp;= \text{vec}\left(-\frac{1}{2}\boldsymbol{\mathbf{\Sigma}}^{-1}\right)^\top\text{vec}\left(\boldsymbol{\mathbf{x}}\boldsymbol{\mathbf{x}}^\top\right)
+\end{align}
+\]</span>
+where the vectorized operation for an <span class="math inline">\(n\times m\)</span> matrix <span class="math inline">\(A\)</span> simply stacks the rows one at a time to create a <span class="math inline">\((nm)\times 1\)</span> vector
+<span class="math display">\[
+\text{vec}[A] = \text{vec}\left[\begin{pmatrix} a_{11} &amp; \cdots &amp; a_{1m} \\ \vdots &amp; \ddots &amp; \vdots \\ a_{n1} &amp; \cdots &amp; a_{nm}\end{pmatrix}\right] = \begin{pmatrix} a_{11} \\ \vdots  \\ a_{1m} \\ \vdots \\ a_{nm}\end{pmatrix}
+\]</span></p>
+<p>this allows us to write the pdf as
+<span class="math display">\[
+f(\boldsymbol{\mathbf{x}}) = \exp\left\{\langle \boldsymbol{\mathbf{\Sigma}}^{-1}\boldsymbol{\mathbf{\mu}}, \boldsymbol{\mathbf{x}}\rangle + \left\langle \text{vec}\left(-\frac{1}{2}\boldsymbol{\mathbf{\Sigma}}^{-1}\right), \text{vec}\left(\boldsymbol{\mathbf{x}}\boldsymbol{\mathbf{x}}^\top\right)\right\rangle -\frac{1}{2}\left[d\log2\pi + \log|\boldsymbol{\mathbf{\Sigma}}| +\boldsymbol{\mathbf{\mu}}^\top\boldsymbol{\mathbf{\Sigma}}^{-1}\boldsymbol{\mathbf{\mu}}\right]\right\}
+\]</span></p>
+</div>
+<div id="natural-parameters-of-a-multivariate-normal-distribution" class="section level3">
+<h3>Natural Parameters of a Multivariate Normal Distribution</h3>
+<p>Since <span class="math inline">\(\boldsymbol{\mathbf{\Sigma}}^{-1}\boldsymbol{\mathbf{\mu}}\)</span> can be written as
+<span class="math display">\[
+\boldsymbol{\mathbf{\Sigma}}^{-1}\boldsymbol{\mathbf{\mu}}= 
+\begin{pmatrix}
+\sum_{j=1}^d \Sigma_{1j}^{-1}\mu_j \\
+\vdots \\
+\sum_{j=1}^d \Sigma_{dj}^{-1}\mu_j
+\end{pmatrix}
+\]</span>
+the natural parameters are given by
+<span class="math display">\[
+\boldsymbol{\mathbf{\theta}}= 
+\begin{pmatrix}
+\boldsymbol{\mathbf{\Sigma}}^{-1}\boldsymbol{\mathbf{\mu}}\\
+\text{vec}\left[-\frac{1}{2}\boldsymbol{\mathbf{\Sigma}}^{-1}\right]
+\end{pmatrix} 
+= 
+\begin{pmatrix}
+\sum_{j=1}^d \Sigma_{1j}^{-1}\mu_j \\
+\vdots \\
+\sum_{j=1}^d \Sigma_{dj}^{-1}\mu_j \\
+-\frac{1}{2}\Sigma_{11}^{-1} \\ \vdots \\ -\frac{1}{2}\Sigma_{1d}^{-1} \\ \vdots \\ -\frac{1}{2}\Sigma_{dd}^{-1}
+\end{pmatrix}_{(d + d^2)\times 1}
+\]</span></p>
+<p>In a similar fashion, we can find the sufficient statistics as
+<span class="math display">\[
+\phi(\boldsymbol{\mathbf{x}}) = \begin{pmatrix}
+\boldsymbol{\mathbf{x}}\\
+\text{vec}(\boldsymbol{\mathbf{x}}\boldsymbol{\mathbf{x}}^\top)
+\end{pmatrix}
+=
+\begin{pmatrix}
+x_1 \\
+\vdots \\
+x_d \\
+x_1^2 \\ \vdots \\ x_1x_d \\ \vdots \\ x_d^2
+\end{pmatrix}_{(d + d^2)\times 1}
+\]</span></p>
+<p>This gives the complete expression for the multivariate normal distribution as part of the Exponential Family of distributions</p>
+<p><span class="math display">\[\begin{align}
+f(\boldsymbol{\mathbf{x}}) &amp;= \exp\left\{\langle \theta, \phi(\boldsymbol{\mathbf{x}})\rangle - A(\boldsymbol{\mathbf{\theta}})\right\} \\
+&amp;= \exp\left\{
+  \left(\sum_{j=1}^d \Sigma_{1j}^{-1}\mu_j, \cdots, \sum_{j=1}^d \Sigma_{dj}^{-1}\mu_j,
+  -\frac{1}{2}\Sigma_{11}^{-1}, \cdots, -\frac{1}{2}\Sigma_{1d}^{-1},  \cdots, -\frac{1}{2}\Sigma_{dd}^{-1}
+  \right)^\top
+  
+  \begin{pmatrix}
+  x_1 \\
+  \vdots \\
+  x_d \\
+  x_1^2 \\ \vdots \\ x_1x_d \\ \vdots \\ x_d^2
+  \end{pmatrix} -\frac{1}{2}\left[d\log2\pi + \log|\boldsymbol{\mathbf{\Sigma}}| +\boldsymbol{\mathbf{\mu}}^\top\boldsymbol{\mathbf{\Sigma}}^{-1}\boldsymbol{\mathbf{\mu}}\right]
+  \right\}
+\end{align}\]</span></p>
+</div>
+<div id="mean-parameters-of-a-multivariate-normal-distribution" class="section level3">
+<h3>Mean Parameters of a Multivariate Normal Distribution</h3>
+<p>Remember that the expected value of a matrix or a vector is taken element-wise, so that if we were to compute
+<span class="math display">\[
+\begin{align}
+(\mathbb{E}[\boldsymbol{\mathbf{x}}\boldsymbol{\mathbf{x}}^\top])_{ij} 
+&amp;= \mathbb{E}[(\boldsymbol{\mathbf{x}}\boldsymbol{\mathbf{x}}^\top)_{ij}] \\
+&amp;= \mathbb{E}[x_ix_j] \\
+&amp;= \text{cov}(x_i, x_j) + \mathbb{E}[x_i]\mathbb{E}[x_j] \\
+&amp;= \Sigma_{ij} + \mu_i \mu_j
+\end{align}
+\]</span>
+This means that taking the expected value of our vectorized matrix <span class="math inline">\(\text{vec}(\boldsymbol{\mathbf{x}}\boldsymbol{\mathbf{x}}^\top)\)</span> is equivalent to vectorizing the expected value of <span class="math inline">\(\boldsymbol{\mathbf{x}}\boldsymbol{\mathbf{x}}^\top\)</span>
+<span class="math display">\[
+\begin{align}
+\mathbb{E}\left[\text{vec}(\boldsymbol{\mathbf{x}}\boldsymbol{\mathbf{x}}^\top)\right] 
+&amp;= \mathbb{E}\left[
+\begin{pmatrix}
+x_1^2 \\
+\vdots \\
+x_1x_d \\
+\vdots \\
+x_d^2
+\end{pmatrix}
+\right] \\
+&amp;=
+\begin{pmatrix}
+\mathbb{E}\left[x_1^2\right] \\
+\vdots \\
+\mathbb{E}\left[x_1x_d\right] \\
+\vdots \\
+\mathbb{E}\left[x_d^2\right]
+\end{pmatrix} \\
+&amp;= 
+\begin{pmatrix}
+\Sigma_{11} + \mu_1^2 \\
+\vdots \\
+\Sigma_{1d} + \mu_1\mu_d \\
+\vdots \\
+\Sigma_{dd} + \mu_d^2
+\end{pmatrix} \\
+&amp;= \text{vec}\left(\mathbb{E}\left[\boldsymbol{\mathbf{x}}\boldsymbol{\mathbf{x}}^\top\right]\right)
+\end{align}
+\]</span>
+Finally, the mean parameters are given by
+<span class="math display">\[
+\begin{align}
+\mathbb{E}\left[\phi(\boldsymbol{\mathbf{x}})\right] &amp;= \mathbb{E}\left[\begin{pmatrix}
+\boldsymbol{\mathbf{x}}\\
+\text{vec}(\boldsymbol{\mathbf{x}}\boldsymbol{\mathbf{x}}^\top)
+\end{pmatrix}\right] \\
+&amp;= \begin{pmatrix}
+\boldsymbol{\mathbf{\mu}}\\
+\text{vec}\left(\boldsymbol{\mathbf{\Sigma}}+ \boldsymbol{\mathbf{\mu}}\boldsymbol{\mathbf{\mu}}^\top\right)
+\end{pmatrix}
+\end{align}
+\]</span></p>
+<!-- ### Division of Multivariate Normal Distributions -->
+<!-- Suppose we have two multivariate normal distributions with the same sufficient statistics -->
+<!-- $$ -->
+<!-- \exp\left\{\vtheta_1^\top \phi(\vx) - A(\vtheta_1)\right\} \qquad \text{and} \qquad \exp\left\{\vtheta_2^\top\phi(\vx) - A(\vtheta_2)\right\} -->
+<!-- $$ -->
+<!-- Dividing the two pdfs we obtain -->
+<!-- $$ -->
+<!-- \exp\left\{(\vtheta_1 - \vtheta_2)^\top \phi(\vx) - A'(\vtheta_1 - \vtheta_2)\right\} -->
+<!-- $$ -->
+<!-- In our case we have -->
+<!-- $$ -->
+<!-- \vtheta_1 = \begin{pmatrix} -->
+<!-- \vSigma^{-1}_1\vmu_1 \\ -->
+<!-- \text{vec}\left[-\frac{1}{2}\vSigma_1\right] -->
+<!-- \end{pmatrix} -->
+<!-- \qquad -->
+<!-- \text{and}  -->
+<!-- \qquad -->
+<!-- \vtheta_2 = \begin{pmatrix} -->
+<!-- \vSigma^{-1}_2\vmu_2 \\ -->
+<!-- \text{vec}\left[-\frac{1}{2}\vSigma_2\right] -->
+<!-- \end{pmatrix} -->
+<!-- $$ -->
+<!-- Subtracting them we get -->
+<!-- $$ -->
+<!-- \begin{align} -->
+<!-- \vtheta_1 - \vtheta_2  -->
+<!-- &=  -->
+<!-- \begin{pmatrix} -->
+<!-- \vSigma_1^{-1}\vmu_1 - \vSigma_2^{-1}\vmu_2 \\ -->
+<!-- \text{vec}\left[-\frac{1}{2}\vSigma_1\right] - \text{vec}\left[-\frac{1}{2}\vSigma_2\right] -->
+<!-- \end{pmatrix} \\ -->
+<!-- &= \begin{pmatrix} -->
+<!-- \vSigma_1^{-1}\vmu_1 - \vSigma_2^{-1}\vmu_2  \\ -->
+<!-- -\frac{1}{2}\text{vec}\left[\vSigma_1 - \vSigma_2\right] -->
+<!-- \end{pmatrix} -->
+<!-- \end{align} -->
+<!-- $$ -->
+</div>

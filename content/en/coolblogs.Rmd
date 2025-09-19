@@ -1,0 +1,35 @@
+---
+title: Interesting AI Blogs
+author: Mauro Camara Escudero
+date: '2020-10-05'
+slug: ai-blogs
+categories:
+  - vae
+  - pytorch
+  - mnist
+tags:
+  - vae
+  - pytorch
+  - mnist
+subtitle: 'A curated list of PhD student websites whose blogs I enjoy reading.'
+summary: 'A curated list of PhD student websites whose blogs I enjoy reading.'
+authors: []
+lastmod: '2020-10-05T14:34:07+01:00'
+featured: no
+image:
+  caption: ''
+  focal_point: ''
+  preview_only: no
+projects: []
+---
+
+## Normalizing Flows and Deep Generative Models
+- [Abdul Fatir Ansari](http://abdulfatir.com/) has some interesting blog posts on Normalizing Flows, the Reparametrization Trick and Monte Carlo Sampling. 
+- [Brad Saund](https://www.bradsaund.com/) also has a very intuitive post on normalizing flows and also provides some code in Tensorflow 2.0.
+- [Sean Robert Bittner](https://srbittner.github.io/) has some amazing context on normalizing flows and exponential family networks.
+- [Emiel Hoogeboom](https://ehoogeboom.github.io/) has a great post on invertible convolutions with lots of diagrams.
+- [Jonathan Gordon](https://gordonjo.github.io/) has detailed posts on Amortized VI, Few-shot learning and Deep probabilistic models in general.
+
+
+
+

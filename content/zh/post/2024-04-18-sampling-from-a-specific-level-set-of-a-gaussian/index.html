@@ -1,0 +1,71 @@
+---
+title: Sampling from a specific level set of a Gaussian
+author: Mauro Camara Escudero
+date: '2024-04-18'
+slug: []
+categories: []
+tags: []
+subtitle: 'How to sample uniformly from a level set of a Gaussian'
+summary: 'How to sample uniformly from a level set of a Gaussian'
+authors: []
+lastmod: '2024-04-18T17:11:35+01:00'
+featured: no
+image:
+  caption: ''
+  focal_point: ''
+  preview_only: no
+projects: []
+---
+
+
+
+<p>In this very short note, I will describe how to sample from a specific level set of a <span class="math inline">\(d\)</span>-dimensional Gaussian.</p>
+<div id="ellipsoids" class="section level3">
+<h3>Ellipsoids</h3>
+<p>A <span class="math inline">\((d-1)\)</span>-dimensional ellipsoid in <span class="math inline">\(\mathbb{R}^d\)</span> is defined by the following equation
+<span class="math display">\[\begin{align*}
+    (x-v)^\top \mathsf{A} (x- v) = 1,
+\end{align*}\]</span>
+where <span class="math inline">\(v\in\mathbb{R}^n\)</span> is the center of the ellipsoid and <span class="math inline">\(\mathsf{A}\)</span> is an <span class="math inline">\(n\times n\)</span> positive-definite symmetric matrix.</p>
+</div>
+<div id="gaussian-level-sets-as-ellipsoids" class="section level3">
+<h3>Gaussian Level-Sets as Ellipsoids</h3>
+<p>Consider a multivariate Gaussian distribution <span class="math inline">\(\pi\)</span> with covariance matrix <span class="math inline">\(\Sigma\)</span> and mean <span class="math inline">\(\mu\)</span> with density
+<span class="math display">\[\begin{align*}
+    \pi(x) = (2\pi)^{-d/2}\text{det}(\Sigma)^{-1/2}\exp\left(-\frac{1}{2}(x-\mu)^\top\Sigma^{-1}(x-\mu)\right).
+\end{align*}\]</span>
+The maximum density value achieved is <span class="math inline">\(\pi(\mu)\)</span> as can be seen by setting the gradient to zero
+<span class="math display">\[
+\nabla_x \pi(x) = -\pi(x)\Sigma^{-1}(x - \mu) = 0\implies x = \mu.
+\]</span>
+For any positive value <span class="math inline">\(c\in (0, \pi(\mu))\)</span>, <span class="math inline">\(\pi^{-1}(\{c\})\)</span> denotes the <span class="math inline">\(c\)</span>-level set of <span class="math inline">\(\pi\)</span>. We wish to show that this is a <span class="math inline">\((d-1)\)</span>-dimensional ellipsoid in <span class="math inline">\(\mathbb{R}^d\)</span>. The level set is the following set of points
+<span class="math display">\[
+\mathcal{E}_c := \left\{x\in\mathbb{R}^d\,:\, (2\pi)^{-d/2}\text{det}(\Sigma)^{-1/2}\exp\left(-\frac{1}{2}(x-\mu)^\top\Sigma^{-1}(x-\mu)\right) = c\right\}
+\]</span>
+Since <span class="math inline">\(\log\)</span> is a monotone function, this is equivalent to
+<span class="math display">\[
+\mathcal{E}_c := \left\{x\in\mathbb{R}^d\,:\, -\frac{d}{2}\log(2\pi) - \frac{1}{2}\log\det\Sigma - \frac{1}{2}(x-\mu)^\top \Sigma^{-1}(x-\mu) = \log c\right\}
+\]</span>
+Rearranging terms we get
+<span class="math display">\[
+\mathcal{E}_c := \left\{x\in\mathbb{R}^d\,:\, (x-\mu)^\top \Sigma^{-1}(x-\mu) = b(c, \Sigma)\right\}
+\]</span>
+where we have defined the constant
+<span class="math display">\[
+b(c, \Sigma) = -2\log c - d\log(2\pi) -\log\det\Sigma.
+\]</span>
+Since the LHS is a quadratic form, <span class="math inline">\(b(c, \Sigma)\)</span> must be positive so we can divide through to obtain
+<span class="math display">\[
+\mathcal{E}_c := \left\{x\in\mathbb{R}^d\,:\, (x-\mu)^\top (b\Sigma)^{-1}(x-\mu) = 1\right\}
+\]</span>
+Therefore they are ellipsoids centered at <span class="math inline">\(v = \mu\)</span> with matrix <span class="math inline">\(\mathsf{A} = (b\Sigma)^{-1}\)</span>.</p>
+</div>
+<div id="sampling-from-the-level-set" class="section level3">
+<h3>Sampling from the level set</h3>
+<p>To sample exactly from this level set we follow the following algorithm:</p>
+<ol style="list-style-type: decimal">
+<li>Sample <span class="math inline">\(x\sim \mathcal{N}(0_d, \mathrm{I}_d)\)</span></li>
+<li>Set <span class="math inline">\(\hat{x} := x / \|x\|\)</span> so that <span class="math inline">\(\hat{x}\sim\mathcal{U}(\mathbb{S}^{d-1})\)</span></li>
+<li>Obtain sample <span class="math inline">\(y := L\hat{x}\)</span> where <span class="math inline">\(L\)</span> is the Cholesky decomposition of <span class="math inline">\(b\Sigma\)</span>, i.e. <span class="math inline">\(b\Sigma = LL^\top\)</span></li>
+</ol>
+</div>

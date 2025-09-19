@@ -1,0 +1,69 @@
+---
+title: 'Towards SMC: Importance Sampling with Sequential Data'
+author: Mauro Camara Escudero
+date: '2020-05-12'
+slug: towards-smc-importance-sampling-with-sequential-data
+categories:
+  - sequential-importance-sampling
+  - sequential-monte-carlo
+  - importance-sampling
+  - sequential-data
+tags:
+  - sequential-monte-carlo
+  - importance-sampling
+  - sequential-importance-sampling
+  - sequential-data
+subtitle: 'Simple Explanation of Importance Sampling with Sequential Data'
+summary: 'Importance Sampling tutorial for Sequential Data'
+authors: []
+lastmod: '2020-05-12T17:22:50+01:00'
+featured: no
+image:
+  caption: ''
+  focal_point: ''
+  preview_only: no
+projects: []
+bibliography: biblio_is.bib
+nocite: |
+  @esmc, @smc_bf, @mcs_sc, @mcsm, @bda,@brml
+---
+\newcommand{\vect}[1]{\boldsymbol{\mathbf{#1}}}
+\newcommand{\vtheta}{\vect{\theta}}
+\newcommand{\vy}{\vect{y}}
+\newcommand{\Ebb}{\mathbb{E}}
+\newcommand{\vx}{\vect{x}}
+
+### Importance Sampling for Sequential Data
+Suppose now that instead of having one posterior $p(\vtheta\mid \vy)$ we actually have a sequence of posterior distributions. This could happen in a scenario in which data comes in sequentially and we need to estimate the posterior each time. In particular, suppose that at time $t$ we have the following data $\vx_{t} = (x_1, \ldots, x_t)^\top$ and the respective posterior is given by $\gamma_t(\vx_t)$. Then we can approximate the expected value of a function $h(\vx_t)$ in a similar way as above by rewriting it in terms of an importance distribution $q_t(\vx_t)$
+\begin{align}
+\Ebb_{\gamma_t}\left[h(\vx_t)\right] 
+&= \int  h(\vx_t)\gamma_t(\vx_t) d\vx_t \\
+&= \frac{1}{Z_t}\int h(\vx_t)\frac{\widetilde{\gamma_t}(\vx_t)}{q_t(\vx_t)} q_t(\vx_t) d\vx_t \\
+&= \frac{\Ebb_{q_t}\left[\frac{\widetilde{\gamma_t}(\vx_t)}{q_t(\vx_t)}h(\vx_t)\right]}{\Ebb_{q_t}\left[\frac{\widetilde{\gamma_t}(\vx_t)}{q_t(\vx_t)}\right]} \\
+&\approx \sum_{i=1}^N w_t(\vx_t^{(i)}) h_t(\vx_t^{(i)}) && \vx_t^{(i)} \overset{\text{iid}}{\sim} q_t(\, \cdot\,)
+\end{align}
+where we have defined the normalized weights and the unnormalized weights as
+$$
+w_t(\vx_t^{(i)}) = \frac{\widetilde{w}_t(\vx_t^{(i)})}{\sum_{j=1}^N \widetilde{w}_t(\vx_t^{(i)})} \qquad \text{and} \qquad \widetilde{w}_t(\vx_t^{(i)}) = \frac{\widetilde{\gamma_t}(\vx_t^{(i)})}{q_t(\vx^{(i)})}
+$$
+We can also use these weights to obtain an estimate of the normalization constant of the posterior, $Z_t$, and of the normalized posterior itself. In order to do this, we need to recall the definition of the dirac delta mass.
+\begin{align}
+\gamma_t(\vx_t) 
+&= \int \gamma_t(\vx_t')\delta_{\vx_t}(\vx_t') d\vx_t' \\
+&\approx \frac{\sum_{i=1}^N \frac{\widetilde{\gamma_t}(\vx_t^{(i)})}{q_t(\vx_t^{(i)})}\delta_{\vx_t^{(i)}}(\vx_t)}{\sum_{j=1}^N \frac{\widetilde{\gamma_t}(\vx_t^{(j)})}{q_t(\vx_t^{(j)})}} \\
+&= \sum_{i=1}^N w_t(\vx_t^{(i)}) \delta_{\vx_t^{(i)}}(\vx_t)
+\end{align}
+
+And, similarly, to estimate the normalization constant we do the following
+$$
+Z_t = \int \widetilde{\gamma_t}(\vx_t) d \vx_t \approx \sum_{i=1}^N \widetilde{w}_t(\vx_t^{(i)})
+$$
+
+  
+
+
+
+
+
+
+# Bibliography

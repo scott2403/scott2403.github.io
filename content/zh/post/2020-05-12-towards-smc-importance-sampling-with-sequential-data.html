@@ -1,0 +1,82 @@
+---
+title: 'Towards SMC: Importance Sampling with Sequential Data'
+author: Mauro Camara Escudero
+date: '2020-05-12'
+slug: towards-smc-importance-sampling-with-sequential-data
+categories:
+  - sequential-importance-sampling
+  - sequential-monte-carlo
+  - importance-sampling
+  - sequential-data
+tags:
+  - sequential-monte-carlo
+  - importance-sampling
+  - sequential-importance-sampling
+  - sequential-data
+subtitle: 'Simple Explanation of Importance Sampling with Sequential Data'
+summary: 'Importance Sampling tutorial for Sequential Data'
+authors: []
+lastmod: '2020-05-12T17:22:50+01:00'
+featured: no
+image:
+  caption: ''
+  focal_point: ''
+  preview_only: no
+projects: []
+bibliography: biblio_is.bib
+nocite: |
+  @esmc, @smc_bf, @mcs_sc, @mcsm, @bda,@brml
+---
+
+
+
+
+<div id="importance-sampling-for-sequential-data" class="section level3">
+<h3>Importance Sampling for Sequential Data</h3>
+<p>Suppose now that instead of having one posterior <span class="math inline">\(p(\boldsymbol{\mathbf{\theta}}\mid \boldsymbol{\mathbf{y}})\)</span> we actually have a sequence of posterior distributions. This could happen in a scenario in which data comes in sequentially and we need to estimate the posterior each time. In particular, suppose that at time <span class="math inline">\(t\)</span> we have the following data <span class="math inline">\(\boldsymbol{\mathbf{x}}_{t} = (x_1, \ldots, x_t)^\top\)</span> and the respective posterior is given by <span class="math inline">\(\gamma_t(\boldsymbol{\mathbf{x}}_t)\)</span>. Then we can approximate the expected value of a function <span class="math inline">\(h(\boldsymbol{\mathbf{x}}_t)\)</span> in a similar way as above by rewriting it in terms of an importance distribution <span class="math inline">\(q_t(\boldsymbol{\mathbf{x}}_t)\)</span>
+<span class="math display">\[\begin{align}
+\mathbb{E}_{\gamma_t}\left[h(\boldsymbol{\mathbf{x}}_t)\right] 
+&amp;= \int  h(\boldsymbol{\mathbf{x}}_t)\gamma_t(\boldsymbol{\mathbf{x}}_t) d\boldsymbol{\mathbf{x}}_t \\
+&amp;= \frac{1}{Z_t}\int h(\boldsymbol{\mathbf{x}}_t)\frac{\widetilde{\gamma_t}(\boldsymbol{\mathbf{x}}_t)}{q_t(\boldsymbol{\mathbf{x}}_t)} q_t(\boldsymbol{\mathbf{x}}_t) d\boldsymbol{\mathbf{x}}_t \\
+&amp;= \frac{\mathbb{E}_{q_t}\left[\frac{\widetilde{\gamma_t}(\boldsymbol{\mathbf{x}}_t)}{q_t(\boldsymbol{\mathbf{x}}_t)}h(\boldsymbol{\mathbf{x}}_t)\right]}{\mathbb{E}_{q_t}\left[\frac{\widetilde{\gamma_t}(\boldsymbol{\mathbf{x}}_t)}{q_t(\boldsymbol{\mathbf{x}}_t)}\right]} \\
+&amp;\approx \sum_{i=1}^N w_t(\boldsymbol{\mathbf{x}}_t^{(i)}) h_t(\boldsymbol{\mathbf{x}}_t^{(i)}) &amp;&amp; \boldsymbol{\mathbf{x}}_t^{(i)} \overset{\text{iid}}{\sim} q_t(\, \cdot\,)
+\end{align}\]</span>
+where we have defined the normalized weights and the unnormalized weights as
+<span class="math display">\[
+w_t(\boldsymbol{\mathbf{x}}_t^{(i)}) = \frac{\widetilde{w}_t(\boldsymbol{\mathbf{x}}_t^{(i)})}{\sum_{j=1}^N \widetilde{w}_t(\boldsymbol{\mathbf{x}}_t^{(i)})} \qquad \text{and} \qquad \widetilde{w}_t(\boldsymbol{\mathbf{x}}_t^{(i)}) = \frac{\widetilde{\gamma_t}(\boldsymbol{\mathbf{x}}_t^{(i)})}{q_t(\boldsymbol{\mathbf{x}}^{(i)})}
+\]</span>
+We can also use these weights to obtain an estimate of the normalization constant of the posterior, <span class="math inline">\(Z_t\)</span>, and of the normalized posterior itself. In order to do this, we need to recall the definition of the dirac delta mass.
+<span class="math display">\[\begin{align}
+\gamma_t(\boldsymbol{\mathbf{x}}_t) 
+&amp;= \int \gamma_t(\boldsymbol{\mathbf{x}}_t&#39;)\delta_{\boldsymbol{\mathbf{x}}_t}(\boldsymbol{\mathbf{x}}_t&#39;) d\boldsymbol{\mathbf{x}}_t&#39; \\
+&amp;\approx \frac{\sum_{i=1}^N \frac{\widetilde{\gamma_t}(\boldsymbol{\mathbf{x}}_t^{(i)})}{q_t(\boldsymbol{\mathbf{x}}_t^{(i)})}\delta_{\boldsymbol{\mathbf{x}}_t^{(i)}}(\boldsymbol{\mathbf{x}}_t)}{\sum_{j=1}^N \frac{\widetilde{\gamma_t}(\boldsymbol{\mathbf{x}}_t^{(j)})}{q_t(\boldsymbol{\mathbf{x}}_t^{(j)})}} \\
+&amp;= \sum_{i=1}^N w_t(\boldsymbol{\mathbf{x}}_t^{(i)}) \delta_{\boldsymbol{\mathbf{x}}_t^{(i)}}(\boldsymbol{\mathbf{x}}_t)
+\end{align}\]</span></p>
+<p>And, similarly, to estimate the normalization constant we do the following
+<span class="math display">\[
+Z_t = \int \widetilde{\gamma_t}(\boldsymbol{\mathbf{x}}_t) d \boldsymbol{\mathbf{x}}_t \approx \sum_{i=1}^N \widetilde{w}_t(\boldsymbol{\mathbf{x}}_t^{(i)})
+\]</span></p>
+</div>
+<div id="bibliography" class="section level1 unnumbered">
+<h1>Bibliography</h1>
+<div id="refs" class="references">
+<div id="ref-brml">
+<p>Barber, David. 2012. <em>Bayesian Reasoning and Machine Learning</em>. USA: Cambridge University Press.</p>
+</div>
+<div id="ref-smc_bf">
+<p>Doucet, Arnaud, Simon Godsill, and Christophe Andrieu. 2000. “On Sequential Monte Carlo Sampling Methods for Bayesian Filtering.” <em>Statistics and Computing</em> 10 (3). USA: Kluwer Academic Publishers: 197–208. <a href="https://doi.org/10.1023/A:1008935410038">https://doi.org/10.1023/A:1008935410038</a>.</p>
+</div>
+<div id="ref-bda">
+<p>Gelman, Andrew, John B. Carlin, Hal S. Stern, and Donald B. Rubin. 2004. <em>Bayesian Data Analysis</em>. 2nd ed. Chapman; Hall/CRC.</p>
+</div>
+<div id="ref-mcs_sc">
+<p>Liu, Jun S. 2008. <em>Monte Carlo Strategies in Scientific Computing</em>. Springer Publishing Company, Incorporated.</p>
+</div>
+<div id="ref-esmc">
+<p>Naesseth, Christian A., Fredrik Lindsten, and Thomas B. Schön. 2019. “Elements of Sequential Monte Carlo.”</p>
+</div>
+<div id="ref-mcsm">
+<p>Robert, Christian P., and George Casella. 2005. <em>Monte Carlo Statistical Methods (Springer Texts in Statistics)</em>. Berlin, Heidelberg: Springer-Verlag.</p>
+</div>
+</div>
+</div>

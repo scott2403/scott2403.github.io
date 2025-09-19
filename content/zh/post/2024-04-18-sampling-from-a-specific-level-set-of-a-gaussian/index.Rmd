@@ -1,0 +1,64 @@
+---
+title: Sampling from a specific level set of a Gaussian
+author: Mauro Camara Escudero
+date: '2024-04-18'
+slug: []
+categories: []
+tags: []
+subtitle: 'How to sample uniformly from a level set of a Gaussian'
+summary: 'How to sample uniformly from a level set of a Gaussian'
+authors: []
+lastmod: '2024-04-18T17:11:35+01:00'
+featured: no
+image:
+  caption: ''
+  focal_point: ''
+  preview_only: no
+projects: []
+---
+In this very short note, I will describe how to sample from a specific level set of a $d$-dimensional Gaussian. 
+
+### Ellipsoids
+A $(d-1)$-dimensional ellipsoid in $\mathbb{R}^d$ is defined by the following equation
+\begin{align*}
+    (x-v)^\top \mathsf{A} (x- v) = 1,
+\end{align*}
+where $v\in\mathbb{R}^n$ is the center of the ellipsoid and $\mathsf{A}$ is an $n\times n$ positive-definite symmetric matrix.
+
+### Gaussian Level-Sets as Ellipsoids
+Consider a multivariate Gaussian distribution $\pi$ with covariance matrix $\Sigma$ and mean $\mu$ with density
+\begin{align*}
+    \pi(x) = (2\pi)^{-d/2}\text{det}(\Sigma)^{-1/2}\exp\left(-\frac{1}{2}(x-\mu)^\top\Sigma^{-1}(x-\mu)\right).
+\end{align*}
+The maximum density value achieved is $\pi(\mu)$ as can be seen by setting the gradient to zero
+$$
+\nabla_x \pi(x) = -\pi(x)\Sigma^{-1}(x - \mu) = 0\implies x = \mu.
+$$
+For any positive value $c\in (0, \pi(\mu))$, $\pi^{-1}(\{c\})$ denotes the $c$-level set of $\pi$. We wish to show that this is a $(d-1)$-dimensional ellipsoid in $\mathbb{R}^d$. The level set is the following set of points
+$$
+\mathcal{E}_c := \left\{x\in\mathbb{R}^d\,:\, (2\pi)^{-d/2}\text{det}(\Sigma)^{-1/2}\exp\left(-\frac{1}{2}(x-\mu)^\top\Sigma^{-1}(x-\mu)\right) = c\right\}
+$$
+Since $\log$ is a monotone function, this is equivalent to 
+$$
+\mathcal{E}_c := \left\{x\in\mathbb{R}^d\,:\, -\frac{d}{2}\log(2\pi) - \frac{1}{2}\log\det\Sigma - \frac{1}{2}(x-\mu)^\top \Sigma^{-1}(x-\mu) = \log c\right\}
+$$
+Rearranging terms we get
+$$
+\mathcal{E}_c := \left\{x\in\mathbb{R}^d\,:\, (x-\mu)^\top \Sigma^{-1}(x-\mu) = b(c, \Sigma)\right\}
+$$
+where we have defined the constant
+$$
+b(c, \Sigma) = -2\log c - d\log(2\pi) -\log\det\Sigma.
+$$
+Since the LHS is a quadratic form, $b(c, \Sigma)$ must be positive so we can divide through to obtain
+$$
+\mathcal{E}_c := \left\{x\in\mathbb{R}^d\,:\, (x-\mu)^\top (b\Sigma)^{-1}(x-\mu) = 1\right\}
+$$
+Therefore they are ellipsoids centered at $v = \mu$ with matrix $\mathsf{A} = (b\Sigma)^{-1}$.
+
+### Sampling from the level set
+To sample exactly from this level set we follow the following algorithm:
+
+1. Sample $x\sim \mathcal{N}(0_d, \mathrm{I}_d)$
+2. Set $\hat{x} := x / \|x\|$ so that $\hat{x}\sim\mathcal{U}(\mathbb{S}^{d-1})$
+3. Obtain sample $y := L\hat{x}$ where $L$ is the Cholesky decomposition of $b\Sigma$, i.e. $b\Sigma = LL^\top$

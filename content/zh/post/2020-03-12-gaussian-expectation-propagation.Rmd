@@ -1,0 +1,169 @@
+---
+title: Gaussian Expectation Propagation
+author: Mauro Camara Escudero
+date: '2020-03-12'
+slug: gaussian-expectation-propagation
+categories:
+  - expectation-propagation
+tags:
+  - gaussian-ep
+  - gaussian-expectation-propagation
+  - normal-expectation-propagation
+subtitle: ''
+summary: 'Description of Expectation Propagation using Multivariate Normal factors for the global approximation.'
+authors: []
+lastmod: '2020-03-12T19:47:53Z'
+featured: no
+image:
+  caption: ''
+  focal_point: ''
+  preview_only: no
+projects: []
+bibliography: bibliography.bib
+---
+\newcommand{\vect}[1]{\boldsymbol{\mathbf{#1}}}
+\newcommand{\nc}[2]{\newcommand{#1}{#2}}
+\nc{\vx}{\vect{x}}
+\nc{\vmu}{\vect{\mu}}
+\nc{\vSigma}{\vect{\Sigma}}
+\nc{\vtheta}{\vect{\theta}}
+\nc{\vX}{\vect{X}}
+\newcommand{\Ebb}[1]{\mathbb{E}\left[#1\right]}
+\nc{\vr}{\vect{r}}
+\nc{\vQ}{\vect{Q}}
+\nc{\vgamma}{\vect{\gamma}}
+
+## Multivariate Normal Distribution in the Exponential Family
+Remember from a previous blog post that a pdf $p(\vx) = \mathcal{N}(\vx; \vmu, \vSigma)$ can be written as
+$$
+p(\vx) = \exp\left\{\langle \vSigma^{-1}\vmu, \vx\rangle + \left\langle \text{vec}\left(-\frac{1}{2}\vSigma^{-1}\right), \text{vec}\left(\vx\vx^\top\right)\right\rangle -\frac{1}{2}\left[d\log2\pi + \log|\vSigma| +\vmu^\top\vSigma^{-1}\vmu\right]\right\}
+$$
+
+Following the work of @barthelm2015divide we can relabel the expression above as follows
+$$
+p(\vx) \propto \exp\left\{\langle \vr, \vx\rangle + \left\langle \text{vec}\left(-\frac{1}{2}\vQ\right), \text{vec}\left(\vx\vx^\top\right)\right\rangle \right\}
+$$
+where we have defined
+$$
+\vr := \vSigma^{-1} \vmu \qquad \text{and} \qquad \vQ := \vSigma^{-1}
+$$
+
+## Target Distribution
+We assume the target distribution is intractable, but can be factorized into a product of $K+1$ terms
+$$
+f(\vgamma) \propto \prod_{k=0}^K f_k(\vgamma_k)
+$$
+where usually
+
+- $f(\vgamma)=p(\vgamma \mid \vx)$ is a **posterior** distribution.
+- $f_0(\vgamma_0) = p(\vgamma; \vtheta_0)$ is a **prior** distribution.
+- $f_1(\vgamma_1), \ldots, f_K(\vgamma_k)$ are **likelihood** terms, which are _intractable_. 
+
+From here onwards we assume that the prior distribution $f_0(\vgamma)$ is a multivariate gaussian distribution $\mathcal{N}(\vgamma; \vr_0, \vQ_0)$ (with natural parameters $\vtheta_0 = \left(\vr_0, -\frac{1}{2}\vQ_0\right)^\top$).
+$$
+f_0(\vgamma) = p(\vgamma; \vr_0, \vQ_0) = \propto \exp\left\{\langle \vr_0, \vx\rangle + \left\langle \text{vec}\left(-\frac{1}{2}\vQ_0\right), \text{vec}\left(\vx\vx^\top\right)\right\rangle \right\}
+$$
+
+> **Note**: The parameters $\vgamma_0, \ldots, \vgamma_k$ are _not_ the components of $\vgamma$, they are different parameters.
+
+## Global Approximation
+The global approximation is defined as 
+$$
+g(\vtheta) \propto \prod_{k=0}^K g_k(\vtheta_k)
+$$
+where we set the first term to be equal to the (tractable) prior, which is a multivariate gaussian distribution
+$$
+g_0(\vtheta) \propto \exp\left\{\langle \vr_0, \vx\rangle + \left\langle \text{vec}\left(-\frac{1}{2}\vQ_0\right), \text{vec}\left(\vx\vx^\top\right)\right\rangle \right\}
+$$
+Furthermore, we assume that each factor $g_k(\vtheta_k)$ for $k=1, \ldots, K$ also follows a Multivariate Normal Distribution with natural parameter $\vtheta_k = (\vr_k, \vQ_k)^\top$. Luckily, the product of Gaussians is again a Gaussian distribution. In particular we have
+$$
+\begin{align}
+g(\vtheta) &\propto
+\prod_{k=0}^K \exp\left\{ \vr_k^\top\vx +  \text{vec}\left(-\frac{1}{2}\vQ_k\right)^\top \text{vec}\left(\vx\vx^\top\right) \right\} \\
+&= \exp\left\{\left(\sum_{k=0}^K \vr_k\right)^\top\vx + \text{vec}\left(-\frac{1}{2}\sum_{k=0}^K \vQ_k\right)^\top  \text{vec}\left(\vx\vx^\top\right)\right\} \\
+&:= \exp\left\{\vr^\top\vx + \text{vec}\left(-\frac{1}{2}\vQ\right)^\top  \text{vec}\left(\vx\vx^\top\right)\right\}
+\end{align}
+$$
+where we have defined the global natural parameters to be
+$$
+\vr := \sum_{k=0}^K \vr_k \qquad \text{and} \qquad \vQ := \sum_{k=0}^K \vQ_k
+$$
+In other words, the natural parameters of the global approximation are found by summing the natural parameters of all the sites.
+
+> **Note**: The parameters $\vtheta_0, \ldots, \vtheta_k$ are _not_ the components of $\vtheta$, they are different parameters.
+
+## Cavity Distribution
+The cavity distribution at the $k^{\text{th}}$ site is given by the product of all but the $k^{\text{th}}$ Multivariate Gaussian. This means that we can write the cavity distribution as
+$$
+g_{-k}(\vtheta - \vtheta_k) \propto \exp\left\{\left(\vr - \vr_k\right)^\top\vx + \text{vec}\left(-\frac{1}{2}\left(\vQ - \vQ_k\right)\right)^\top  \text{vec}\left(\vx\vx^\top\right)\right\}
+$$
+In other words, the natural parameters of the cavity distribution are found by taking the difference between the global natural parameters and the natural parameters of the $k^{\text{th}}$ site.
+
+## Tilted Distribution
+The tilted distribution, also called pseudo-posterior, is found by multiplying the cavity distribution by the $k^{\text{th}}$ local likelihood term. In other words, the tilted distribution is a (pseudo-)posterior where we use the cavity distribution as a (pseudo-)prior and the single local likelihood term as the likelihood.
+
+In general, computing moments of this distribution will be intractable, however we how that calculating moments of this distribution will be easier than calculating moments of the entire target distribution.
+$$
+\begin{align}
+g_{\backslash k}(\widetilde{\vgamma}_k) 
+&\propto f_k(\vgamma_k) \exp\left\{\left(\vr - \vr_k\right)^\top\vx + \text{vec}\left(-\frac{1}{2}\left(\vQ - \vQ_k\right)\right)^\top  \text{vec}\left(\vx\vx^\top\right)\right\}
+\end{align}
+$$
+
+## Gaussian Expectation Propagation Updates
+### Initialization
+
+- Choose natural parameters for the prior distribution $\vr_0$ and $\vQ_0$.
+- For every site $k=1, \ldots, K$ choose the parameters $\vr_k$ and $\vQ_k$.
+- Compute the natural parameters of the global approximation
+$$
+\vr \leftarrow \sum_{k=0}^K \vr_k \qquad \text{and} \qquad \vQ\leftarrow \sum_{k=0}^K \vQ_k
+$$
+
+### Updates
+- At the $k^{\text{th}}$ site subtract the $k^{\text{th}}$ natural parameters from the global ones, to obtain the natural parameters of the **cavity distribution**
+$$
+\vr_{-k}\leftarrow \vr - \vr_k \qquad \text{and} \qquad \vQ_{-k} \leftarrow \vQ - \vQ_k
+$$
+- Sample from the **tilted distribution** using an MCMC sampler to obtain $N$ samples $\widetilde{\vgamma}_k^{(1)}, \ldots, \widetilde{\vgamma}_k^{(N)}$ from
+$$
+g_{\backslash k}(\widetilde{\vgamma}_k) 
+\propto f_k(\vgamma_k) \exp\left\{\left(\vr - \vr_k\right)^\top\vx + \text{vec}\left(-\frac{1}{2}\left(\vQ - \vQ_k\right)\right)^\top  \text{vec}\left(\vx\vx^\top\right)\right\}
+$$
+- Perform **moment-matching** by computing the mean and the variance-coviariance matrix from the samples, and assign those values to the mean and the variance-covariance matrix of the newly-found global gaussian approximation.
+$$
+\begin{align}
+\vmu^{\text{new}, k}&\leftarrow \frac{1}{N}\sum_{j=1}^N \widetilde{\vgamma}_i^{(j)} \\
+\vSigma^{\text{new}, k} &\leftarrow \frac{1}{N - 1}\sum_{j=1}^N \left(\widetilde{\vgamma}_i^{(j)}  - \vmu^{\text{new}, k}\right) \left(\widetilde{\vgamma}_i^{(j)}  - \vmu^{\text{new}, k}\right)^\top
+\end{align}
+$$
+Notice that every site $k=1, \ldots, K$ has found (possibly) different new mean and variance-covariance parameters. We denote by $\vmu^{\text{new}, k}$ the new mean parameter for the multivariate normal global approximation, found at site $k$.
+- Next, at every site $i=1, \ldots, K$, **convert** the global mean and variance-covariance parameters into natural parameters
+$$
+\begin{align}
+\vQ^{\text{new}, k} &\leftarrow \left(\vSigma^{\text{new}, k}\right)^{-1} \\
+\vr^{\text{new}, k} &\leftarrow \vQ^{\text{new}, k} \vmu^{\text{new}, k}
+\end{align}
+$$
+- At site $k$ find the new natural parameters for the $k^{\text{th}}$ approximating factor $g_k(\vtheta_k)$ by taking the difference between the new global natural parameters and the natural parameters of the old cavity distribution.
+$$
+\begin{align}
+\vQ_k^{\text{new}} &\leftarrow \vQ^{\text{new}, k} - \vQ_{-k} \\
+\vr_k^{\text{new}} &\leftarrow \vr^{\text{new}, k} - \vr_{-k}
+\end{align}
+$$
+- From each site, send $\vr_k^{\text{new}}$ and $\vQ_k^{\text{new}}$ to the posterior server and **update global approximation**
+$$
+\begin{align}
+\vr^{\text{new}}_{\text{parallel}} &\leftarrow \sum_{k=1}^K \vr_k^{\text{new}} \\
+\vQ^{\text{new}}_{\text{parallel}} &\leftarrow \sum_{k=1}^K \vQ_k^{\text{new}}
+\end{align}
+$$
+
+
+
+
+
+
+
+# Bibliography

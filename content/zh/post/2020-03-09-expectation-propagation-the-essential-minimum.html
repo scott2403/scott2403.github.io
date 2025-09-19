@@ -1,0 +1,53 @@
+---
+title: Expectation Propagation - The Essential Minimum
+author: Mauro Camara Escudero
+date: '2020-03-09'
+slug: expectation-propagation-the-essential-minimum
+categories:
+  - expectation-propagation
+tags:
+  - expectation-propagation
+  - variational-inference
+subtitle: ''
+summary: 'The bare practical minimum to understand Expectation Propagation'
+authors: []
+lastmod: '2020-03-09T22:52:13Z'
+featured: no
+image:
+  caption: ''
+  focal_point: ''
+  preview_only: no
+projects: []
+bibliography: bibliography.bib
+---
+
+
+
+<p>Taken from <span class="citation">Vehtari et al. (2014)</span>. Assume that you can factorize your <strong>target distribution</strong>
+<span class="math display">\[
+f(\theta) \propto \prod_{k=0}^K f_k(\theta)
+\]</span>
+Approximate target distribution using a distribution with a similar factorization, called the <strong>global approximation</strong>
+<span class="math display">\[
+g(\theta) \propto \prod_{k=0}^K g_k(\theta)
+\]</span>
+At each iteration of the algorithm, and for every factor <span class="math inline">\(k=1, \ldots, K\)</span> form the <strong>cavity distribution</strong> by removing <span class="math inline">\(k^{\text{th}}\)</span> term from the global approximation
+<span class="math display">\[
+g_{-k} \propto \frac{g(\theta)}{g_k(\theta)}
+\]</span>
+also form the <strong>tilted distribution</strong> by including <span class="math inline">\(f_k(\theta)\)</span> to the cavity distribution (in place of <span class="math inline">\(g_k(\theta)\)</span>)
+<span class="math display">\[
+g_{\backslash k}(\theta) \propto f_k(\theta) g_{-k}(\theta)
+\]</span>
+The algorithm updates the site approximation <span class="math inline">\(g_k(\theta)\)</span> so that the new global approximation approximates the tilted distribution
+<span class="math display">\[
+g_k(\theta)^{\text{new}}g_{-k}(\theta) \approx f_k(\theta)g_{-k}(\theta)
+\]</span></p>
+<div id="bibliography" class="section level1 unnumbered">
+<h1>Bibliography</h1>
+<div id="refs" class="references">
+<div id="ref-EPWay">
+<p>Vehtari, Aki, Andrew Gelman, Tuomas Sivula, Pasi Jylänki, Dustin Tran, Swupnil Sahai, Paul Blomstedt, John P. Cunningham, David Schiminovich, and Christian Robert. 2014. “Expectation Propagation as a Way of Life: A Framework for Bayesian Inference on Partitioned Data.”</p>
+</div>
+</div>
+</div>

@@ -1,0 +1,73 @@
+---
+title: Holistic AI Workshop
+author: Mauro Camara Escudero
+date: '2023-10-11'
+slug: []
+categories:
+  - ai-safety
+  - bias
+tags:
+  - ai-safety
+  - fairness
+  - bias
+subtitle: 'Assessing and Mitigating Bias and Discrimination in AI'
+summary: ''
+authors: []
+lastmod: '2023-10-11T18:04:08+01:00'
+featured: no
+image:
+  caption: ''
+  focal_point: ''
+  preview_only: no
+projects: []
+---
+On October 4th 2023, Roseline Polle (Responsible AI Auditor and Researcher at Holistic AI) and Sachin Beepath (AI Assurance Officer at Holistic AI) gave us a day workshop on AI Safety, focusing an assessing and mitigating bias.
+
+### Trustworthy AI
+The Ethical guidelines of Trustworthy AI follows 4 main verticals:
+
+1. Robustness
+2. Bias
+3. Privacy
+4. Explainability
+
+![Source: Holistic AI](/trustworthy_ai.png)
+
+### Case Studies
+During the workshop we saw case studies for all four verticals.
+
+1. Bias:
+    - [UK A-level grading fiasco](https://blogs.lse.ac.uk/impactofsocialsciences/2020/08/26/fk-the-algorithm-what-the-world-can-learn-from-the-uks-a-level-grading-fiasco/): Grades for A-level students during the pandemic were determined using an algorithm. Unfortunately, this algorithm was subject to several sources of bias, which lead to lower-than-expected grades, protests and eventually the government retracted the grades.
+    - [COMPAS](https://www.propublica.org/article/how-we-analyzed-the-compas-recidivism-algorithm) predicted the likelihood of recidivism of criminals, but was found to have sever bias against black defendants: they were often considered to be at higher risk of recidivism, whereas white defendants were considered less risky. This was also true when controlling for prior crimes, age and gender. 
+    - [Amazon Recruitment Algorithm](https://www.businessinsider.com/amazon-ai-biased-against-women-no-surprise-sandra-wachter-2018-10?r=US&IR=T) was found to discriminate against female candidates.
+    - [Gender Shades](http://gendershades.org) algorithms from Microsoft, IBM and Face++ all perform better on lighter subjects, with a difference of up to 34% in error rates. Most of the misgendered faces by Face++ were of female subjects. Bias against intersectionality is exacerbated.
+2. Explainability
+    - [Cancer diagnosis](https://highdemandskills.com/explainable-ai/)
+    - [Health Insurance Premium](https://www.ncbi.nlm.nih.gov/pmc/articles/PMC9265373/)
+3. Robustness
+    - [Knight Capital Trading Glitch](https://archive.nytimes.com/dealbook.nytimes.com/2012/08/02/knight-capital-says-trading-mishap-cost-it-440-million/)
+    - [Alexa's Penny Challenge](https://www.bbc.co.uk/news/technology-59810383)
+4. Privacy
+    - [Uber Data Breach](https://www.codecademy.com/article/case-studies-notable-breaches)
+    - [Solar Winds](https://www.codecademy.com/article/case-studies-notable-breaches)
+
+
+### Sources of Bias
+
+![Source: Holistic AI](/sources_of_bias.png)
+
+
+
+structured as follows:
+
+1. Teaching Session:
+    1. 30m Talk: Introduction to **Trustworthy AI**, with a focus on **Bias** and **Fairness** although they touched upon other verticals such as **Explainability**, **Privacy**, and **Robustness**.
+    2. 30min Talk: Sources of Bias. Equality of Opportunity vs Equality of Outcome.
+    3. 20min Talk: Measuring Bias in **Binary Classification**.
+    4. 30min Talk: Mitigating bias in Binary Classification.
+    5. 30min Talk: Trade-offs and other verticals such as Explainability and Robustness.
+2. Practical Session:
+    1. Measure and Mitigate in Binary classification using recruitment data and holisticai library (Equality of Outcome). Several mitigation techniques were explored.
+    2. Measure and Mitigate bias in a face recognition application (Equality of Opportunity).  Several mitigation techniques were explored.
+    3. Explore trade-offs with other verticals, with a focus on explainability (SHAP, LIME, Feature importance)
+

@@ -1,0 +1,244 @@
+---
+title: Summary of the SNEP algorithm
+author: Mauro Camara Escudero
+date: '2020-03-09'
+slug: summary-of-the-snep-algorithm
+categories:
+  - paper-summaries
+  - expectation-propagation
+tags:
+  - snep
+  - natural-gradient
+  - expectation-propagation
+  - mcmc
+subtitle: 'A minimalist and practical introduction.'
+summary: 'Concised summary of Stochastic Natural Gradient Expectation Propagation algorithm by Hasenclever et al.'
+authors: []
+lastmod: '2020-03-09T16:19:31Z'
+featured: no
+image:
+  caption: ''
+  focal_point: ''
+  preview_only: no
+projects: []
+bibliography: bibliography.bib
+---
+\DeclareMathOperator*{\argmin}{arg\,min}
+\newcommand{\vect}[1]{\boldsymbol{\mathbf{#1}}}
+\newcommand{\vd}{\vect{d}}
+\newcommand{\vtheta}{\vect{\theta}}
+\newcommand{\nc}[2]{\newcommand{#1}{#2}}
+\nc{\eval}{\biggr\rvert}
+
+<!-- # The SNEP Algorithm in a Nutshell -->
+# At a Glance
+Coordinate maximization of 
+$$
+\begin{alignat}{2}
+    &\!\max_{\mu_0, [\mu_i, \nu_i, \theta_i']_{i=1}^n}       &\qquad& \left\{\langle\mu_0, \theta_0\rangle + \sum_{i=1}^{n} \langle \nu_i, 1\rangle  - A^*(\mu_0) -\sum_{i=1}^{n} \beta_i[A^*(\mu_i, \nu_i)+ A(\theta_i') - \mu_i^\top \theta_i']\right\}\\
+    &\text{s.t.} &      & (\mu_i, \nu_i)\in \mathcal{M}(s(x), \ell_i(x)) &\forall i=1, \ldots, n\\
+    &            &      & \mu_i = \mu_0  & \forall i=1, \ldots, n\\
+    &            &      & \mu_0\in \mathcal{M}(s(x)) \\
+    &		 	 & 		& \theta_i'\in\Theta
+\end{alignat}
+$$
+
+# Context
+In @SNEP the prior is in the base exponential family
+$$
+p_0(x) = \exp(\theta_0^\top s(x) - A(\theta_0))
+$$
+Each node $i=1, \ldots, n$ has a partition of the data. Local likelihood $\ell_i(x)$ can be formed
+$$
+\ell_i(x) =\sum_{c\in S_i} \log p(y_c \mid x)
+$$
+Posterior can be written as extended exponential family
+$$
+\widetilde{p}(x) \propto p_0(x) \exp\left(\sum_{i=1}^n \ell_i(x)\right) \propto \exp\left(\widetilde{\theta}^\top \widetilde{s}(x) - \widetilde{A}(\widetilde{\theta})\right)
+$$
+where
+$$
+\begin{align}\widetilde{s}(x) &= [s(x), \ell_1(x), \ldots, \ell_n(x)]  &&\Longleftrightarrow \qquad (\phi(x), \Phi^1(x), \ldots, \Phi^{n}(x)) \\\widetilde{\theta} &= [\theta_0, \boldsymbol{1}_n] &&\Longleftrightarrow \qquad (\theta, \widetilde{\theta}^1, \ldots, \widetilde{\theta}^n)\end{align}
+$$
+
+# Aim
+Want to learn the posterior distribution $\widetilde{p}(x)$. Do this by finding the log-partition function and the mean parameters, which completely specify the posterior distribution. Both can be found altogether by solving the variational problem represented by the convex dual. This problem is difficult to solve, so we solve an approximated problem instead.
+
+# Variational Problem
+The approximated problem that we need to solve to find the (approximated) mean parameters and the (approximated) log-partition function is
+$$
+\begin{alignat}{2}
+    &\!\max_{\mu_0, [\mu_i, \nu_i]_{i=1}^n}       &\qquad& \left\{\langle\mu_0, \theta_0\rangle + \sum_{i=1}^{n} \langle \nu_i, 1\rangle  - A^*(\mu_0) -\sum_{i=1}^{n} \beta_i[A^*(\mu_i, \nu_i) - A^*(\mu_i)]\right\}\\
+    &\text{s.t.} &      & (\mu_i, \nu_i)\in \mathcal{M}(s(x), \ell_i(x)) &\forall i=1, \ldots, n\\
+    &            &      & \mu_i = \mu_0  & \forall i=1, \ldots, n\\
+    &            &      & \mu_0\in \mathcal{M}(s(x))
+\end{alignat}
+$$
+Solving this gives an approximation to the posterior that belongs to the exponential family
+$$
+\widetilde{p}(x)\propto \exp\left(\left\langle \theta_0 + \sum_{i=1}^n \lambda_i, s(x)\right\rangle\right)
+$$
+Since exponential family is closed under multiplication (adding up the coefficients), we can interpret this approximation as follows. Each $\lambda_i$ is the natural parameter of an exponential family approximating the intractable likelihood term in site $i$ given by $\exp(\ell_i(x))$.
+
+# Updates
+The **tilted distribution** in each node is given by
+$$
+p_i(x) \propto \exp\left(\left\langle \theta_0 + \sum_{j=1}^n \lambda_j - \frac{\lambda_i}{\beta_i}, s(x) \right\rangle + \left\langle \frac{1}{\beta_i}, \ell_i(x)\right\rangle\right)
+$$
+Therefore at each iteration we compute the mean parameters of the tilted distribution
+$$
+\left(\mathbb{E}_{p_i}[s(X)], \mathbb{E}_{p_i}[\ell_i(X)]\right)  = (\mu_i, \nu_i)
+$$
+and then perform **moment matching** by adjusting $\lambda_i$
+$$
+\lambda_i^{\text{new}} \longleftarrow \nabla_{\mu_i} A^*(\mu_i) - \theta_0 - \sum_{j\neq i} \lambda_j
+$$
+
+In practice, to avoid oscillations, we add some damping
+$$
+\lambda_i^{\text{new}} \longleftarrow \alpha \lambda_i + (1-\alpha)\left(\nabla_{\mu_i} A^*(\mu_i) - \theta_0 - \sum_{j\neq i} \lambda_j\right) \qquad\qquad \text{where } \alpha\in[0, 1]
+$$
+Notice that here $\nabla_{\mu_i} A^*(\mu_i)$ is the natural parameter corresponding to the mean parameter $\mu_i$.
+
+# Stochastic Natural-Gradient Expectation Propagation
+The only difficult step is to compute the mean parameters of the tilted distribution
+$$
+\mathbb{E}_{p_i}\left[(s(X), \ell_i(X)\right]
+$$
+because $\ell_i(x)$ are intractable. For this reason, authors derive **an alternative** to EP and PowerEP. Basically they introduce additional auxiliary natural parameter vector $\theta'$, obtaining a new variational objective function. 
+$$
+\begin{alignat}{2}
+    &\!\max_{\mu_0, [\mu_i, \nu_i, \theta'_i]_{i=1}^n}       &\qquad& \left\{\langle\mu_0, \theta_0\rangle + \sum_{i=1}^{n} \langle \nu_i, 1\rangle  - A^*(\mu_0) -\sum_{i=1}^{n} \beta_i[A^*(\mu_i, \nu_i)+ A(\theta_i') - \mu_i^\top \theta_i']\right\}\\
+    &\text{s.t.} &      & (\mu_i, \nu_i)\in \mathcal{M}(s(x), \ell_i(x)) &\forall i=1, \ldots, n\\
+    &            &      & \mu_i = \mu_0  & \forall i=1, \ldots, n\\
+    &            &      & \mu_0\in \mathcal{M}(s(x)) \\
+    &		 	 & 		& \theta_i'\in\Theta
+\end{alignat}
+$$
+The key is that maximizing this new objective with respect to the auxiliary variables $\theta'$ yields the original problem. To solve this new variational problem they introduce Lagrange multipliers and switch to the dual problem.
+$$
+\begin{alignat}{2}
+    &\!\max_{[\theta_i']_{i=1}^n}\min_{[\lambda_i]_{i=1}^n}   &\qquad& A\left(\theta_0 + \sum_{i=1}^n \lambda_i\right) + \sum_{i=1}^{n} \beta_i\left[A_i\left(\theta_i'-\frac{\lambda_i}{\beta_i}, \frac{1}{\beta_i}\right)- A(\theta_i')\right]\\
+    &\text{s.t.} &   	& \theta_i'\in\Theta \qquad \qquad \forall \, i=1, \ldots, n
+\end{alignat}
+$$
+
+
+
+<!-- # Introduction -->
+<!-- Computation of posterior in Bayesian model is intractable. Approximate schemes include -->
+
+<!-- - Variational Inference [@ExpFamVarInf] -->
+<!-- - Markov Chain Monte Carlo [@MCMCPractice] -->
+<!-- - Sequential Monte Carlo [@SMCPractice] -->
+
+<!-- SNEP builds on top of the Expectation Propagation method developed by @PosteriorSamplingMomentSharing, because the latter method was found to perform poorly on complex models such as Bayesian Deep Neural Networks. -->
+
+<!-- >need to add diagram of algorithm -->
+
+<!-- # Problem Set-up and Background -->
+<!-- ### Prior, Likelihood and Posterior -->
+<!-- **Prior** is in the base exponential family -->
+<!-- $$ -->
+<!-- p_0(x) = \exp(\theta_0^\top s(x) - A(\theta_0)) -->
+<!-- $$ -->
+<!-- And on each node $i=1, \ldots, n$ there is a **log likelihood term** -->
+<!-- $$ -->
+<!-- \ell_i(x) =\sum_{c\in S_i} \log p(y_c \mid x) -->
+<!-- $$ -->
+<!-- Then the **posterior** can be written as part of the _extended exponential family_  -->
+<!-- $$ -->
+<!-- \widetilde{p}(x) \propto p_0(x) \exp\left(\sum_{i=1}^n \ell_i(x)\right) \propto \exp\left(\widetilde{\theta}^\top \widetilde{s}(x) - \widetilde{A}(\widetilde{\theta})\right) -->
+<!-- $$ -->
+<!-- where -->
+<!-- $$ -->
+<!-- \begin{align}\widetilde{s}(x) &= [s(x), \ell_1(x), \ldots, \ell_n(x)]  &&\Longleftrightarrow \qquad (\phi(x), \Phi^1(x), \ldots, \Phi^{n}(x)) \\\widetilde{\theta} &= [\theta_0, \boldsymbol{1}_n] &&\Longleftrightarrow \qquad (\theta, \widetilde{\theta}^1, \ldots, \widetilde{\theta}^n)\end{align} -->
+<!-- $$ -->
+
+<!-- ### Extended and Augmented Variational Problem -->
+<!-- The _extended_ variational problem to be solved is -->
+<!-- $$ -->
+<!-- \max_{\widetilde{\mu}\in\widetilde{\mathcal{M}}} \widetilde{\theta}^\top \widetilde{\mu} - \widetilde{A}^*(\widetilde{\mu}) -->
+<!-- $$ -->
+<!-- This can be **relaxed** by  -->
+
+<!-- - optimizing over an _outer bound_ of $\widetilde{\mathcal{M}}$ and  -->
+<!-- - approximating $-\widetilde{A}^*(\widetilde{\mu})$ with a _term-by-term approximation_  -->
+
+<!-- Leading to the following **optimization problem** -->
+<!-- $$ -->
+<!-- \begin{alignat}{2} -->
+<!--     &\!\max_{\mu_0, [\mu_i, \nu_i]_{i=1}^n}       &\qquad& \left\{\langle\mu_0, \theta_0\rangle + \sum_{i=1}^{n} \langle \nu_i, 1\rangle  - A^*(\mu_0) -\sum_{i=1}^{n} \beta_i[A^*(\mu_i, \nu_i) - A^*(\mu_i)]\right\}\\ -->
+<!--     &\text{s.t.} &      & (\mu_i, \nu_i)\in \mathcal{M}(s(x), \ell_i(x)) &\forall i=1, \ldots, n\\ -->
+<!--     &            &      & \mu_i = \mu_0  & \forall i=1, \ldots, n\\ -->
+<!--     &            &      & \mu_0\in \mathcal{M}(s(x)) -->
+<!-- \end{alignat} -->
+<!-- $$ -->
+
+<!-- ### Solving the Optimization Problem -->
+
+<!-- This is solved by forming the **Lagrangian** for the equality conditions -->
+<!-- $$ -->
+<!-- L = \langle\mu_0, \theta_0\rangle + \sum_{i=1}^{n} \langle \nu_i, 1\rangle  - A^*(\mu_0) -\sum_{i=1}^{n} \beta_i[A^*(\mu_i, \nu_i) - A^*(\mu_i)] - \sum_{i=1}^n\langle\lambda_i, \mu_i-\mu_0\rangle -->
+<!-- $$ -->
+<!-- find its derivatives and setting them to zero. -->
+<!-- $$ -->
+<!-- \begin{align} -->
+<!-- 	\nabla_{\mu_0}L  -->
+<!-- 	&= \theta_0-\nabla_{\mu_0}A^*(\mu_0) + \sum_{i=1}^n \lambda_i  -->
+<!-- 	&&\implies  \nabla_{\mu_0} A^*(\mu_0)  -->
+<!-- 	=&&& \theta_0 + \sum_{i=1}^n \lambda_i \\ -->
+<!-- 	\nabla_{\lambda_j} L  -->
+<!-- 	&= \mu_0 - \mu_j  -->
+<!-- 	&&\implies \mu_j  -->
+<!-- 	=&&& \mu_0 \\ -->
+<!-- 	\nabla_{\mu_j} L  -->
+<!-- 	&= -\beta_j\nabla_{\mu_j}A^*(\mu_j, \nu_j) + \beta_j \nabla_{\mu_j}A^*(\mu_j) - \lambda_j  -->
+<!-- 	&&\implies \nabla_{\mu_j} A^*(\mu_j, \nu_j)  -->
+<!-- 	=&&& \theta_0  + \sum_{i=1}^n \lambda_i - \frac{\lambda_j}{\beta_j} \\ -->
+<!-- 	\nabla_{\nu_j} L  -->
+<!-- 	&= 1 - \beta_j\nabla_{\nu_j}A^*(\mu_j, \nu_j)  -->
+<!-- 	&&\implies \nabla_{\nu_j} A^*(\mu_j, \nu_j)  -->
+<!-- 	=&&& \frac{1}{\beta_j} -->
+<!-- \end{align} -->
+<!-- $$ -->
+
+<!-- ### Interpreting the Solutions -->
+
+<!-- **Posterior** can be approximated by -->
+<!-- $$ -->
+<!-- \widetilde{p}(x)\propto \exp\left(\left\langle \theta_0 + \sum_{i=1}^n \lambda_i, s(x)\right\rangle\right) -->
+<!-- $$ -->
+<!-- Basically each $\lambda_i$ is the natural parameter of an exponential family approximating the intractable likelihood term in site $i$ given by $\exp(\ell_i(x))$.  -->
+<!-- The **tilted** distribution at site $i$ corresponds to the $(s(x), \ell_i(x))$-Exponential Family and thus is given by -->
+<!-- $$ -->
+<!-- \begin{align} -->
+<!-- p_i(x) &\propto \exp\left(\left\langle \left[\theta_0 + \sum_{j=1}^n \lambda_j - \frac{\lambda_i}{\beta_i}, \frac{1}{\beta_i}\right] , [s(x), \ell_i(x)]\right\rangle\right) \\ -->
+<!-- & \propto \exp\left(\left\langle \theta_0 + \sum_{j=1}^n \lambda_j - \frac{\lambda_i}{\beta_i}, s(x) \right\rangle + \left\langle \frac{1}{\beta_i}, \ell_i(x)\right\rangle\right) -->
+<!-- \end{align} -->
+<!-- $$ -->
+
+
+<!-- # Mathematical Background -->
+<!-- ### Natural Gradient Descent -->
+<!-- - **Fisher Information Matrix**: Measures the curvature of $\ell(\theta\mid x)$. Often used as replacement of $H_{\ell(\theta\mid x)}$ in second order optimization methods. -->
+<!--   - **Variance** of the score (gradient of log-likelihood) $F = \mathbb{E}_{\mathcal{L}(\theta\mid x)}\left[\nabla_\theta\ell(\theta\mid x)\,\nabla_\theta\ell(\theta\mid x)^\top\right]$ -->
+<!--   - Negative expected **Hessian** for the log-likelihood $F = -\mathbb{E}_{\mathcal{L}(\theta\mid x)}\left[H_{\ell(\theta\mid x)}\right]$ -->
+<!--   - Hessian (with respect to $\theta'$) of the **KL divergence** between $\mathcal{L}(\theta\mid x)$ and $\mathcal{L}(\theta'\mid x)$ evaluated at $\theta' = \theta$. -->
+<!--   $$ -->
+<!--   F = \nabla_{\theta'}\text{KL}(\mathcal{L}(\theta\mid x) \parallel \mathcal{L}(\theta'\mid x)\eval_{\theta' = \theta} -->
+<!--   $$ -->
+<!-- - **Steepest Descent**: Steepest direction minimizing $-\ell(\theta\mid x)$ is the solution of an optimization problem depending on the norm $\parallel \vd \parallel$. Different norms dive different solutions -->
+<!-- $$ -->
+<!-- \vd^* = \arg \min_{\vd\,:\, \parallel \vd \parallel = 1} -\nabla_\theta \ell(\theta \mid x)^\top \vd -->
+<!-- $$ -->
+
+<!-- - **Natural Gradient**: Use KL-divergence as a "metric" in the distribution space. Although asymmetric, as $\vd$ goes to zero, KL approximately symmetric. Steepest descent direction  $\vd^* = -F^{-1}\nabla_\theta \ell(\theta\mid x)$ is the solution of -->
+<!-- $$ -->
+<!-- \vd^* = \arg\min_{\vd \,:\, \text{KL}(\mathcal{L}(\theta) \parallel \mathcal{L}(\theta')) = c} -\nabla_\theta \ell(\theta \mid x)^\top \vd -->
+<!-- $$ -->
+
+
+
+
+# Bibliography

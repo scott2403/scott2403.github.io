@@ -1,0 +1,81 @@
+---
+title: Integrator Snippets Formulas
+author: Mauro Camara Escudero
+date: '2024-01-29'
+slug: integrator_snippets
+subtitle: 'Various bits of knowledge about integrator snippets.'
+summary: ''
+authors: []
+lastmod: '2024-01-29T14:34:07+01:00'
+featured: no
+image:
+  caption: ''
+  focal_point: ''
+  preview_only: no
+projects: []
+---
+$
+\newcommand{\Rbb}{\mathbb{R}}
+\newcommand{\Asf}{\mathsf{A}}
+\newcommand{\Bsf}{\mathsf{B}}
+\newcommand{\Ysf}{\mathsf{Y}}
+\newcommand{\Zsf}{\mathsf{Z}}
+\newcommand{\Bcal}{\mathcal{B}}
+\newcommand{\Ycal}{\mathcal{Y}}
+\newcommand{\Zcal}{\mathcal{Z}}
+$
+
+# Pushforwards
+
+## Definitions
+### Pushforward definition
+Let $(\Zsf, \Zcal)$ and $(\Ysf, \Ycal)$ be measurable spaces, $\psi:\Zsf\to\Ysf$ be a $\Zcal/\Ycal$-measurable function, and $\mu$ be a measure on $(\Zsf, \Zcal)$. The function $\mu^{\psi}:\Ycal\to[0,1]$ defined as
+$$
+\mu^{\psi}(\Bsf) = \mu\left(\left\{z\in\Zsf\,:\, \psi(z) \in \Bsf\right\}\right) \qquad \forall\,\,\Bsf\in\Ycal
+$$
+is also a measure and we refer to it as pushforward measure
+
+### Radon-Nikodym Theorem
+Let $(\Zsf, \Zcal)$ be a measurable space and $\mu$ and $\upsilon$ be two sigma-finite measures on it. If $\mu\ll\upsilon$ then there exists a $\Zcal$-measurable function $d\mu/d\upsilon:\Zsf\to[0, \infty)$ such that for any $\Asf\in\Zcal$
+$$
+\mu(\Asf) = \int_\Asf \frac{d\mu}{d\upsilon}(z) \upsilon(dz).
+$$
+
+## Consequences
+### Same normalising constant
+Simply set $\Bsf = \Ysf$ in the definition of pushforward distribution
+$$
+\mu^{\psi}(\Ysf) = \mu\left(\left\{z\in\Zsf\,:\, \psi(z)\in\Ysf\right\}\right) = \mu\left(\Zsf\right).
+$$
+In particular, if $\mu$ is a probability measure, then so is $\mu^{\psi}$.
+
+### Density of the pushforward distribution
+Let $\Asf\in\Zcal$ and assume there is a reference measure $\upsilon$ on $(\Zsf, \Zcal)$ such that $\mu^{\psi}\ll \upsilon$ and such that $\upsilon^{\psi} \ll \upsilon$. Then by the Radon-Nikodym theorem there exists a measurable function $d\mu^{\psi}/d\upsilon:\Zsf\to[0, +\infty)$ such that
+$$
+\begin{align}
+    \mu^{\psi}(\Asf)
+    &= \int_\Asf \frac{d\mu^{\psi}}{d\upsilon}(z)\upsilon(dz).
+\end{align}
+$$
+We can write the LHS differently
+$$
+\begin{align}
+    \mu^{\psi}(\Asf)
+    &= \int_\Asf \mu^{\psi}(dz) \\
+    &= \int_\Zsf \mathbb{1}_\Asf(z) \mu^\psi(dz) \\
+    &= \int_{\psi(\Zsf)} \mathbb{1}_\Asf(\psi(z)) \mu(dz) && \text{change of variables} \\
+    &= \int_\Zsf \mathbb{1}_\Asf(\psi(z)) \frac{d\mu}{d\upsilon}(z) \upsilon(dz) && \psi(\Zsf)=\Zsf \text{ and RN theorem} \\
+    &= \int_\Zsf \mathbb{1}_\Asf(\psi(z)) \frac{d\mu}{d\upsilon}(z) \upsilon^{\psi^{\psi^{-1}}}(dz) \\
+    &= \int_{\psi^{-1}(\Zsf)} \mathbb{1}_\Asf(z) \frac{d\mu}{d\upsilon}\circ\psi^{-1}(z) \upsilon^{\psi}(dz) \\
+    &= \int_\Asf \frac{d\mu}{d\upsilon}\circ\psi^{-1}(z)\frac{d\upsilon^\psi}{d\upsilon}(z)\upsilon(dz) && \psi^{-1}(\Zsf)=\Zsf \text{ and } \upsilon^{\psi} \ll \upsilon
+\end{align}
+$$
+By the uniqueness of the Radon-Nikodym theorem we obtain
+$$
+\frac{d\mu^\psi}{d\upsilon}(z) = \frac{d\mu}{d\upsilon}\circ \psi^{-1}(z) \frac{d\upsilon^{\psi}}{d\upsilon}(z) \qquad \upsilon-\text{almost everywhere}.
+$$
+In particular, when $\upsilon$ is the Lebesgue measure, and if we use the same symbols for densities and measures we get the familiar form for the density of the pushforward
+$$
+\mu^\psi(z) = \mu(\psi^{-1}(z)) |\det \mathrm{J}_{\psi^{-1}}(z)|.
+$$
+Additionally, notice that while $\upsilon^\psi = \upsilon$ implies $\upsilon^\psi \ll \upsilon$ (and, of course, $\upsilon \ll \upsilon^\psi$), the reverse is not necessarily true. That is, we can have $\upsilon^\psi \ll \upsilon$ without volume preservation $\upsilon^\psi = \upsilon$.

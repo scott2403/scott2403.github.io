@@ -1,0 +1,50 @@
+---
+title: PhD Thesis Code
+author: Mauro Camara Escudero
+date: '2024-01-29'
+slug: code
+categories:
+  - abc
+  - smc
+  - mcmc
+tags:
+  - abc
+  - smc
+  - mcmc
+subtitle: 'Code to reproduce the examples in the thesis.'
+summary: ''
+authors: []
+lastmod: '2024-01-29T14:34:07+01:00'
+featured: no
+image:
+  caption: ''
+  focal_point: ''
+  preview_only: no
+projects: []
+---
+I will slowly populate this page with all things code regarding my PhD thesis. Contact me if you find any typos, as I am rewriting this code at an ungodly hour before submission.
+
+1. Quick, easy, simple code to check your understanding.
+    - [THUG sampler](https://colab.research.google.com/drive/1x8_sjd5zMat6ECRdX_PaiDREUzbTG1uG?usp=sharing)
+    - [SMC with a mixture of THUG and NHUG](https://colab.research.google.com/drive/15cW5SylXrvni1Es-l2BTRh396VXrRKIB?usp=sharing)
+    - [GHUMS](https://colab.research.google.com/drive/1Jxr_H0C7Ja_PYBbHlxELI_vq4sOt_zCZ?usp=sharing)
+    - [QQIS](https://maurocamaraescudero.netlify.app/qqis) Quasi-Quantum Integrator Snippet a $\mathcal{O}(1)$ algorithm for instant Bayesian inference. Unfortunately, I did not have time to include this into the thesis.
+2. Reproduce the experiments/figures in the thesis.
+    - Chapter 2
+    - Chapter 3
+      - 
+3. Off-the-shelf implementation: [IntegratorSnippets](https://github.com/MauroCE/IntegratorSnippets) repository, soon to be transformed into a Python Package. For now, it handles integrator snippets for filamentary distributions. Tempered distributions are coming soon.
+
+### Why have I structured the code this way?
+I believe there are two reasons researchers check out a paper's accompanying code:
+
+1. They want to check how something is implemented, perhaps they have not understood something in the text.
+2. They want to use the code to either reproduce the experiments or to apply it seemlessly into their application.
+
+Something that has frustrated me a lot has been that these two aims have been muddled up together, and I think this is counterproductive. People in the first group want to simply check their understanding, people in the second group don't necessarily need to understand the inner working of the algorithm, they just want a quick-and-easy way to test if the algorithm works in their application. I claim these are two entirely different tasks which are usually solved together. As a result, huge well-crafted Python packages are typically created which can be incredibly hard to read, but very easy to use for simple purposes, but hard to adapt. This is what I believe that a researcher aiming to check their understanding or see how an algorithm is implemented should take less than one minute to find the relevant part of the code.
+
+For instance the [THUG Sampler Colab Notebook](https://colab.research.google.com/drive/1x8_sjd5zMat6ECRdX_PaiDREUzbTG1uG?usp=sharing)'s aim is to maximise readability and minimize time spent looking for the revelant part of the code. For this reason, I have imported most NumPy functions to create less visual clutter, and I have minimised commenting (which was painful to do, since I love creating helpful docstrings and typing the variables). This code is definitely not optimised.
+
+
+
+

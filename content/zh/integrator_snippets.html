@@ -1,0 +1,85 @@
+---
+title: Integrator Snippets Formulas
+author: Mauro Camara Escudero
+date: '2024-01-29'
+slug: integrator_snippets
+subtitle: 'Various bits of knowledge about integrator snippets.'
+summary: ''
+authors: []
+lastmod: '2024-01-29T14:34:07+01:00'
+featured: no
+image:
+  caption: ''
+  focal_point: ''
+  preview_only: no
+projects: []
+---
+
+
+
+<p>$
+$</p>
+<div id="pushforwards" class="section level1">
+<h1>Pushforwards</h1>
+<div id="definitions" class="section level2">
+<h2>Definitions</h2>
+<div id="pushforward-definition" class="section level3">
+<h3>Pushforward definition</h3>
+<p>Let <span class="math inline">\((\mathsf{Z}, \mathcal{Z})\)</span> and <span class="math inline">\((\mathsf{Y}, \mathcal{Y})\)</span> be measurable spaces, <span class="math inline">\(\psi:\mathsf{Z}\to\mathsf{Y}\)</span> be a <span class="math inline">\(\mathcal{Z}/\mathcal{Y}\)</span>-measurable function, and <span class="math inline">\(\mu\)</span> be a measure on <span class="math inline">\((\mathsf{Z}, \mathcal{Z})\)</span>. The function <span class="math inline">\(\mu^{\psi}:\mathcal{Y}\to[0,1]\)</span> defined as
+<span class="math display">\[
+\mu^{\psi}(\mathsf{B}) = \mu\left(\left\{z\in\mathsf{Z}\,:\, \psi(z) \in \mathsf{B}\right\}\right) \qquad \forall\,\,\mathsf{B}\in\mathcal{Y}
+\]</span>
+is also a measure and we refer to it as pushforward measure</p>
+</div>
+<div id="radon-nikodym-theorem" class="section level3">
+<h3>Radon-Nikodym Theorem</h3>
+<p>Let <span class="math inline">\((\mathsf{Z}, \mathcal{Z})\)</span> be a measurable space and <span class="math inline">\(\mu\)</span> and <span class="math inline">\(\upsilon\)</span> be two sigma-finite measures on it. If <span class="math inline">\(\mu\ll\upsilon\)</span> then there exists a <span class="math inline">\(\mathcal{Z}\)</span>-measurable function <span class="math inline">\(d\mu/d\upsilon:\mathsf{Z}\to[0, \infty)\)</span> such that for any <span class="math inline">\(\mathsf{A}\in\mathcal{Z}\)</span>
+<span class="math display">\[
+\mu(\mathsf{A}) = \int_\mathsf{A}\frac{d\mu}{d\upsilon}(z) \upsilon(dz).
+\]</span></p>
+</div>
+</div>
+<div id="consequences" class="section level2">
+<h2>Consequences</h2>
+<div id="same-normalising-constant" class="section level3">
+<h3>Same normalising constant</h3>
+<p>Simply set <span class="math inline">\(\mathsf{B}= \mathsf{Y}\)</span> in the definition of pushforward distribution
+<span class="math display">\[
+\mu^{\psi}(\mathsf{Y}) = \mu\left(\left\{z\in\mathsf{Z}\,:\, \psi(z)\in\mathsf{Y}\right\}\right) = \mu\left(\mathsf{Z}\right).
+\]</span>
+In particular, if <span class="math inline">\(\mu\)</span> is a probability measure, then so is <span class="math inline">\(\mu^{\psi}\)</span>.</p>
+</div>
+<div id="density-of-the-pushforward-distribution" class="section level3">
+<h3>Density of the pushforward distribution</h3>
+<p>Let <span class="math inline">\(\mathsf{A}\in\mathcal{Z}\)</span> and assume there is a reference measure <span class="math inline">\(\upsilon\)</span> on <span class="math inline">\((\mathsf{Z}, \mathcal{Z})\)</span> such that <span class="math inline">\(\mu^{\psi}\ll \upsilon\)</span> and such that <span class="math inline">\(\upsilon^{\psi} \ll \upsilon\)</span>. Then by the Radon-Nikodym theorem there exists a measurable function <span class="math inline">\(d\mu^{\psi}/d\upsilon:\mathsf{Z}\to[0, +\infty)\)</span> such that
+<span class="math display">\[
+\begin{align}
+    \mu^{\psi}(\mathsf{A})
+    &amp;= \int_\mathsf{A}\frac{d\mu^{\psi}}{d\upsilon}(z)\upsilon(dz).
+\end{align}
+\]</span>
+We can write the LHS differently
+<span class="math display">\[
+\begin{align}
+    \mu^{\psi}(\mathsf{A})
+    &amp;= \int_\mathsf{A}\mu^{\psi}(dz) \\
+    &amp;= \int_\mathsf{Z}\mathbb{1}_\mathsf{A}(z) \mu^\psi(dz) \\
+    &amp;= \int_{\psi(\mathsf{Z})} \mathbb{1}_\mathsf{A}(\psi(z)) \mu(dz) &amp;&amp; \text{change of variables} \\
+    &amp;= \int_\mathsf{Z}\mathbb{1}_\mathsf{A}(\psi(z)) \frac{d\mu}{d\upsilon}(z) \upsilon(dz) &amp;&amp; \psi(\mathsf{Z})=\mathsf{Z}\text{ and RN theorem} \\
+    &amp;= \int_\mathsf{Z}\mathbb{1}_\mathsf{A}(\psi(z)) \frac{d\mu}{d\upsilon}(z) \upsilon^{\psi^{\psi^{-1}}}(dz) \\
+    &amp;= \int_{\psi^{-1}(\mathsf{Z})} \mathbb{1}_\mathsf{A}(z) \frac{d\mu}{d\upsilon}\circ\psi^{-1}(z) \upsilon^{\psi}(dz) \\
+    &amp;= \int_\mathsf{A}\frac{d\mu}{d\upsilon}\circ\psi^{-1}(z)\frac{d\upsilon^\psi}{d\upsilon}(z)\upsilon(dz) &amp;&amp; \psi^{-1}(\mathsf{Z})=\mathsf{Z}\text{ and } \upsilon^{\psi} \ll \upsilon
+\end{align}
+\]</span>
+By the uniqueness of the Radon-Nikodym theorem we obtain
+<span class="math display">\[
+\frac{d\mu^\psi}{d\upsilon}(z) = \frac{d\mu}{d\upsilon}\circ \psi^{-1}(z) \frac{d\upsilon^{\psi}}{d\upsilon}(z) \qquad \upsilon-\text{almost everywhere}.
+\]</span>
+In particular, when <span class="math inline">\(\upsilon\)</span> is the Lebesgue measure, and if we use the same symbols for densities and measures we get the familiar form for the density of the pushforward
+<span class="math display">\[
+\mu^\psi(z) = \mu(\psi^{-1}(z)) |\det \mathrm{J}_{\psi^{-1}}(z)|.
+\]</span>
+Additionally, notice that while <span class="math inline">\(\upsilon^\psi = \upsilon\)</span> implies <span class="math inline">\(\upsilon^\psi \ll \upsilon\)</span> (and, of course, <span class="math inline">\(\upsilon \ll \upsilon^\psi\)</span>), the reverse is not necessarily true. That is, we can have <span class="math inline">\(\upsilon^\psi \ll \upsilon\)</span> without volume preservation <span class="math inline">\(\upsilon^\psi = \upsilon\)</span>.</p>
+</div>
+</div>
+</div>

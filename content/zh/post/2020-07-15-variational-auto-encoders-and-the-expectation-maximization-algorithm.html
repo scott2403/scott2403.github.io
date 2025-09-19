@@ -1,0 +1,269 @@
+---
+title: Variational Auto-Encoders and the Expectation-Maximization Algorithm
+author: Mauro Camara Escudero
+date: '2020-07-15'
+slug: variational-auto-encoders-and-the-expectation-maximization-algorithm
+categories:
+  - vae
+  - variational-auto-encoders
+  - variational-inference
+tags:
+  - variational-inference
+  - vae
+  - variational-auto-encoders
+subtitle: 'Relationship between Variational Autoencoders (VAE) and the Expectation Maximization Algorithm'
+summary: 'Relationship between Variational Autoencoders (VAE) and the Expectation Maximization Algorithm. Simple Explanation'
+authors: []
+lastmod: '2020-07-15T16:02:46+01:00'
+featured: no
+image:
+  caption: ''
+  focal_point: ''
+  preview_only: no
+projects: []
+bibliography: biblio_vae.bib
+nocite: |
+  @ermon, @machine_thoughts_2017
+---
+
+
+
+
+<div id="latent-variable-models-lvm" class="section level2">
+<h2>Latent Variable Models (LVM)</h2>
+<p>Suppose we observe some data <span class="math inline">\(\mathcal{D}= \{\boldsymbol{\mathbf{x}}_1, \ldots, \boldsymbol{\mathbf{x}}_N\}\)</span>. Often we know that what we have observed is only part of the whole picture, and to understand the system at hand we have to introduce some latent variables. Consider, for now, a single data point <span class="math inline">\(\boldsymbol{\mathbf{x}}\)</span> and its corresponding latent variables <span class="math inline">\(\boldsymbol{\mathbf{z}}\)</span>. Then, we might be interested in the following three tasks.</p>
+<ul>
+<li><strong>Generative Modelling</strong>: Generating samples from the following distributions, efficiently.
+<span class="math display">\[
+p_{\boldsymbol{\mathbf{\theta}}}(\boldsymbol{\mathbf{x}})= \int p_{\boldsymbol{\mathbf{\theta}}}(\boldsymbol{\mathbf{x}}, \boldsymbol{\mathbf{z}})d\boldsymbol{\mathbf{z}}
+\]</span></li>
+<li><strong>Posterior Inference</strong>: Modelling the posterior distribution over the latent variables.
+<span class="math display">\[
+p_{\boldsymbol{\mathbf{\theta}}}(\boldsymbol{\mathbf{z}}\mid \boldsymbol{\mathbf{x}})= \frac{p_{\boldsymbol{\mathbf{\theta}}}(\boldsymbol{\mathbf{x}}, \boldsymbol{\mathbf{z}})}{p_{\boldsymbol{\mathbf{\theta}}}(\boldsymbol{\mathbf{x}})}
+\]</span></li>
+<li><strong>Parameter Estimation</strong>: Performing Maximum Likelihood Estimation (MLE) or Maximum-A-Posteriori estimation (MAP) for the parameter <span class="math inline">\(\boldsymbol{\mathbf{\theta}}\)</span>:
+<span class="math display">\[
+\boldsymbol{\mathbf{\theta}}^{*}= \arg \max_{\boldsymbol{\mathbf{\theta}}} \prod_{\boldsymbol{\mathbf{x}}\in\mathcal{D}}p_{\boldsymbol{\mathbf{\theta}}}(\boldsymbol{\mathbf{x}})\quad \text{or} \quad \boldsymbol{\mathbf{\theta}}^{*} = \arg\max_{\boldsymbol{\mathbf{\theta}}} \left[\prod_{\boldsymbol{\mathbf{x}}\in\mathcal{D}}p_{\boldsymbol{\mathbf{\theta}}}(\boldsymbol{\mathbf{x}})\right]p(\boldsymbol{\mathbf{\theta}})
+\]</span></li>
+</ul>
+<p>The settings and problems described above are quite standard and of widespread interest. One method to perform Maximum Likelihood Estimation in Latent Variable Models is the <strong>Expectation-Maximization</strong> algorithm, while a method to perform posterior inference is <strong>Mean-Field Variational Inference</strong>.</p>
+</div>
+<div id="expectation-maximization-algorithm-for-maximum-likelihood-estimation" class="section level2">
+<h2>Expectation-Maximization Algorithm for Maximum Likelihood Estimation</h2>
+<p>Suppose that, for some reason, we have a fairly good estimate for the parameter, let’s call this guess <span class="math inline">\(\widehat{\boldsymbol{\mathbf{\theta}}}\)</span>. How can we improve this guess? One way to go about this is to use <span class="math inline">\(\widehat{\boldsymbol{\mathbf{\theta}}}\)</span> to construct the posterior distribution at each data point
+<span class="math display">\[
+\left\{p_{\widehat{\boldsymbol{\mathbf{\theta}}}}(\boldsymbol{\mathbf{z}}\mid \boldsymbol{\mathbf{x}}) \,\,:\,\, \boldsymbol{\mathbf{x}}\in\mathcal{D}\right\}
+\]</span>
+And then we find an updated and improved parameter value by maximizing the expected complete-data log likelihood
+<span class="math display">\[
+\arg\max_{\boldsymbol{\mathbf{\theta}}} \mathbb{E}_{p_{\widehat{\boldsymbol{\mathbf{\theta}}}}(\boldsymbol{\mathbf{z}}\mid \boldsymbol{\mathbf{x}})}\left[\log p_{\boldsymbol{\mathbf{\theta}}}(\boldsymbol{\mathbf{x}}, \boldsymbol{\mathbf{z}})\right]
+\]</span>
+That is, rather than maximizing the incomplete-data likelihood <span class="math inline">\(p_{\widehat{\boldsymbol{\mathbf{\theta}}}}(\boldsymbol{\mathbf{x}})\)</span>, we maximize the joint likelihood <span class="math inline">\(p_{\widehat{\boldsymbol{\mathbf{\theta}}}}(\boldsymbol{\mathbf{x}}, \boldsymbol{\mathbf{z}})\)</span>, but since we don’t actually have the latent variables <span class="math inline">\(\boldsymbol{\mathbf{z}}\)</span> we average this complete-data likelihood with respect to the posterior of the latent variables given the data and the parameter value <span class="math inline">\(p_{\widehat{\boldsymbol{\mathbf{\theta}}}}(\boldsymbol{\mathbf{z}}\mid\boldsymbol{\mathbf{x}})\)</span>. By iterating this proceedure we obtain the following algorithm.</p>
+<ul>
+<li>Initialize <span class="math inline">\(\boldsymbol{\mathbf{\theta}}^{(0)}\)</span> and set <span class="math inline">\(t=0\)</span>.</li>
+<li>Until convergence:
+<ul>
+<li>Compute posterior distribution of the latent variables given the observations
+<span class="math display">\[
+\left\{p_{\boldsymbol{\mathbf{\theta}}^{(t)}}(\boldsymbol{\mathbf{z}}\mid \boldsymbol{\mathbf{x}}) \,\,:\,\, \boldsymbol{\mathbf{x}}\in\mathcal{D}\right\}
+\]</span></li>
+<li>Choose new parameter value <span class="math inline">\(\boldsymbol{\mathbf{\theta}}^{(t+1)}\)</span> so that it maximises
+<span class="math display">\[
+\sum_{\boldsymbol{\mathbf{x}}\in\mathcal{D}} \mathbb{E}_{p_{\boldsymbol{\mathbf{\theta}}^{(t)}}(\boldsymbol{\mathbf{z}}\mid \boldsymbol{\mathbf{x}})}\left[\log p_{\boldsymbol{\mathbf{\theta}}}(\boldsymbol{\mathbf{x}}, \boldsymbol{\mathbf{z}})\right]
+\]</span></li>
+</ul></li>
+</ul>
+<blockquote>
+<p><strong>Problem</strong>: The EM Algorithm breaks if <span class="math inline">\(p_{\boldsymbol{\mathbf{\theta}}^{(t)}}(\boldsymbol{\mathbf{z}}\mid \boldsymbol{\mathbf{x}})\)</span> are intractable.</p>
+</blockquote>
+</div>
+<div id="mean-field-variational-inference-for-posterior-inference" class="section level2">
+<h2>Mean-Field Variational Inference for Posterior Inference</h2>
+<p>A well-known method, alternative to MCMC, for posterior inference if Mean-Field Variational Inference. In Variational Inference we essentially define a family of distributions that we think is somehow representative of the true posterior distribution <span class="math inline">\(p_{\boldsymbol{\mathbf{\theta}}}(\boldsymbol{\mathbf{z}}\mid \boldsymbol{\mathbf{x}})\)</span>. Then, we choose the member of that family that is closest, in some sense, to the true posterior. In Mean-Field Variational Inference we assume that such a family of distributions is factorized into a product of terms, one for each data point.</p>
+<p><span class="math display">\[
+\prod_{i=1}^{N} q_{\boldsymbol{\mathbf{\phi}}_i}(\boldsymbol{\mathbf{z}}_i) \approx \prod_{i=1}^N p_{\boldsymbol{\mathbf{\theta}}}(\boldsymbol{\mathbf{z}}_i \mid \boldsymbol{\mathbf{x}})
+\]</span></p>
+<p>We can see that each factor in the product on the RHS is described by a vector of parameters <span class="math inline">\(\boldsymbol{\mathbf{\phi}}_i\)</span>. Usually, to judge how close each member of the chosen family is to the true posterior, we use the KL-divergence. This means that we need to solve an optimization problem for each factor in the approximation, i.e. for each data point
+<span class="math display">\[
+\boldsymbol{\mathbf{\phi}}^*_i = \arg\min_{\boldsymbol{\mathbf{\phi}}_i} \text{KL}(q_{\boldsymbol{\mathbf{\phi}}_i}(\boldsymbol{\mathbf{z}}\mid\boldsymbol{\mathbf{x}})\,\,||\,\,p_{\boldsymbol{\mathbf{\theta}}}(\boldsymbol{\mathbf{z}}\mid \boldsymbol{\mathbf{x}})).
+\]</span></p>
+<blockquote>
+<p><strong>Problem</strong>: It clearly doesn’t scale well with large datasets and it breaks if <span class="math inline">\(\mathbb{E}_{q_{\boldsymbol{\mathbf{\phi}}_i}}\left[\cdot\right]\)</span> are intractable.</p>
+</blockquote>
+<p>Ideally, we would like to use only one vector of parameter <span class="math inline">\(\boldsymbol{\mathbf{\phi}}\)</span>, which is shared across data points. This is called <strong>amortized inference</strong>.</p>
+</div>
+<div id="variational-autoencoders-at-a-glance" class="section level2">
+<h2>Variational Autoencoders at a Glance</h2>
+<p>So what are Variational Autoencoders or Auto-Encoding Variational Bayes?? Below is a summary of what they are and what they are used for.</p>
+<ul>
+<li><strong>What is AEVB used for?</strong> Inference and Generative Modelling in LVMs.</li>
+<li><strong>How do AEVBs work?</strong> Optimization of an unbiased estimator of an objective function using SGD.</li>
+<li><strong>What are VAEs?</strong> They are AEVB where the probability distributions in the LVM are <em>parametrized</em> by Neural Networks.</li>
+</ul>
+</div>
+<div id="auto-encoding-variational-bayes-objective-function" class="section level2">
+<h2>Auto-Encoding Variational Bayes Objective Function</h2>
+<p>In this section, we derive the objective function of AEVB. First, let us introduce a so-called <strong>recognition model</strong> <span class="math inline">\(q_{\boldsymbol{\mathbf{\phi}}}(\boldsymbol{\mathbf{z}}\mid\boldsymbol{\mathbf{x}})\)</span>. This is a chosen distribution that we want to use to approximate the true posterior distribution <span class="math inline">\(p_{\boldsymbol{\mathbf{\theta}}}(\boldsymbol{\mathbf{z}}\mid \boldsymbol{\mathbf{x}})\)</span>, similar to how we did it for Mean-Field Variational Inference. The key difference here is that instead of having a different vector of parameters for each data point, we share a single vector of parameters across data points. Then, we consider the KL divergence between this approximating distribution and the true posterior</p>
+<p><span class="math display">\[\begin{align*}
+  \text{KL}(q_{\boldsymbol{\mathbf{\phi}}}(\boldsymbol{\mathbf{z}}\mid \boldsymbol{\mathbf{x}})\,\,||\,\,p_{\boldsymbol{\mathbf{\theta}}}(\boldsymbol{\mathbf{z}}\mid \boldsymbol{\mathbf{x}})) 
+  &amp;= \mathbb{E}_{q_{\boldsymbol{\mathbf{\phi}}}}\left[\log q_{\boldsymbol{\mathbf{\phi}}}(\boldsymbol{\mathbf{z}}\mid \boldsymbol{\mathbf{x}})- \log p_{\boldsymbol{\mathbf{\theta}}}(\boldsymbol{\mathbf{z}}\mid \boldsymbol{\mathbf{x}})\right] \\
+  &amp;= -\mathbb{E}_{q_{\boldsymbol{\mathbf{\phi}}}}\left[\log\left(\frac{p_{\boldsymbol{\mathbf{\theta}}}(\boldsymbol{\mathbf{x}}, \boldsymbol{\mathbf{z}})}{q_{\boldsymbol{\mathbf{\phi}}}(\boldsymbol{\mathbf{z}}\mid \boldsymbol{\mathbf{x}})}\right)\right] + \log p_{\boldsymbol{\mathbf{\theta}}}(\boldsymbol{\mathbf{x}})\\
+  &amp;:= -\mathcal{L}_{\theta, \boldsymbol{\mathbf{\phi}}}(\boldsymbol{\mathbf{x}})+ \log p_{\boldsymbol{\mathbf{\theta}}}(\boldsymbol{\mathbf{x}})
+\end{align*}\]</span></p>
+<p>Notice how we managed to write the KL divergence in terms of the log marginal likelihood <span class="math inline">\(p_{\boldsymbol{\mathbf{\theta}}}(\boldsymbol{\mathbf{x}})\)</span> and a term that we call <span class="math inline">\(\mathcal{L}_{\theta, \boldsymbol{\mathbf{\phi}}}(\boldsymbol{\mathbf{x}})\)</span>. We can now rearrange the following expression and notice that, since the KL divergence is always non-negative, <span class="math inline">\(\mathcal{L}_{\theta, \boldsymbol{\mathbf{\phi}}}(\boldsymbol{\mathbf{x}})\)</span> provides a lower bound for the marginal log-likelihood.</p>
+<p><span class="math display">\[\begin{align*}
+  \log p_{\boldsymbol{\mathbf{\theta}}}(\boldsymbol{\mathbf{x}})
+  &amp;= \text{KL}(q_{\boldsymbol{\mathbf{\phi}}}(\boldsymbol{\mathbf{z}}\mid \boldsymbol{\mathbf{x}})\,\,||\,\,p_{\boldsymbol{\mathbf{\theta}}}(\boldsymbol{\mathbf{z}}\mid \boldsymbol{\mathbf{x}}))  + \mathcal{L}_{\theta, \boldsymbol{\mathbf{\phi}}}(\boldsymbol{\mathbf{x}})\\
+  &amp;\geq \mathcal{L}_{\theta, \boldsymbol{\mathbf{\phi}}}(\boldsymbol{\mathbf{x}})
+\end{align*}\]</span></p>
+<p>For this reason, we call <span class="math inline">\(\mathcal{L}_{\theta, \boldsymbol{\mathbf{\phi}}}(\boldsymbol{\mathbf{x}})\)</span> the <strong>Evidence Lower BOund</strong> (ELBO). With an i.i.d dataset we can see that this relationships holds for the whole dataset:</p>
+<p><span class="math display">\[
+\sum_{\boldsymbol{\mathbf{x}}\in\mathcal{D}} \log p_{\boldsymbol{\mathbf{\theta}}}(\boldsymbol{\mathbf{x}})\geq \sum_{\boldsymbol{\mathbf{x}}\in\mathcal{D}} \mathcal{L}_{\theta, \boldsymbol{\mathbf{\phi}}}(\boldsymbol{\mathbf{x}})
+\]</span></p>
+<p>Why is it useful to find a lower bound on the log marginal likelihood? Because by maximizing the ELBO we get two birds with one stone. First of all, notice how by maximizing the ELBO with respect to <span class="math inline">\(\boldsymbol{\mathbf{\theta}}\)</span>, we can expect to approximately maximize also the log marginal likelihood. Similarly, by maximizing the ELBO with respect to <span class="math inline">\(\boldsymbol{\mathbf{\phi}}\)</span> we can see that, since the ELBO can be written as the log marginal likelihood <em>minus</em> the kl divergence, this is equivalent to minimizing the KL divergence. In summary we can write:</p>
+<p><span class="math display">\[\begin{equation*}
+    \max_{\boldsymbol{\mathbf{\theta}}, \boldsymbol{\mathbf{\phi}}} \mathcal{L}_{\theta, \boldsymbol{\mathbf{\phi}}}(\boldsymbol{\mathbf{x}})\implies
+    \begin{cases} 
+    \displaystyle\max_{\boldsymbol{\mathbf{\theta}}} \sum_{\boldsymbol{\mathbf{x}}\in\mathcal{D}}\log p_{\boldsymbol{\mathbf{\theta}}}(\boldsymbol{\mathbf{x}})&amp; \text{as } \log p_{\boldsymbol{\mathbf{\theta}}}(\boldsymbol{\mathbf{x}})\geq \mathcal{L}_{\theta, \boldsymbol{\mathbf{\phi}}}(\boldsymbol{\mathbf{x}})\\ 
+    \displaystyle\min_{\boldsymbol{\mathbf{\phi}}}  \sum_{\boldsymbol{\mathbf{x}}\in\mathcal{D}} \text{KL} &amp; \text{as } \log p_{\boldsymbol{\mathbf{\theta}}}(\boldsymbol{\mathbf{x}})-\text{KL} = \mathcal{L}_{\theta, \boldsymbol{\mathbf{\phi}}}(\boldsymbol{\mathbf{x}})
+    \end{cases}
+\end{equation*}\]</span></p>
+<p>Repectively, such maximization have a very practical results:</p>
+<ul>
+<li>The generative model <span class="math inline">\(p_{\boldsymbol{\mathbf{\theta}}}(\boldsymbol{\mathbf{x}})\)</span> improves.</li>
+<li>The approximation <span class="math inline">\(q_{\boldsymbol{\mathbf{\phi}}}(\boldsymbol{\mathbf{z}}\mid \boldsymbol{\mathbf{x}})\)</span> improves.</li>
+</ul>
+<p>Lastly, one can also write the ELBO in a different way. This second formulation is often convenient because it will tend to have estimates with lower variance.</p>
+<p><span class="math display">\[\begin{align*}
+    \mathcal{L}_{\theta, \boldsymbol{\mathbf{\phi}}}(\boldsymbol{\mathbf{x}})
+    &amp;= \log p_{\boldsymbol{\mathbf{\theta}}}(\boldsymbol{\mathbf{x}})- \text{KL}(q_{\boldsymbol{\mathbf{\phi}}}\,\,||\,\,p_{\boldsymbol{\mathbf{\theta}}}(\boldsymbol{\mathbf{z}}\mid \boldsymbol{\mathbf{x}})) \\
+    &amp;= \mathbb{E}_{q_{\boldsymbol{\mathbf{\phi}}}}\left[ \log \left(p_{\boldsymbol{\mathbf{\theta}}}(\boldsymbol{\mathbf{x}}\mid \boldsymbol{\mathbf{z}})p_{\boldsymbol{\mathbf{\theta}}}(\boldsymbol{\mathbf{z}})\right)- \log q_{\boldsymbol{\mathbf{\phi}}}(\boldsymbol{\mathbf{z}}\mid \boldsymbol{\mathbf{x}})\right] \\
+    &amp;= \underbrace{\mathbb{E}_{q_{\boldsymbol{\mathbf{\phi}}}}\left[\log p_{\boldsymbol{\mathbf{\theta}}}(\boldsymbol{\mathbf{x}}\mid \boldsymbol{\mathbf{z}})\right]}_{\text{Expected Reconstruction Error}} - \underbrace{\text{KL}(q_{\boldsymbol{\mathbf{\phi}}}(\boldsymbol{\mathbf{z}}\mid \boldsymbol{\mathbf{x}})\,\,||\,\,p_{\boldsymbol{\mathbf{\theta}}}(\boldsymbol{\mathbf{z}}))}_{\text{Regularization Term}}
+\end{align*}\]</span></p>
+<p>As can be seen above, the ELBO can be written as a sum of two terms: expected reconstruction error and the KL divergence between the approximation and the latent prior. This KL-divergence can be interpreted as a regularization term trying to keep the approximation close to the prior. This regularization term can sometimes backfire and maintain the approximation to be exactly equal to the prior. To deal with such scenarios, called <strong>posterior collapse</strong>, people have been developing new methods, such as <a href="https://neuralnetworksbristol.netlify.app/preventing-posterior-collapse-with-delta-vaes/">delta-VAEs</a>.</p>
+</div>
+<div id="optimization-of-the-elbo-objective-function" class="section level2">
+<h2>Optimization of the ELBO Objective Function</h2>
+<p>One way to optimize the ELBO with respect to <span class="math inline">\(\boldsymbol{\mathbf{\phi}}\)</span> and <span class="math inline">\(\boldsymbol{\mathbf{\theta}}\)</span> is to perform gradient descent. Since our aim is to find an algorithm that scales well with large datasets, we want to use <strong>Stochastic Gradient Ascent</strong>. In order to do so, we need to be able to compute <span class="math inline">\(\nabla_{\boldsymbol{\mathbf{\phi}}} \mathcal{L}_{\theta, \boldsymbol{\mathbf{\phi}}}(\boldsymbol{\mathbf{x}})\)</span> and <span class="math inline">\(\nabla_{\boldsymbol{\mathbf{\theta}}}\mathcal{L}_{\theta, \boldsymbol{\mathbf{\phi}}}(\boldsymbol{\mathbf{x}})\)</span>. However, notice how in both formulations of the ELBO we find expectations with respect to <span class="math inline">\(q_{\boldsymbol{\mathbf{\phi}}}(\boldsymbol{\mathbf{z}}\mid \boldsymbol{\mathbf{x}})\)</span>, which depends on <span class="math inline">\(\boldsymbol{\mathbf{\phi}}\)</span></p>
+<p><span class="math display">\[\begin{equation*}
+    \mathcal{L}_{\theta, \boldsymbol{\mathbf{\phi}}}(\boldsymbol{\mathbf{x}})= 
+    \begin{cases} 
+        \displaystyle \mathbb{E}_{q_{\boldsymbol{\mathbf{\phi}}}}\left[\log p_{\boldsymbol{\mathbf{\theta}}}(\boldsymbol{\mathbf{x}}, \boldsymbol{\mathbf{z}})- \log q_{\boldsymbol{\mathbf{\phi}}}(\boldsymbol{\mathbf{z}}\mid \boldsymbol{\mathbf{x}})\right] \\
+        \qquad \\
+        \displaystyle \mathbb{E}_{q_{\boldsymbol{\mathbf{\phi}}}}\left[\log p_{\boldsymbol{\mathbf{\theta}}}(\boldsymbol{\mathbf{x}}\mid \boldsymbol{\mathbf{z}})\right] - \text{KL}(q_{\boldsymbol{\mathbf{\phi}}}\,\,||\,\,p_{\boldsymbol{\mathbf{\theta}}}(\boldsymbol{\mathbf{z}}))
+    \end{cases}
+\end{equation*}\]</span></p>
+<p>This means that when taking the gradient of the ELBO with respect to <span class="math inline">\(\boldsymbol{\mathbf{\phi}}\)</span> we cannot exchange the gradient and the expectation sign</p>
+<p><span class="math display">\[
+\nabla_{\boldsymbol{\mathbf{\phi}}}\mathbb{E}_{q_{\boldsymbol{\mathbf{\phi}}}(\boldsymbol{\mathbf{z}}\mid \boldsymbol{\mathbf{x}})}\left[ \cdot \right] \neq \mathbb{E}_{q_{\boldsymbol{\mathbf{\phi}}}(\boldsymbol{\mathbf{z}}\mid \boldsymbol{\mathbf{x}})}\left[\nabla_{\boldsymbol{\mathbf{\phi}}} \right]
+\]</span>
+We would like to do this “exchange” operation so that we can approximate the gradient with a simple Monte Carlo estimate as it is usually done in Stochastic Gradient Ascent. To go around this problem our question becomes:</p>
+<blockquote>
+<p>Can we write the expectation with respect to a distribution that is independent of <span class="math inline">\(\boldsymbol{\mathbf{\phi}}\)</span>?
+<span class="math display">\[
+\nabla_{\boldsymbol{\mathbf{\phi}}}\mathbb{E}_{q_{\boldsymbol{\mathbf{\phi}}}(\boldsymbol{\mathbf{z}}\mid \boldsymbol{\mathbf{x}})}\left[\cdot\right] = \mathbb{E}_{p(\boldsymbol{\mathbf{\epsilon}})}\left[\nabla_{\boldsymbol{\mathbf{\phi}}}\right]
+\]</span></p>
+</blockquote>
+<p>If we think about it, we already know a special case in which this can be done. For instance, suppose that the distribution <span class="math inline">\(q_{\boldsymbol{\mathbf{\phi}}}(\boldsymbol{\mathbf{z}}\mid \boldsymbol{\mathbf{x}})\)</span> is actually a multivariate normal distribution <span class="math inline">\(\mathcal{N}(\boldsymbol{\mathbf{\mu}}, \boldsymbol{\mathbf{\Sigma}})\)</span>. Then, we can rewrite a sample <span class="math inline">\(\boldsymbol{\mathbf{z}}\sim q_{\boldsymbol{\mathbf{\phi}}}(\boldsymbol{\mathbf{z}}\mid \boldsymbol{\mathbf{x}})\)</span> in terms of a standard multivariate normal distribution
+<span class="math display">\[
+\boldsymbol{\mathbf{z}}= \boldsymbol{\mathbf{\mu}}+ \boldsymbol{\mathbf{L}}\boldsymbol{\mathbf{\epsilon}}\qquad \text{where} \qquad \boldsymbol{\mathbf{\epsilon}}\sim \mathcal{N}(\boldsymbol{\mathbf{0}}, \boldsymbol{\mathbf{I}})
+\]</span>
+where <span class="math inline">\(\boldsymbol{\mathbf{L}}\boldsymbol{\mathbf{L}}^\top\)</span> is the Cholesky decomposition of <span class="math inline">\(\boldsymbol{\mathbf{\Sigma}}\)</span>. Notice how essentially we’ve written the random variable <span class="math inline">\(\boldsymbol{\mathbf{z}}\)</span>, which depends on the parameters <span class="math inline">\(\boldsymbol{\mathbf{\phi}}= (\boldsymbol{\mathbf{\mu}}, \boldsymbol{\mathbf{\Sigma}})\)</span> in terms of another random variables <span class="math inline">\(\boldsymbol{\mathbf{\epsilon}}\)</span> that is independent of <span class="math inline">\(\boldsymbol{\mathbf{\phi}}\)</span> and a deterministic (linear) transformation, which instead does depend on <span class="math inline">\(\boldsymbol{\mathbf{\phi}}\)</span>. We can then write an expectation with respect to <span class="math inline">\(\mathcal{N}(\boldsymbol{\mathbf{\mu}}, \boldsymbol{\mathbf{L}})\)</span> in terms of <span class="math inline">\(\mathcal{N}(\boldsymbol{\mathbf{0}}, \boldsymbol{\mathbf{I}})\)</span>:
+<span class="math display">\[
+\mathbb{E}_{\mathcal{N}(\boldsymbol{\mathbf{\mu}}, \boldsymbol{\mathbf{L}})}\left[f(\boldsymbol{\mathbf{z}})\right] = \mathbb{E}_{\mathcal{N}(\boldsymbol{\mathbf{0}}, \boldsymbol{\mathbf{I}})}\left[f(\boldsymbol{\mathbf{\mu}}+ \boldsymbol{\mathbf{L}}\boldsymbol{\mathbf{\epsilon}})\right]
+\]</span></p>
+<p>More generally, we can write a sample <span class="math inline">\(\boldsymbol{\mathbf{z}}\sim q_{\boldsymbol{\mathbf{\phi}}}(\boldsymbol{\mathbf{z}}\mid \boldsymbol{\mathbf{x}})\)</span> as a <em>deterministic</em> function of <span class="math inline">\(\boldsymbol{\mathbf{x}}\)</span> and <span class="math inline">\(\boldsymbol{\mathbf{\epsilon}}\)</span>, parametrized by <span class="math inline">\(\boldsymbol{\mathbf{\phi}}\)</span>
+<span class="math display">\[
+\boldsymbol{\mathbf{z}}= g_{\boldsymbol{\mathbf{\phi}}}(\boldsymbol{\mathbf{x}}, \boldsymbol{\mathbf{\epsilon}})
+\]</span>
+where <span class="math inline">\(\boldsymbol{\mathbf{\epsilon}}\)</span> is drawn from a distribution <span class="math inline">\(p(\boldsymbol{\mathbf{\epsilon}})\)</span> independent of <span class="math inline">\(\boldsymbol{\mathbf{\phi}}\)</span>. Then we can exchange the expectation and gradient operators as follows</p>
+<p><span class="math display">\[
+\nabla_{\boldsymbol{\mathbf{\phi}}}\mathbb{E}_{q_{\boldsymbol{\mathbf{\phi}}}(\boldsymbol{\mathbf{z}}\mid \boldsymbol{\mathbf{x}})}[f(\boldsymbol{\mathbf{z}})] = \mathbb{E}_{p(\boldsymbol{\mathbf{\epsilon}})}[\nabla_{\boldsymbol{\mathbf{\phi}}}f(g_{\boldsymbol{\mathbf{\phi}}}(\boldsymbol{\mathbf{x}}, \boldsymbol{\mathbf{\epsilon}}))]
+\]</span></p>
+<p>This is called the <strong>reparametrization trick</strong>. At this point we can finally obtain unbiased estimators of the ELBO (or equivalently, of its gradients) based on <span class="math inline">\(\boldsymbol{\mathbf{\epsilon}}^{(i)} \overset{\text{i.i.d.}}{\sim}p(\boldsymbol{\mathbf{\epsilon}})\)</span></p>
+<p><span class="math display">\[\begin{equation*}
+    \widetilde{\mathcal{L}}_{\boldsymbol{\mathbf{\theta}}, \boldsymbol{\mathbf{\phi}}}(\boldsymbol{\mathbf{x}}) = 
+    \begin{cases} 
+        \displaystyle \frac{1}{L}\sum_{i=1}^L \left[\log p_{\boldsymbol{\mathbf{\theta}}}(\boldsymbol{\mathbf{x}}, g_{\boldsymbol{\mathbf{\phi}}}(\boldsymbol{\mathbf{\epsilon}}^{(i)}, \boldsymbol{\mathbf{x}})) - \log q_{\boldsymbol{\mathbf{\phi}}}(g_{\boldsymbol{\mathbf{\phi}}}(\boldsymbol{\mathbf{\epsilon}}^{(i)}, \boldsymbol{\mathbf{x}})\mid \boldsymbol{\mathbf{x}})\right] \\
+        \qquad \\
+        \displaystyle \frac{1}{L}\sum_{i=1}^L \left[\log p_{\boldsymbol{\mathbf{\theta}}}(\boldsymbol{\mathbf{x}}\mid g_{\boldsymbol{\mathbf{\phi}}}(\boldsymbol{\mathbf{\epsilon}}^{(i)}, \boldsymbol{\mathbf{x}}))\right] - \underbrace{\text{KL}(q_{\boldsymbol{\mathbf{\phi}}}\,\,||\,\,p_{\boldsymbol{\mathbf{\theta}}}(\boldsymbol{\mathbf{z}}))}_{\substack{\text{Often available} \\ \text{in closed form}}}
+    \end{cases}
+\end{equation*}\]</span></p>
+<p>Then to perform Stochastic Gradient Ascent we simply sample a mini-batch of data <span class="math inline">\(\mathcal{M}\subseteq \mathcal{D}\)</span> and use mini-batch gradients
+<span class="math display">\[
+\frac{1}{|\mathcal{M}|}\sum_{\boldsymbol{\mathbf{x}}\in\mathcal{M}} \nabla_{\boldsymbol{\mathbf{\theta}}, \boldsymbol{\mathbf{\phi}}}\widetilde{\mathcal{L}}_{\boldsymbol{\mathbf{\theta}}, \boldsymbol{\mathbf{\phi}}}(\boldsymbol{\mathbf{x}})
+\]</span></p>
+<p>We call this <strong>Auto-Encoding Variational Bayes</strong>.</p>
+</div>
+<div id="estimating-the-marginal-likelihood" class="section level2">
+<h2>Estimating the Marginal Likelihood</h2>
+<p><em>After training</em>, one can estimate the log marginal likelihood by using <strong>importance sampling</strong></p>
+<p><span class="math display">\[\begin{align*}
+\log p_{\boldsymbol{\mathbf{\theta}}}(\boldsymbol{\mathbf{x}})
+&amp;= \log \int p_{\boldsymbol{\mathbf{\theta}}}(\boldsymbol{\mathbf{x}}, \boldsymbol{\mathbf{z}})d\boldsymbol{\mathbf{z}}\\
+&amp;= \log \mathbb{E}_{q_{\boldsymbol{\mathbf{\phi}}}(\boldsymbol{\mathbf{z}}\mid \boldsymbol{\mathbf{x}})}\left[\frac{p_{\boldsymbol{\mathbf{\theta}}}(\boldsymbol{\mathbf{x}}, \boldsymbol{\mathbf{z}})}{q_{\boldsymbol{\mathbf{\phi}}}(\boldsymbol{\mathbf{z}}\mid \boldsymbol{\mathbf{x}})}\right] \\
+&amp;\approx \log \frac{1}{L}\sum_{i=1}^L \frac{p_{\boldsymbol{\mathbf{\theta}}}(\boldsymbol{\mathbf{x}}, \boldsymbol{\mathbf{z}}^{(i)})}{q_{\boldsymbol{\mathbf{\phi}}}(\boldsymbol{\mathbf{z}}^{(i)}\mid \boldsymbol{\mathbf{x}})} &amp;&amp; \boldsymbol{\mathbf{z}}^{(i)}\overset{\text{i.i.d.}}{\sim}q_{\boldsymbol{\mathbf{\phi}}}(\boldsymbol{\mathbf{z}}\mid \boldsymbol{\mathbf{x}})
+\end{align*}\]</span></p>
+</div>
+<div id="variational-autoencoders" class="section level2">
+<h2>Variational Autoencoders</h2>
+<p>Before introducing what a Variational Autoencoder is, we need to understand what we mean when we say that we parametrise a distribution using a neural network. Suppose that <span class="math inline">\(\boldsymbol{\mathbf{x}}\)</span> is a binary vector of Bernoulli trials. Then <span class="math inline">\(p_{\boldsymbol{\mathbf{\theta}}}(\boldsymbol{\mathbf{x}}\mid\boldsymbol{\mathbf{z}})\)</span> is parametrized by a vector of probabilities <span class="math inline">\(\boldsymbol{\mathbf{p}}\)</span> which can be constructed via a Multi-Layer Perceptron with an approrpriate output layer (e.g. softmax).</p>
+<p><img src="/mlp.png" alt="Parametrizing a distribution with a MLP" width="200"/></p>
+<p>and the log-likelihood is, of course
+<span class="math display">\[
+\log p_{\boldsymbol{\mathbf{\theta}}}(\boldsymbol{\mathbf{x}}\mid \boldsymbol{\mathbf{z}}) = \sum_{j} x_j \log p_j + (1 - x_j) \log(1 - p_j)
+\]</span></p>
+<p>A Variational Autoencoder is simply Auto-Encoding Variational Bayes where both the approximating distribution <span class="math inline">\(q_{\boldsymbol{\mathbf{\phi}}}(\boldsymbol{\mathbf{z}}\mid \boldsymbol{\mathbf{x}})\)</span> and <span class="math inline">\(p_{\boldsymbol{\mathbf{\theta}}}(\boldsymbol{\mathbf{x}}\mid\boldsymbol{\mathbf{z}})\)</span> are parametrized using two different Neural Networks, as shown below.</p>
+<p><img src="/vae.png" alt="Variational Autoencoder Diagram" width="800"/></p>
+</div>
+<div id="relationship-between-em-algorithm-and-vae" class="section level2">
+<h2>Relationship between EM algorithm and VAE</h2>
+<p>So what is the relationship between the Expectation-Maximization algorithm and Variational Autoencoders? To get there we need to understand the EM algorithm in terms of Variational Inference. That is, we need to understand how the EM algorithm can be cast into the framework of variational inference. Recall that the EM algorithm proceeds in the following two steps:</p>
+<ul>
+<li>Compute “current” posterior (which we can call approximate since <span class="math inline">\(\boldsymbol{\mathbf{\theta}}^{(t)})\)</span> will likely be, before convergence, different from the true <span class="math inline">\(\boldsymbol{\mathbf{\theta}}^*\)</span>)
+<span class="math display">\[
+\displaystyle\left\{p_{\boldsymbol{\mathbf{\theta}}^{(t)}}(\boldsymbol{\mathbf{z}}\mid \boldsymbol{\mathbf{x}}) \,\, : \,\, \boldsymbol{\mathbf{x}}\in\mathcal{D}\right\}
+\]</span></li>
+<li>Find optimal parameter
+<span class="math display">\[
+\displaystyle \boldsymbol{\mathbf{\theta}}^{(t+1)} = \arg\max_{\boldsymbol{\mathbf{\theta}}} \sum_{\boldsymbol{\mathbf{x}}\in\mathcal{D}} \mathbb{E}_{p_{\boldsymbol{\mathbf{\theta}}^{(t)}}(\boldsymbol{\mathbf{z}}\mid \boldsymbol{\mathbf{x}})}\left[\log p_{\boldsymbol{\mathbf{\theta}}}(\boldsymbol{\mathbf{x}}, \boldsymbol{\mathbf{z}})\right]
+\]</span></li>
+</ul>
+<p>Now consider the ELBO in its two different forms, but now rather than considering it as a function of <span class="math inline">\(\boldsymbol{\mathbf{x}}\)</span> parametrized by <span class="math inline">\(\boldsymbol{\mathbf{\theta}}\)</span> and <span class="math inline">\(\boldsymbol{\mathbf{\phi}}\)</span> (i.e. <span class="math inline">\(\mathcal{L}_{\theta, \boldsymbol{\mathbf{\phi}}}(\boldsymbol{\mathbf{x}})\)</span>), consider it as a functional of <span class="math inline">\(q_{\boldsymbol{\mathbf{\phi}}}\)</span> and a function of <span class="math inline">\(\boldsymbol{\mathbf{\theta}}\)</span>, i.e. <span class="math inline">\(\mathcal{L}_{\boldsymbol{\mathbf{x}}}(\boldsymbol{\mathbf{\theta}}, q_{\boldsymbol{\mathbf{\phi}}})\)</span>.</p>
+<p><span class="math display">\[\begin{equation*}
+    \mathcal{L}_{\boldsymbol{\mathbf{x}}}(\boldsymbol{\mathbf{\theta}}, q_{\boldsymbol{\mathbf{\phi}}})= 
+    \begin{cases} 
+        \displaystyle \log p_{\boldsymbol{\mathbf{\theta}}}(\boldsymbol{\mathbf{x}})-  \text{KL}(q_{\boldsymbol{\mathbf{\phi}}}\,\,||\,\,p_{\boldsymbol{\mathbf{\theta}}}(\boldsymbol{\mathbf{z}}\mid \boldsymbol{\mathbf{x}})) \qquad \qquad &amp;(1)\\
+        \qquad \\
+        \displaystyle \mathbb{E}_{q_{\boldsymbol{\mathbf{\phi}}}}[\log p_{\boldsymbol{\mathbf{\theta}}}(\boldsymbol{\mathbf{x}}, \boldsymbol{\mathbf{z}})] - \mathbb{E}_{q_{\boldsymbol{\mathbf{\phi}}}}[\log q_{\boldsymbol{\mathbf{\phi}}}] \qquad \qquad &amp;(2)
+    \end{cases}
+\end{equation*}\]</span></p>
+<p>We can find two <strong>identical</strong> steps as those of the EM algorithm by performing maximization of the ELBO with respect to <span class="math inline">\(q_{\boldsymbol{\mathbf{\phi}}}\)</span> first, and then with respect to <span class="math inline">\(\boldsymbol{\mathbf{\theta}}\)</span>:</p>
+<ul>
+<li><strong>E-step</strong>: Maximize <span class="math inline">\((1)\)</span> with respect to <span class="math inline">\(q_{\boldsymbol{\mathbf{\phi}}}\)</span> (this makes the KL-divergence zero and the bound is <strong>tight</strong>)
+<span class="math display">\[
+\left\{p_{\boldsymbol{\mathbf{\theta}}^{(t)}}(\boldsymbol{\mathbf{z}}\mid \boldsymbol{\mathbf{x}})= \arg\max_{q_{\boldsymbol{\mathbf{\phi}}}} \mathcal{L}_{\boldsymbol{\mathbf{x}}}(\boldsymbol{\mathbf{\theta}}^{(t)}, q_{\boldsymbol{\mathbf{\phi}}})\,\, : \,\, \boldsymbol{\mathbf{x}}\in\mathcal{D}\right\}
+\]</span></li>
+<li><strong>M-step</strong>: Maximize <span class="math inline">\((2)\)</span> with respect to <span class="math inline">\(\boldsymbol{\mathbf{\theta}}\)</span>
+<span class="math display">\[
+\boldsymbol{\mathbf{\theta}}^{(t+1)} = \arg\max_{\boldsymbol{\mathbf{\theta}}} \sum_{\boldsymbol{\mathbf{x}}\in\mathcal{D}} \mathcal{L}_{\boldsymbol{\mathbf{x}}}(\boldsymbol{\mathbf{\theta}}, p_{\boldsymbol{\mathbf{\theta}}^{(t)}}(\boldsymbol{\mathbf{z}}\mid \boldsymbol{\mathbf{x}}))
+\]</span></li>
+</ul>
+<p>The relationship between the Expectation Maximization algorithm and Variational Auto-Encoders can therefore be summarized as follows:</p>
+<ul>
+<li>EM algorithm and VAE optimize the <strong>same objective function</strong>.</li>
+<li>When expectations are in closed-form, one should use the EM algorithm which uses <strong>coordinate ascent</strong>.</li>
+<li>When expectations are intractable, VAE uses <strong>stochastic gradient ascent</strong> on an unbiased estimator of the objective function.</li>
+</ul>
+</div>
+<div id="bibliography" class="section level1 unnumbered">
+<h1>Bibliography</h1>
+<div id="refs" class="references">
+<div id="ref-machine_thoughts_2017">
+<p>“VAE = Em.” 2017. <em>Machine Thoughts</em>. <a href="https://machinethoughts.wordpress.com/2017/10/02/vae-em/">https://machinethoughts.wordpress.com/2017/10/02/vae-em/</a>.</p>
+</div>
+<div id="ref-ermon">
+<p>n.d. <em>The Variational Auto-Encoder</em>. <a href="https://ermongroup.github.io/cs228-notes/extras/vae/">https://ermongroup.github.io/cs228-notes/extras/vae/</a>.</p>
+</div>
+</div>
+</div>

@@ -1,0 +1,407 @@
+---
+title: Variational Auto-Encoders and the Expectation-Maximization Algorithm
+author: Mauro Camara Escudero
+date: '2020-07-15'
+slug: variational-auto-encoders-and-the-expectation-maximization-algorithm
+categories:
+  - vae
+  - variational-auto-encoders
+  - variational-inference
+tags:
+  - variational-inference
+  - vae
+  - variational-auto-encoders
+subtitle: 'Relationship between Variational Autoencoders (VAE) and the Expectation Maximization Algorithm'
+summary: 'Relationship between Variational Autoencoders (VAE) and the Expectation Maximization Algorithm. Simple Explanation'
+authors: []
+lastmod: '2020-07-15T16:02:46+01:00'
+featured: no
+image:
+  caption: ''
+  focal_point: ''
+  preview_only: no
+projects: []
+bibliography: biblio_vae.bib
+nocite: |
+  @ermon, @machine_thoughts_2017
+---
+\usepackage{amsmath}
+\usepackage{algorithm}
+\DeclareRobustCommand{\rchi}{{\mathpalette\irchi\relax}}
+\newcommand{\irchi}[2]{\raisebox{\depth}{$#1\chi$}}
+\DeclareMathOperator*{\argmax}{arg\,max}
+\DeclareMathOperator*{\argmin}{arg\,min}
+\newcommand{\def}{\overset{\text{def}}{:=}}
+\newcommand{\lop}{\mathcal{L}}
+\newcommand{\vect}[1]{\boldsymbol{\mathbf{#1}}}
+\newcommand{\norm}[1]{||#1||}
+\newcommand{\vx}{\vect{x}}
+\newcommand{\vb}{\vect{b}}
+\newcommand{\vy}{\vect{y}}
+\newcommand{\vz}{\vect{z}}
+\newcommand{\ve}{\vect{e}}
+\newcommand{\vc}{\vect{c}}
+\newcommand{\vr}{\vect{r}}
+\newcommand{\vphi}{\vect{\phi}}
+\newcommand{\vf}{\vect{f}}
+\newcommand{\vY}{\vect{Y}}
+\newcommand{\vX}{\vect{X}}
+\newcommand{\vw}{\vect{w}}
+\newcommand{\thetahatis}{\widehat{\theta}^{(s)}_i}
+\newcommand{\thetahat}[1]{\widehat{\theta}^{(#1)}_i}
+\newcommand{\vm}{\vect{m}}
+\newcommand{\redmath}[1]{\mathbin{\textcolor{red}{\vect{#1}}}}
+\newcommand{\redtext}[1]{\textcolor{red}{\vect{#1}}}
+\newcommand{\vzero}{\vect{0}}
+\newcommand{\vt}{\vect{t}}
+\newcommand{\linearpredictor}{\vx_i^T\vbeta}
+\newcommand{\vmu}{\vect{\mu}}
+\newcommand{\vnu}{\vect{\nu}}
+\newcommand{\veta}{\vect{\eta}}
+\newcommand{\vbeta}{\vect{\beta}}
+\newcommand{\vepsilon}{\vect{\epsilon}}
+\newcommand{\Pbb}{\mathbb{P}}
+\newcommand{\Ebb}{\mathbb{E}}
+\newcommand{\vdelta}{\vect{\delta}}
+\newcommand{\Rbb}{\mathbb{R}}
+\newcommand{\vxi}{\vect{\xi}}
+\newcommand{\sigmalg}{\sigma\text{-algebra}}
+\newcommand{\vu}{\vect{u}}
+\newcommand{\vW}{\vect{W}}
+\newcommand{\vlambda}{\vect{\lambda}}
+\newcommand{\dataset}{\mathcal{D}}
+\newcommand{\vS}{\vect{S}}
+\newcommand{\sample}{\vz^{(l)}}
+\newcommand{\MYhref}[3][blue]{\href{#2}{\color{#1}{#3}}}
+\newcommand{\sol}[1]{\vx^{(#1)}}
+\newcommand{\qtext}[1]{\quad\quad \text{#1}}
+\newcommand{\vtheta}{\vect{\theta}}
+\newcommand{\bi}[1]{\textbf{\textit{#1}}}
+\newcommand{\iid}{\overset{\text{i.i.d.}}{\sim}}
+\newcommand{\uniform}{\mathcal{U}(0, 1)}
+\newcommand{\qimplies}{\quad\Longrightarrow\quad}
+\newcommand{\tp}{\tilde{p}}
+\newcommand{\nul}{\Theta^{(0)}}
+\newcommand{\alter}{\Theta^{(1)}}
+\newcommand{\const}{\mathcal{Z}}
+\newcommand{\tq}{\tilde{q}}
+\newcommand{\tvx}{\widetilde{\vx}}
+\newcommand{\vK}{\vect{K}}
+\newcommand{\tr}{\tilde{r}}
+\newcommand{\like}{\mathcal{L}}
+\newcommand{\kl}[2]{\text{KL}(#1\,\,||\,\,#2)}
+\newcommand{\logit}[1]{\log\left(\frac{#1}{1-#1}\right)}
+\newcommand{\eval}{\biggr\rvert}
+\newcommand{\normal}{\mathcal{N}}
+\newcommand{\vk}{\vect{k}}
+\newcommand{\class}{\mathcal{C}}
+\newcommand{\infor}{\mathcal{I}}
+\newcommand{\variance}{\text{Var}}
+\newcommand{\vfx}{\vect{f}(X)}
+\newcommand{\events}{\mathcal{F}}
+\newcommand{\vSigma}{\vect{\Sigma}}
+\newcommand{\vTheta}{\vect{\Theta}}
+\newcommand{\fls}{f_{\text{LS}}}
+\newcommand{\Ebbeps}[1]{\Ebb_{\vepsilon}\left[#1\right]}
+\newcommand{\vKc}{\vect{\mathcal{K}}}
+\newcommand{\Var}[1]{\text{Var}\left[#1\right]}
+\newcommand{\lp}[3]{
+    \begin{equation*}
+    \begin{alignat}{2}
+    &\!\min       &\qquad& #1\\
+    &\text{s.t.} &      & #2\\
+    &                  &      & #3
+    \end{alignat}
+    \end{equation*}
+}
+\newcommand{\ip}[2]{\langle #1\, , \, #2 \rangle}
+\newcommand{\lpmax}[3]{
+    \begin{equation*}
+    \begin{alignat}{2}
+    &\!\max       &\qquad& #1\\
+    &\text{s.t.} &      & #2\\
+    &                  &      & #3
+    \end{alignat}
+    \end{equation*}
+}
+\newcommand{\iphi}[2]{\ip{\phi(\vx_{#1})}{\phi(\vx_{#2})}}
+\newcommand{\fourmatrix}[4]{
+\begin{pmatrix}
+#1 & \cdots & #2 \\
+\vdots & \ddots & \vdots \\
+#3 & \cdots & #4
+\end{pmatrix}
+}
+\newcommand{\Cov}[2]{\text{Cov}\left[#1, #2\right]}
+\newcommand{\wls}{\vw_{\text{LS}}}
+\newcommand{\fxwls}{f(\vx, \vw_{\text{LS}})}
+\newcommand{\vPhi}{\vect{\Phi}}
+\newcommand{\wlsr}{\vw_{\text{LS-R}}}
+\newcommand{\mcal}{\mathcal{M}}
+\newcommand{\yhat}{\widehat{y}}
+\newcommand{\alphahat}{\widehat{\alpha}}
+\newcommand{\expectation}[1]{\Ebb\left[#1\right]}
+\newcommand{\Nbb}{\mathbb{N}}
+\newcommand{\indicator}[1]{\mathbbm{1}_{\left\{#1\right\}}}
+\newcommand{\ustop}{U^{\text{stopped}}}
+\newcommand{\hvtheta}{\widehat{\vtheta}}
+\newcommand{\htheta}{\widehat{\theta}}
+\newcommand{\vZ}{\vect{Z}}
+\newcommand{\expcond}[2]{\Ebb_{p(\vx\mid \vy, #1)}\left[#2\right]}
+\newcommand{\hpsi}{\widehat{\psi}}
+\newcommand{\vpsi}{\vect{\psi}}
+\newcommand{\vPsi}{\vect{\Psi}}
+\newcommand{\xprior}{p_{\vtheta}(\vx)}
+\newcommand{\joint}{p_{\vtheta}(\vx, \vz)}
+\newcommand{\post}{p_{\vtheta}(\vz \mid \vx)}
+\newcommand{\latentdata}{\mathcal{Z}}
+\newcommand{\encoder}{q_{\vphi}(\vz \mid \vx)}
+\newcommand{\elbo}{\mathcal{L}_{\theta, \vphi}(\vx)}
+\newcommand{\elbof}{\mathcal{L}_{\vx}(\vtheta, q_{\vphi})}
+
+## Latent Variable Models (LVM)
+Suppose we observe some data $\dataset = \{\vx_1, \ldots, \vx_N\}$. Often we know that what we have observed is only part of the whole picture, and to understand the system at hand we have to introduce some latent variables. Consider, for now, a single data point $\vx$ and its corresponding latent variables $\vz$. Then, we might be interested in the following three tasks.
+
+- **Generative Modelling**: Generating samples from the following distributions, efficiently.
+  $$
+  \xprior = \int \joint d\vz
+  $$
+- **Posterior Inference**: Modelling the posterior distribution over the latent variables.
+$$
+  \post = \frac{\joint}{\xprior}
+$$
+- **Parameter Estimation**: Performing Maximum Likelihood Estimation (MLE) or Maximum-A-Posteriori estimation (MAP) for the parameter $\vtheta$:
+$$
+\vtheta^{*}= \arg \max_{\vtheta} \prod_{\vx\in\dataset}\xprior \quad \text{or} \quad \vtheta^{*} = \arg\max_{\vtheta} \left[\prod_{\vx\in\dataset}p_{\vtheta}(\vx)\right]p(\vtheta)
+$$
+
+The settings and problems described above are quite standard and of widespread interest. One method to perform Maximum Likelihood Estimation in Latent Variable Models is the **Expectation-Maximization** algorithm, while a method to perform posterior inference is **Mean-Field Variational Inference**.
+
+## Expectation-Maximization Algorithm for Maximum Likelihood Estimation
+Suppose that, for some reason, we have a fairly good estimate for the parameter, let's call this guess $\widehat{\vtheta}$. How can we improve this guess? One way to go about this is to use $\widehat{\vtheta}$ to construct the posterior distribution at each data point 
+$$
+\left\{p_{\widehat{\vtheta}}(\vz\mid \vx) \,\,:\,\, \vx\in\dataset\right\}
+$$
+And then we find an updated and improved parameter value by maximizing the expected complete-data log likelihood
+$$
+\arg\max_{\vtheta} \Ebb_{p_{\widehat{\vtheta}}(\vz\mid \vx)}\left[\log \joint\right]
+$$
+That is, rather than maximizing the incomplete-data likelihood $p_{\widehat{\vtheta}}(\vx)$, we maximize the joint likelihood $p_{\widehat{\vtheta}}(\vx, \vz)$, but since we don't actually have the latent variables $\vz$ we average this complete-data likelihood with respect to the posterior of the latent variables given the data and the parameter value $p_{\widehat{\vtheta}}(\vz\mid\vx)$. By iterating this proceedure we obtain the following algorithm. 
+
+
+- Initialize $\vtheta^{(0)}$ and set $t=0$.
+- Until convergence:
+    - Compute posterior distribution of the latent variables given the observations 
+      $$
+      \left\{p_{\vtheta^{(t)}}(\vz\mid \vx) \,\,:\,\, \vx\in\dataset\right\}
+      $$
+    - Choose new parameter value $\vtheta^{(t+1)}$ so that it maximises 
+      $$
+      \sum_{\vx\in\dataset} \Ebb_{p_{\vtheta^{(t)}}(\vz\mid \vx)}\left[\log \joint\right]
+      $$
+
+> **Problem**: The EM Algorithm breaks if $p_{\vtheta^{(t)}}(\vz\mid \vx)$ are intractable.
+      
+## Mean-Field Variational Inference for Posterior Inference
+A well-known method, alternative to MCMC, for posterior inference if Mean-Field Variational Inference. In Variational Inference we essentially define a family of distributions that we think is somehow representative of the true posterior distribution $\post$. Then, we choose the member of that family that is closest, in some sense, to the true posterior. In Mean-Field Variational Inference we assume that such a family of distributions is factorized into a product of terms, one for each data point.
+
+$$
+\prod_{i=1}^{N} q_{\vphi_i}(\vz_i) \approx \prod_{i=1}^N p_{\vtheta}(\vz_i \mid \vx)
+$$
+
+We can see that each factor in the product on the RHS is described by a vector of parameters $\vphi_i$. Usually, to judge how close each member of the chosen family is to the true posterior, we use the KL-divergence. This means that we need to solve an optimization problem for each factor in the approximation, i.e. for each data point
+$$
+\vphi^*_i = \arg\min_{\vphi_i} \kl{q_{\vphi_i}(\vz\mid\vx)}{p_{\vtheta}(\vz\mid \vx)}.
+$$
+
+> **Problem**: It clearly doesn't scale well with large datasets and it breaks if $\Ebb_{q_{\vphi_i}}\left[\cdot\right]$ are intractable.
+
+Ideally, we would like to use only one vector of parameter $\vphi$, which is shared across data points. This is called **amortized inference**.
+
+## Variational Autoencoders at a Glance
+So what are Variational Autoencoders or Auto-Encoding Variational Bayes?? Below is a summary of what they are and what they are used for.
+
+- **What is AEVB used for?** Inference and Generative Modelling in LVMs.
+- **How do AEVBs work?** Optimization of an unbiased estimator of an objective function using SGD.
+- **What are VAEs?** They are AEVB where the probability distributions in the LVM are _parametrized_ by Neural Networks.
+
+## Auto-Encoding Variational Bayes Objective Function
+In this section, we derive the objective function of AEVB. First, let us introduce a so-called **recognition model** $q_{\vphi}(\vz\mid\vx)$. This is a chosen distribution that we want to use to approximate the true posterior distribution $\post$, similar to how we did it for Mean-Field Variational Inference. The key difference here is that instead of having a different vector of parameters for each data point, we share a single vector of parameters across data points. Then, we consider the KL divergence between this approximating distribution and the true posterior
+
+\begin{align*}
+  \kl{\encoder}{\post} 
+  &= \Ebb_{q_{\vphi}}\left[\log \encoder - \log \post\right] \\
+  &= -\Ebb_{q_{\vphi}}\left[\log\left(\frac{\joint}{\encoder}\right)\right] + \log \xprior \\
+  &:= -\elbo + \log \xprior 
+\end{align*}
+
+Notice how we managed to write the KL divergence in terms of the log marginal likelihood $\xprior$ and a term that we call $\elbo$. We can now rearrange the following expression and notice that, since the KL divergence is always non-negative, $\elbo$ provides a lower bound for the marginal log-likelihood.
+
+\begin{align*}
+  \log \xprior 
+  &= \kl{\encoder}{\post}  + \elbo \\
+  &\geq \elbo
+\end{align*}
+
+For this reason, we call $\elbo$ the **Evidence Lower BOund** (ELBO). With an i.i.d dataset we can see that this relationships holds for the whole dataset:
+
+$$
+\sum_{\vx\in\dataset} \log \xprior \geq \sum_{\vx\in\dataset} \elbo
+$$
+
+Why is it useful to find a lower bound on the log marginal likelihood? Because by maximizing the ELBO we get two birds with one stone. First of all, notice how by maximizing the ELBO with respect to $\vtheta$, we can expect to approximately maximize also the log marginal likelihood. Similarly, by maximizing the ELBO with respect to $\vphi$ we can see that, since the ELBO can be written as the log marginal likelihood _minus_ the kl divergence, this is equivalent to minimizing the KL divergence. In summary we can write:
+
+\begin{equation*}
+    \max_{\vtheta, \vphi} \elbo \implies
+    \begin{cases} 
+    \displaystyle\max_{\vtheta} \sum_{\vx\in\dataset}\log \xprior & \text{as } \log \xprior \geq \elbo\\ 
+    \displaystyle\min_{\vphi}  \sum_{\vx\in\dataset} \text{KL} & \text{as } \log \xprior-\text{KL} = \elbo
+    \end{cases}
+\end{equation*}
+
+Repectively, such maximization have a very practical results:
+
+- The generative model $\xprior$ improves.
+- The approximation $\encoder$ improves.
+
+Lastly, one can also write the ELBO in a different way. This second formulation is often convenient because it will tend to have estimates with lower variance. 
+
+\begin{align*}
+    \elbo 
+    &= \log \xprior - \kl{q_{\vphi}}{\post} \\
+    &= \Ebb_{q_{\vphi}}\left[ \log \left(p_{\vtheta}(\vx\mid \vz)p_{\vtheta}(\vz)\right)- \log \encoder\right] \\
+    &= \underbrace{\Ebb_{q_{\vphi}}\left[\log p_{\vtheta}(\vx\mid \vz)\right]}_{\text{Expected Reconstruction Error}} - \underbrace{\kl{\encoder}{p_{\vtheta}(\vz)}}_{\text{Regularization Term}}
+\end{align*}
+
+As can be seen above, the ELBO can be written as a sum of two terms: expected reconstruction error and the KL divergence between the approximation and the latent prior. This KL-divergence can be interpreted as a regularization term trying to keep the approximation close to the prior. This regularization term can sometimes backfire and maintain the approximation to be exactly equal to the prior. To deal with such scenarios, called **posterior collapse**, people have been developing new methods, such as [delta-VAEs](https://neuralnetworksbristol.netlify.app/preventing-posterior-collapse-with-delta-vaes/).
+
+## Optimization of the ELBO Objective Function
+One way to optimize the ELBO with respect to $\vphi$ and $\vtheta$ is to perform gradient descent. Since our aim is to find an algorithm that scales well with large datasets, we want to use **Stochastic Gradient Ascent**. In order to do so, we need to be able to compute $\nabla_{\vphi} \elbo$ and $\nabla_{\vtheta}\elbo$. However, notice how in both formulations of the ELBO we find expectations with respect to $\encoder$, which depends on $\vphi$
+
+\begin{equation*}
+    \elbo = 
+    \begin{cases} 
+        \displaystyle \Ebb_{q_{\vphi}}\left[\log \joint - \log \encoder\right] \\
+        \qquad \\
+        \displaystyle \Ebb_{q_{\vphi}}\left[\log p_{\vtheta}(\vx \mid \vz)\right] - \kl{q_{\vphi}}{p_{\vtheta}(\vz)}
+    \end{cases}
+\end{equation*}
+
+This means that when taking the gradient of the ELBO with respect to $\vphi$ we cannot exchange the gradient and the expectation sign
+
+$$
+\nabla_{\vphi}\Ebb_{\encoder}\left[ \cdot \right] \neq \Ebb_{\encoder}\left[\nabla_{\vphi} \right]
+$$
+We would like to do this "exchange" operation so that we can approximate the gradient with a simple Monte Carlo estimate as it is usually done in Stochastic Gradient Ascent. To go around this problem our question becomes:
+
+> Can we write the expectation with respect to a distribution that is independent of $\vphi$? 
+$$
+\nabla_{\vphi}\Ebb_{\encoder}\left[\cdot\right] = \Ebb_{p(\vepsilon)}\left[\nabla_{\vphi}\right]
+$$
+
+If we think about it, we already know a special case in which this can be done. For instance, suppose that the distribution $\encoder$ is actually a multivariate normal distribution $\mathcal{N}(\vmu, \vSigma)$. Then, we can rewrite a sample $\vz\sim \encoder$ in terms of a standard multivariate normal distribution
+$$
+\vz = \vmu + \vect{L}\vepsilon \qquad \text{where} \qquad \vepsilon\sim \mathcal{N}(\vzero, \vect{I})
+$$
+where $\vect{L}\vect{L}^\top$ is the Cholesky decomposition of $\vSigma$. Notice how essentially we've written the random variable $\vz$, which depends on the parameters $\vphi = (\vmu, \vSigma)$ in terms of another random variables $\vepsilon$ that is independent of $\vphi$ and a deterministic (linear) transformation, which instead does depend on $\vphi$. We can then write an expectation with respect to $\mathcal{N}(\vmu, \vect{L})$ in terms of $\mathcal{N}(\vzero, \vect{I})$:
+$$
+\Ebb_{\mathcal{N}(\vmu, \vect{L})}\left[f(\vz)\right] = \Ebb_{\mathcal{N}(\vzero, \vect{I})}\left[f(\vmu + \vect{L}\vepsilon)\right]
+$$
+
+More generally, we can write a sample $\vz\sim \encoder$ as a _deterministic_ function of $\vx$ and $\vepsilon$, parametrized by $\vphi$
+$$
+\vz = g_{\vphi}(\vx, \vepsilon)
+$$
+where $\vepsilon$ is drawn from a distribution $p(\vepsilon)$ independent of $\vphi$. Then we can exchange the expectation and gradient operators as follows
+
+$$
+\nabla_{\vphi}\Ebb_{\encoder}[f(\vz)] = \Ebb_{p(\vepsilon)}[\nabla_{\vphi}f(g_{\vphi}(\vx, \vepsilon))]
+$$
+
+This is called the **reparametrization trick**. At this point we can finally obtain unbiased estimators of the ELBO (or equivalently, of its gradients) based on $\vepsilon^{(i)} \iid p(\vepsilon)$
+
+\begin{equation*}
+    \widetilde{\mathcal{L}}_{\vtheta, \vphi}(\vx) = 
+    \begin{cases} 
+        \displaystyle \frac{1}{L}\sum_{i=1}^L \left[\log p_{\vtheta}(\vx, g_{\vphi}(\vepsilon^{(i)}, \vx)) - \log q_{\vphi}(g_{\vphi}(\vepsilon^{(i)}, \vx)\mid \vx)\right] \\
+        \qquad \\
+        \displaystyle \frac{1}{L}\sum_{i=1}^L \left[\log p_{\vtheta}(\vx \mid g_{\vphi}(\vepsilon^{(i)}, \vx))\right] - \underbrace{\kl{q_{\vphi}}{p_{\vtheta}(\vz)}}_{\substack{\text{Often available} \\ \text{in closed form}}}
+    \end{cases}
+\end{equation*}
+
+Then to perform Stochastic Gradient Ascent we simply sample a mini-batch of data $\mathcal{M}\subseteq \dataset$ and use mini-batch gradients
+$$
+\frac{1}{|\mathcal{M}|}\sum_{\vx \in\mathcal{M}} \nabla_{\vtheta, \vphi}\widetilde{\mathcal{L}}_{\vtheta, \vphi}(\vx)
+$$
+
+We call this **Auto-Encoding Variational Bayes**.
+
+## Estimating the Marginal Likelihood 
+
+_After training_, one can estimate the log marginal likelihood by using **importance sampling**
+
+\begin{align*}
+\log \xprior 
+&= \log \int \joint d\vz \\
+&= \log \Ebb_{\encoder}\left[\frac{\joint}{\encoder}\right] \\
+&\approx \log \frac{1}{L}\sum_{i=1}^L \frac{p_{\vtheta}(\vx, \vz^{(i)})}{q_{\vphi}(\vz^{(i)}\mid \vx)} && \vz^{(i)}\iid \encoder
+\end{align*}
+
+## Variational Autoencoders
+Before introducing what a Variational Autoencoder is, we need to understand what we mean when we say that we parametrise a distribution using a neural network. Suppose that $\vx$ is a binary vector of Bernoulli trials. Then $p_{\vtheta}(\vx\mid\vz)$ is parametrized by a vector of probabilities $\vect{p}$ which can be constructed via a Multi-Layer Perceptron with an approrpriate output layer (e.g. softmax).
+
+<img src="/mlp.png" alt="Parametrizing a distribution with a MLP" width="200"/>
+
+and the log-likelihood is, of course
+$$
+\log p_{\vtheta}(\vx\mid \vz) = \sum_{j} x_j \log p_j + (1 - x_j) \log(1 - p_j)
+$$
+
+A Variational Autoencoder is simply Auto-Encoding Variational Bayes where both the approximating distribution $\encoder$ and $p_{\vtheta}(\vx\mid\vz)$ are parametrized using two different Neural Networks, as shown below.
+
+<img src="/vae.png" alt="Variational Autoencoder Diagram" width="800"/>
+
+## Relationship between EM algorithm and VAE
+
+So what is the relationship between the Expectation-Maximization algorithm and Variational Autoencoders? To get there we need to understand the EM algorithm in terms of Variational Inference. That is, we need to understand how the EM algorithm can be cast into the framework of variational inference. Recall that the EM algorithm proceeds in the following two steps:
+
+- Compute "current" posterior (which we can call approximate since $\vtheta^{(t)})$ will likely be, before convergence, different from the true $\vtheta^*$) 
+$$
+\displaystyle\left\{p_{\vtheta^{(t)}}(\vz \mid \vx) \,\, : \,\, \vx\in\dataset\right\}
+$$
+- Find optimal parameter 
+$$
+\displaystyle \vtheta^{(t+1)} = \arg\max_{\vtheta} \sum_{\vx\in\dataset} \Ebb_{p_{\vtheta^{(t)}}(\vz \mid \vx)}\left[\log \joint\right]
+$$
+
+Now  consider the ELBO in its two different forms, but now rather than considering it as a function of $\vx$ parametrized by $\vtheta$ and $\vphi$ (i.e. $\elbo$), consider it as a functional of $q_{\vphi}$ and a function of $\vtheta$, i.e. $\elbof$.
+
+\begin{equation*}
+    \elbof = 
+    \begin{cases} 
+        \displaystyle \log \xprior -  \kl{q_{\vphi}}{\post} \qquad \qquad &(1)\\
+        \qquad \\
+        \displaystyle \Ebb_{q_{\vphi}}[\log \joint] - \Ebb_{q_{\vphi}}[\log q_{\vphi}] \qquad \qquad &(2)
+    \end{cases}
+\end{equation*}
+
+We can find two **identical** steps as those of the EM algorithm by performing maximization of the ELBO with respect to $q_{\vphi}$ first, and then with respect to $\vtheta$:
+
+- **E-step**: Maximize $(1)$ with respect to $q_{\vphi}$ (this makes the KL-divergence zero and the bound is **tight**)
+$$
+\left\{p_{\vtheta^{(t)}}(\vz \mid \vx)= \arg\max_{q_{\vphi}} \mathcal{L}_{\vx}(\vtheta^{(t)}, q_{\vphi})\,\, : \,\, \vx\in\dataset\right\}
+$$
+- **M-step**: Maximize $(2)$ with respect to $\vtheta$
+$$
+\vtheta^{(t+1)} = \arg\max_{\vtheta} \sum_{\vx\in\dataset} \mathcal{L}_{\vx}(\vtheta, p_{\vtheta^{(t)}}(\vz \mid \vx))
+$$
+
+The relationship between the Expectation Maximization algorithm and Variational Auto-Encoders can therefore be summarized as follows:
+
+- EM algorithm and VAE optimize the **same objective function**.
+- When expectations are in closed-form, one should use the EM algorithm which uses **coordinate ascent**.
+- When expectations are intractable, VAE uses **stochastic gradient ascent** on an unbiased estimator of the objective function.
+
+
+# Bibliography
+

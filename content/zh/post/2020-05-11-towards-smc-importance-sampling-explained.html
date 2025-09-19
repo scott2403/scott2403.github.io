@@ -1,0 +1,102 @@
+---
+title: 'Towards SMC: Importance Sampling Explained'
+author: Mauro
+date: '2020-05-11'
+slug: towards-smc-importance-sampling-explained
+categories:
+  - sampling
+  - monte-carlo
+  - importance-sampling
+  - smc
+  - sequential-monte-carlo
+  - sequential-importance-sampling
+  - bayesian-inference
+tags:
+  - importance-sampling
+  - sequential-monte-carlo
+  - sequential-importance-sampling
+  - bayesian-inference
+  - sampling
+subtitle: 'Simple Explanation of Importance Sampling for Sequential Monte Carlo (SMC)'
+summary: 'Importance Sampling as a first step towards Sequential Monte Carlo (SMC)'
+authors: []
+lastmod: '2020-05-12T11:40:54+01:00'
+featured: no
+image:
+  caption: ''
+  focal_point: ''
+  preview_only: no
+projects: []
+bibliography: biblio_is.bib
+nocite: |
+  @esmc, @smc_bf, @mcs_sc, @mcsm, @bda,@brml
+---
+
+
+
+
+<div id="classic-importance-sampling" class="section level3">
+<h3>Classic Importance Sampling</h3>
+<p>Suppose that our aim is to compute the posterior expectation
+<span class="math display">\[
+\mathbb{E}_{p(\boldsymbol{\mathbf{\theta}}\mid \boldsymbol{\mathbf{y}})}[h(\boldsymbol{\mathbf{\theta}})] = \int h(\boldsymbol{\mathbf{\theta}})p(\boldsymbol{\mathbf{\theta}}\mid\boldsymbol{\mathbf{y}}) d\boldsymbol{\mathbf{\theta}}
+\]</span>
+of some function <span class="math inline">\(h(\boldsymbol{\mathbf{\theta}})\)</span> with respect to a posterior distribution</p>
+<p><span class="math display">\[\begin{align}
+p(\boldsymbol{\mathbf{\theta}}\mid \boldsymbol{\mathbf{y}}) = \frac{\widetilde{p}(\boldsymbol{\mathbf{\theta}}\mid \boldsymbol{\mathbf{y}})}{Z_p} \qquad \text{and} \qquad Z_p = \int \widetilde{p}(\boldsymbol{\mathbf{\theta}}\mid \boldsymbol{\mathbf{y}}) d\boldsymbol{\mathbf{\theta}}.
+\end{align}\]</span></p>
+<p>Suppose also that it is impractical to sample directly from <span class="math inline">\(p(\boldsymbol{\mathbf{\theta}}\mid \boldsymbol{\mathbf{y}})\)</span>. In Importance Sampling we choose an <strong>importance distribution</strong> <span class="math inline">\(q(\boldsymbol{\mathbf{\theta}})\)</span> from which it is easier to sample from, and rewrite the expectation above as an expectation with respect to <span class="math inline">\(q(\boldsymbol{\mathbf{\theta}})\)</span> so that we can use its samples instead
+<span class="math display">\[
+\begin{align}
+  \mathbb{E}_{p(\boldsymbol{\mathbf{\theta}}\mid \boldsymbol{\mathbf{y}})}[h(\boldsymbol{\mathbf{\theta}})] 
+  &amp;= \int h(\boldsymbol{\mathbf{\theta}})p(\boldsymbol{\mathbf{\theta}}\mid\boldsymbol{\mathbf{y}}) d\boldsymbol{\mathbf{\theta}}\\
+  &amp;= \int h(\boldsymbol{\mathbf{\theta}})\frac{\widetilde{p}(\boldsymbol{\mathbf{\theta}}\mid \boldsymbol{\mathbf{y}})}{Z_p}d\boldsymbol{\mathbf{\theta}}\\
+  &amp;= \frac{1}{Z_p}\int h(\boldsymbol{\mathbf{\theta}}) \frac{\widetilde{p}(\boldsymbol{\mathbf{\theta}}\mid \boldsymbol{\mathbf{y}})}{q(\boldsymbol{\mathbf{\theta}})} q(\boldsymbol{\mathbf{\theta}}) d\boldsymbol{\mathbf{\theta}}\\
+  &amp;= \frac{\int h(\boldsymbol{\mathbf{\theta}}) \frac{\widetilde{p}(\boldsymbol{\mathbf{\theta}}\mid \boldsymbol{\mathbf{y}})}{q(\boldsymbol{\mathbf{\theta}})} q(\boldsymbol{\mathbf{\theta}}) d\boldsymbol{\mathbf{\theta}}}{\int \frac{\widetilde{p}(\boldsymbol{\mathbf{\theta}}\mid \boldsymbol{\mathbf{y}})}{q(\boldsymbol{\mathbf{\theta}})} q(\boldsymbol{\mathbf{\theta}})d\boldsymbol{\mathbf{\theta}}} \\
+  &amp;= \frac{\mathbb{E}_{q(\boldsymbol{\mathbf{\theta}})}\left[\frac{\widetilde{p}(\boldsymbol{\mathbf{\theta}}\mid \boldsymbol{\mathbf{y}})}{q(\boldsymbol{\mathbf{\theta}})}h(\boldsymbol{\mathbf{\theta}})\right]}{\mathbb{E}_{q(\boldsymbol{\mathbf{\theta}})}\left[\frac{\widetilde{p}(\boldsymbol{\mathbf{\theta}}\mid \boldsymbol{\mathbf{y}})}{q(\boldsymbol{\mathbf{\theta}})}\right]}.
+\end{align}
+\]</span>
+Now we approximate this expectation using Monte Carlo using <span class="math inline">\(\boldsymbol{\mathbf{\theta}}^{(1)}, \ldots, \boldsymbol{\mathbf{\theta}}^{(N)}\sim q(\boldsymbol{\mathbf{\theta}})\)</span>
+<span class="math display">\[\begin{align}
+  \mathbb{E}_{p(\boldsymbol{\mathbf{\theta}}\mid \boldsymbol{\mathbf{y}})}[h(\boldsymbol{\mathbf{\theta}})] 
+  &amp;= \frac{\mathbb{E}_{q(\boldsymbol{\mathbf{\theta}})}\left[\frac{\widetilde{p}(\boldsymbol{\mathbf{\theta}}\mid \boldsymbol{\mathbf{y}})}{q(\boldsymbol{\mathbf{\theta}})}h(\boldsymbol{\mathbf{\theta}})\right]}{\mathbb{E}_{q(\boldsymbol{\mathbf{\theta}})}\left[\frac{\widetilde{p}(\boldsymbol{\mathbf{\theta}}\mid \boldsymbol{\mathbf{y}})}{q(\boldsymbol{\mathbf{\theta}})}\right]} \\
+  &amp;\approx \frac{\frac{1}{N}\sum_{i=1}^N \frac{\widetilde{p}(\boldsymbol{\mathbf{\theta}}^{(i)}\mid \boldsymbol{\mathbf{y}})}{q(\boldsymbol{\mathbf{\theta}}^{(i)})}h(\boldsymbol{\mathbf{\theta}}^{(i)})}{\frac{1}{N}\sum_{i=1}^N \frac{\widetilde{p}(\boldsymbol{\mathbf{\theta}}^{(i)}\mid \boldsymbol{\mathbf{y}})}{q(\boldsymbol{\mathbf{\theta}}^{(i)})}} \\
+  &amp;= \sum_{i=1}^N \left[\frac{\frac{\widetilde{p}(\boldsymbol{\mathbf{\theta}}^{(i)}\mid \boldsymbol{\mathbf{y}})}{q(\boldsymbol{\mathbf{\theta}}^{(i)})}}{\sum_{j=1}^N \frac{\widetilde{p}(\boldsymbol{\mathbf{\theta}}^{(j)}\mid \boldsymbol{\mathbf{y}})}{q(\boldsymbol{\mathbf{\theta}}^{(j)})}}\right] h(\boldsymbol{\mathbf{\theta}}^{(i)}) \\
+  &amp;= \sum_{i=1}^N \left[\frac{\widetilde{w}(\boldsymbol{\mathbf{\theta}}^{(i)})}{\sum_{j=1}^N \widetilde{w}(\boldsymbol{\mathbf{\theta}}^{(j)})}\right]h(\boldsymbol{\mathbf{\theta}}^{(i)}) \\
+  &amp;= \sum_{i=1}^N w(\boldsymbol{\mathbf{\theta}}^{(i)}) h(\boldsymbol{\mathbf{\theta}}^{(i)})
+\end{align}\]</span></p>
+<p>where we have defined <span class="math inline">\(w(\boldsymbol{\mathbf{\theta}}^{(i)})\)</span> and <span class="math inline">\(\widetilde{w}(\boldsymbol{\mathbf{\theta}}^{(i)})\)</span> are called <strong>normalized importance weights</strong> and unnormalized importance weights respectively and are defined below
+<span class="math display">\[
+\widetilde{w}(\boldsymbol{\mathbf{\theta}}^{(i)}) = \frac{\widetilde{p}(\boldsymbol{\mathbf{\theta}}^{(i)}\mid \boldsymbol{\mathbf{y}})}{q(\boldsymbol{\mathbf{\theta}}^{(i)})} \qquad \text{and} \qquad w(\boldsymbol{\mathbf{\theta}}^{(i)}) = \frac{\widetilde{w}(\boldsymbol{\mathbf{\theta}}^{(i)})}{\sum_{j=1}^N \widetilde{w}(\boldsymbol{\mathbf{\theta}}^{(j)}) }
+\]</span></p>
+</div>
+<div id="properties-of-classic-importance-sampling" class="section level3">
+<h3>Properties of Classic Importance Sampling</h3>
+<ul>
+<li>For the variance of the estimator of <span class="math inline">\(\mathbb{E}_{p(\boldsymbol{\mathbf{\theta}}\mid \boldsymbol{\mathbf{y}})}[h(\boldsymbol{\mathbf{\theta}})]\)</span> to be finite we require <span class="math inline">\(\text{supp}(q) \supset \text{supp}(p)\)</span>.</li>
+<li>Notice that the vector of weights <span class="math inline">\(\boldsymbol{\mathbf{w}} = (w(\boldsymbol{\mathbf{\theta}}^{(1)}), \ldots, w(\boldsymbol{\mathbf{\theta}}^{(N)}))^\top\)</span> tells us how well <span class="math inline">\(q(\boldsymbol{\mathbf{\theta}})\)</span> fits <span class="math inline">\(p(\boldsymbol{\mathbf{\theta}}\mid\boldsymbol{\mathbf{y}})\)</span>. In particular when <span class="math inline">\(q\equiv p\)</span> we have <span class="math inline">\(\boldsymbol{\mathbf{w}} = \left(\frac{1}{N}, \ldots, \frac{1}{N}\right)^\top\)</span>, i.e. a vector of uniform weights. So the more uniform the weights, the better the fit. In practice, there will be only few dominant weights, and if <span class="math inline">\(q\)</span> badly fits <span class="math inline">\(p\)</span> then the vast majority of weights will be neglegible, and one or two weights will dominate.</li>
+</ul>
+</div>
+<div id="bibliography" class="section level1 unnumbered">
+<h1>Bibliography</h1>
+<div id="refs" class="references">
+<div id="ref-brml">
+<p>Barber, David. 2012. <em>Bayesian Reasoning and Machine Learning</em>. USA: Cambridge University Press.</p>
+</div>
+<div id="ref-smc_bf">
+<p>Doucet, Arnaud, Simon Godsill, and Christophe Andrieu. 2000. “On Sequential Monte Carlo Sampling Methods for Bayesian Filtering.” <em>Statistics and Computing</em> 10 (3). USA: Kluwer Academic Publishers: 197–208. <a href="https://doi.org/10.1023/A:1008935410038">https://doi.org/10.1023/A:1008935410038</a>.</p>
+</div>
+<div id="ref-bda">
+<p>Gelman, Andrew, John B. Carlin, Hal S. Stern, and Donald B. Rubin. 2004. <em>Bayesian Data Analysis</em>. 2nd ed. Chapman; Hall/CRC.</p>
+</div>
+<div id="ref-mcs_sc">
+<p>Liu, Jun S. 2008. <em>Monte Carlo Strategies in Scientific Computing</em>. Springer Publishing Company, Incorporated.</p>
+</div>
+<div id="ref-esmc">
+<p>Naesseth, Christian A., Fredrik Lindsten, and Thomas B. Schön. 2019. “Elements of Sequential Monte Carlo.”</p>
+</div>
+<div id="ref-mcsm">
+<p>Robert, Christian P., and George Casella. 2005. <em>Monte Carlo Statistical Methods (Springer Texts in Statistics)</em>. Berlin, Heidelberg: Springer-Verlag.</p>
+</div>
+</div>
+</div>

@@ -1,0 +1,125 @@
+---
+title: 'Towards SMC: Using the Dirac-delta function in Sampling and Sequential Monte
+  Carlo'
+author: Mauro Camara Escudero
+date: '2020-05-19'
+slug: towards-smc-using-the-dirac-delta-function-in-sampling-and-sequential-monte-carlo
+categories:
+  - sampling
+  - dirac-delta-funtion
+  - dirac-delta-mass
+  - importance-sampling
+  - sequential-monte-carlo
+tags: []
+subtitle: 'Explanation of the Dirac-delta notation in Sampling and Sequential Monte Carlo.'
+summary: 'We derive the Dirac-delta function, explain how to use to approximate an Empirical PDF for a sample.'
+authors: []
+lastmod: '2020-05-19T15:02:08+01:00'
+featured: no
+image:
+  caption: ''
+  focal_point: ''
+  preview_only: no
+projects: []
+---
+
+
+
+
+<div id="discrete-distributions-pmf-and-cdf" class="section level2">
+<h2>Discrete Distributions, PMF and CDF</h2>
+<p>Suppose we have a discrete random variable <span class="math inline">\(X\)</span> taking <span class="math inline">\(k\)</span> different values
+<span class="math display">\[
+\mathbb{P}[X = x_i] = p_i \qquad \forall\, i = 1, \ldots, k,
+\]</span>
+where <span class="math inline">\(0\leq p_i \leq 1\)</span> and <span class="math inline">\(\sum_{i=1}^k p_i = 1\)</span>. It’s <strong>probability mass function</strong> is then equal to <span class="math inline">\(p_i\)</span> at <span class="math inline">\(X=x_i\)</span> and <span class="math inline">\(0\)</span> everywhere else, as shown in Figure <a href="#fig:pmf">1</a>
+<span class="math display">\[
+P_X(x) = 
+\begin{cases}
+p_i &amp; x=x_i \\
+0   &amp; x\neq \{x_1, \ldots, x_k\}
+\end{cases}.
+\]</span></p>
+<div class="figure" style="text-align: center"><span id="fig:pmf"></span>
+<img src="/post/2020-05-19-towards-smc-using-the-dirac-delta-function-in-sampling-and-sequential-monte-carlo_files/figure-html/pmf-1.png" alt="\label{fig:pmf}Probability Mass Function" width="672" />
+<p class="caption">
+Figure 1: Probability Mass Function
+</p>
+</div>
+<p>The <strong>cumulative distribution function</strong> of <span class="math inline">\(X\)</span>, denoted <span class="math inline">\(F_X(x)\)</span>, gives us the probability that the state of <span class="math inline">\(X\)</span> is less than or equal to <span class="math inline">\(x\)</span> (see Figure <a href="#fig:cdf">2</a>)
+<span class="math display">\[
+F_X(x) = \sum_{x_i \leq x} \mathbb{P}[X = x_i] \qquad\qquad -\infty &lt; x &lt; \infty.
+\]</span></p>
+<div class="figure" style="text-align: center"><span id="fig:cdf"></span>
+<img src="/post/2020-05-19-towards-smc-using-the-dirac-delta-function-in-sampling-and-sequential-monte-carlo_files/figure-html/cdf-1.png" alt="\label{fig:cdf}Cumulative Distribution Function" width="672" />
+<p class="caption">
+Figure 2: Cumulative Distribution Function
+</p>
+</div>
+</div>
+<div id="rewriting-discrete-distributions-as-continuous-distributions" class="section level2">
+<h2>Rewriting Discrete Distributions as Continuous Distributions</h2>
+<p>We can also express the CDF as a sum of step functions. For this purpose we define <span class="math inline">\(u_y(x)\)</span>
+<span class="math display">\[
+u_{y}(x) =
+\begin{cases}
+1 &amp; x\geq y \\
+0 &amp; x &lt; y
+\end{cases},
+\]</span></p>
+<div class="figure" style="text-align: center"><span id="fig:step"></span>
+<img src="/post/2020-05-19-towards-smc-using-the-dirac-delta-function-in-sampling-and-sequential-monte-carlo_files/figure-html/step-1.png" alt="\label{fig:step}Step Function" width="672" />
+<p class="caption">
+Figure 3: Step Function
+</p>
+</div>
+<p>and then rewrite the CDF as follows
+<span class="math display">\[
+F_X(x) = \sum_{i=1}^N \mathbb{P}\left(X = x_i\right) u_{x^{(i)}}(x) = \sum_{i=1}^N p_i u_{x^{(i)}}(x)
+\]</span>
+This way of writing the CDF is more useful because, if we can find a suitable derivative for the step function, then we can find an approximation to the PDF. Unfortunately, the step function has a discontinuity at <span class="math inline">\(x=y\)</span>. The solution to this problem lies in defining the derivative of the step function ourselves. We call this the <strong>Dirac Delta function</strong> and it satisfies the following properties (for any function <span class="math inline">\(g(x)\)</span>)
+<span class="math display">\[
+\frac{d \,u_{y}(x)}{d x} = \delta_y(x) =
+\begin{cases}
+\infty &amp; x=y \\
+0 &amp; x\neq y
+\end{cases}
+\]</span>
+<span class="math display">\[
+\int g(x) \delta_y(x) dx = g(y)
+\]</span></p>
+<div class="figure" style="text-align: center"><span id="fig:diracdelta"></span>
+<img src="/post/2020-05-19-towards-smc-using-the-dirac-delta-function-in-sampling-and-sequential-monte-carlo_files/figure-html/diracdelta-1.png" alt="\label{fig:diracdelta}Dirac-delta Function" width="672" />
+<p class="caption">
+Figure 4: Dirac-delta Function
+</p>
+</div>
+<p>Now we can find an approximate continuous PDF for <span class="math inline">\(X\)</span> by taking the derivative of <span class="math inline">\(F_X(x)\)</span>
+<span class="math display">\[
+p_X(x) = \frac{d F_X(x)}{dx} = \sum_{i=1}^Np_i \frac{d u_{x^{(i)}}(x)}{dx} = \sum_{i=1}^Np_i \delta_{x^{(i)}}(x)
+\]</span></p>
+<p>##Continuous approximation of an Empirical PDF
+Suppose now that we obtain realizations <span class="math inline">\(x^{(1)}, \ldots, x^{(N)}\)</span> of a sample <span class="math inline">\(X^{(1)}, \ldots, X^{(N)}\)</span> from a <strong>probability density function</strong> <span class="math inline">\(p_X(x)\)</span>. Since we only have a finite number <span class="math inline">\(N\)</span> of such samples, we need to find a way of obtaining an approximate representation of <span class="math inline">\(p_X(x)\)</span> from them. One step towards this goal is to construct the <strong>empirical distribution function</strong>
+<span class="math display">\[
+\widehat{F}_N(x) = \frac{1}{N}\sum_{i=1}^N \mathbb{I}(X^{(i)} \leq x) = \sum_{i=1}^N\frac{1}{N} \mathbb{I}(X^{(i)} \leq x),
+\]</span>
+which essentially uses the indicator function to count how many observations of the sample are less than or equal to <span class="math inline">\(x\)</span> and then divides it by <span class="math inline">\(N\)</span>, the number of samples. Another way of interpreting it is that is assigns probability <span class="math inline">\(\frac{1}{N}\)</span> to each sample. Practically, this means that <span class="math inline">\(\widehat{F}_N(x)\)</span> will be conceptually similar to Figure <a href="#fig:cdf">2</a>, but with jumps of <span class="math inline">\(\frac{1}{N}\)</span> at every sample.</p>
+<p>For instance, suppose that we sample <span class="math inline">\(N=5\)</span> times from a standard normal <span class="math inline">\(\mathcal{N}(0, 1)\)</span> and we sort the samples in increasing order, as shown in Figure <a href="#fig:sample">5</a>.</p>
+<div class="figure" style="text-align: center"><span id="fig:sample"></span>
+<img src="/post/2020-05-19-towards-smc-using-the-dirac-delta-function-in-sampling-and-sequential-monte-carlo_files/figure-html/sample-1.png" alt="\label{fig:sample}The true PDF $\normal{0}{1}$ is being approximated by a weighted sum of Dirac-delta functions." width="672" />
+<p class="caption">
+Figure 5: The true PDF <span class="math inline">\(\mathcal{N}\left(0, 1\right)\)</span> is being approximated by a weighted sum of Dirac-delta functions.
+</p>
+</div>
+<p>We can build a CDF with jumps of <span class="math inline">\(\frac{1}{5}\)</span> at every sample <span class="math inline">\(x^{(i)}\)</span> (see Figure <a href="#fig:empirical">6</a>), and we can see how it gives a decent approximation of the true CDF. Importantly, by the Glivenko-Cantelli theorem  we know that the empirical CDF converges to the true CDF as <span class="math inline">\(N\)</span> increases.</p>
+<div class="figure" style="text-align: center"><span id="fig:empirical"></span>
+<img src="/post/2020-05-19-towards-smc-using-the-dirac-delta-function-in-sampling-and-sequential-monte-carlo_files/figure-html/empirical-1.png" alt="\label{fig:empirical}he true CDF can be approximated by a weighted sum of step functions." width="672" />
+<p class="caption">
+Figure 6: he true CDF can be approximated by a weighted sum of step functions.
+</p>
+</div>
+<p>At this point, we can follow the same steps as above: rewrite the empirical CDF as a weighted sum of step functions, and then take the derivative to find an approximate PDF using the Dirac-delta function.
+<span class="math display">\[
+\widehat{F}_N(x) = \sum_{i=1}^{N} \frac{1}{N} u_{x^{(i)}}(x) \quad \implies \quad \widehat{p}_N(x) = \sum_{i=1}^{N} \frac{1}{N} \delta_{x^{(i)}}(x)
+\]</span></p>
+</div>

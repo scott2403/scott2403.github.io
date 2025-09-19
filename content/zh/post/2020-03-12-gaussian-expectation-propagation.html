@@ -1,0 +1,173 @@
+---
+title: Gaussian Expectation Propagation
+author: Mauro Camara Escudero
+date: '2020-03-12'
+slug: gaussian-expectation-propagation
+categories:
+  - expectation-propagation
+tags:
+  - gaussian-ep
+  - gaussian-expectation-propagation
+  - normal-expectation-propagation
+subtitle: ''
+summary: 'Description of Expectation Propagation using Multivariate Normal factors for the global approximation.'
+authors: []
+lastmod: '2020-03-12T19:47:53Z'
+featured: no
+image:
+  caption: ''
+  focal_point: ''
+  preview_only: no
+projects: []
+bibliography: bibliography.bib
+---
+
+
+
+<div id="multivariate-normal-distribution-in-the-exponential-family" class="section level2">
+<h2>Multivariate Normal Distribution in the Exponential Family</h2>
+<p>Remember from a previous blog post that a pdf <span class="math inline">\(p(\boldsymbol{\mathbf{x}}) = \mathcal{N}(\boldsymbol{\mathbf{x}}; \boldsymbol{\mathbf{\mu}}, \boldsymbol{\mathbf{\Sigma}})\)</span> can be written as
+<span class="math display">\[
+p(\boldsymbol{\mathbf{x}}) = \exp\left\{\langle \boldsymbol{\mathbf{\Sigma}}^{-1}\boldsymbol{\mathbf{\mu}}, \boldsymbol{\mathbf{x}}\rangle + \left\langle \text{vec}\left(-\frac{1}{2}\boldsymbol{\mathbf{\Sigma}}^{-1}\right), \text{vec}\left(\boldsymbol{\mathbf{x}}\boldsymbol{\mathbf{x}}^\top\right)\right\rangle -\frac{1}{2}\left[d\log2\pi + \log|\boldsymbol{\mathbf{\Sigma}}| +\boldsymbol{\mathbf{\mu}}^\top\boldsymbol{\mathbf{\Sigma}}^{-1}\boldsymbol{\mathbf{\mu}}\right]\right\}
+\]</span></p>
+<p>Following the work of <span class="citation">Barthelmé, Chopin, and Cottet (<a href="#ref-barthelm2015divide">2015</a>)</span> we can relabel the expression above as follows
+<span class="math display">\[
+p(\boldsymbol{\mathbf{x}}) \propto \exp\left\{\langle \boldsymbol{\mathbf{r}}, \boldsymbol{\mathbf{x}}\rangle + \left\langle \text{vec}\left(-\frac{1}{2}\boldsymbol{\mathbf{Q}}\right), \text{vec}\left(\boldsymbol{\mathbf{x}}\boldsymbol{\mathbf{x}}^\top\right)\right\rangle \right\}
+\]</span>
+where we have defined
+<span class="math display">\[
+\boldsymbol{\mathbf{r}}:= \boldsymbol{\mathbf{\Sigma}}^{-1} \boldsymbol{\mathbf{\mu}}\qquad \text{and} \qquad \boldsymbol{\mathbf{Q}}:= \boldsymbol{\mathbf{\Sigma}}^{-1}
+\]</span></p>
+</div>
+<div id="target-distribution" class="section level2">
+<h2>Target Distribution</h2>
+<p>We assume the target distribution is intractable, but can be factorized into a product of <span class="math inline">\(K+1\)</span> terms
+<span class="math display">\[
+f(\boldsymbol{\mathbf{\gamma}}) \propto \prod_{k=0}^K f_k(\boldsymbol{\mathbf{\gamma}}_k)
+\]</span>
+where usually</p>
+<ul>
+<li><span class="math inline">\(f(\boldsymbol{\mathbf{\gamma}})=p(\boldsymbol{\mathbf{\gamma}}\mid \boldsymbol{\mathbf{x}})\)</span> is a <strong>posterior</strong> distribution.</li>
+<li><span class="math inline">\(f_0(\boldsymbol{\mathbf{\gamma}}_0) = p(\boldsymbol{\mathbf{\gamma}}; \boldsymbol{\mathbf{\theta}}_0)\)</span> is a <strong>prior</strong> distribution.</li>
+<li><span class="math inline">\(f_1(\boldsymbol{\mathbf{\gamma}}_1), \ldots, f_K(\boldsymbol{\mathbf{\gamma}}_k)\)</span> are <strong>likelihood</strong> terms, which are <em>intractable</em>.</li>
+</ul>
+<p>From here onwards we assume that the prior distribution <span class="math inline">\(f_0(\boldsymbol{\mathbf{\gamma}})\)</span> is a multivariate gaussian distribution <span class="math inline">\(\mathcal{N}(\boldsymbol{\mathbf{\gamma}}; \boldsymbol{\mathbf{r}}_0, \boldsymbol{\mathbf{Q}}_0)\)</span> (with natural parameters <span class="math inline">\(\boldsymbol{\mathbf{\theta}}_0 = \left(\boldsymbol{\mathbf{r}}_0, -\frac{1}{2}\boldsymbol{\mathbf{Q}}_0\right)^\top\)</span>).
+<span class="math display">\[
+f_0(\boldsymbol{\mathbf{\gamma}}) = p(\boldsymbol{\mathbf{\gamma}}; \boldsymbol{\mathbf{r}}_0, \boldsymbol{\mathbf{Q}}_0) = \propto \exp\left\{\langle \boldsymbol{\mathbf{r}}_0, \boldsymbol{\mathbf{x}}\rangle + \left\langle \text{vec}\left(-\frac{1}{2}\boldsymbol{\mathbf{Q}}_0\right), \text{vec}\left(\boldsymbol{\mathbf{x}}\boldsymbol{\mathbf{x}}^\top\right)\right\rangle \right\}
+\]</span></p>
+<blockquote>
+<p><strong>Note</strong>: The parameters <span class="math inline">\(\boldsymbol{\mathbf{\gamma}}_0, \ldots, \boldsymbol{\mathbf{\gamma}}_k\)</span> are <em>not</em> the components of <span class="math inline">\(\boldsymbol{\mathbf{\gamma}}\)</span>, they are different parameters.</p>
+</blockquote>
+</div>
+<div id="global-approximation" class="section level2">
+<h2>Global Approximation</h2>
+<p>The global approximation is defined as
+<span class="math display">\[
+g(\boldsymbol{\mathbf{\theta}}) \propto \prod_{k=0}^K g_k(\boldsymbol{\mathbf{\theta}}_k)
+\]</span>
+where we set the first term to be equal to the (tractable) prior, which is a multivariate gaussian distribution
+<span class="math display">\[
+g_0(\boldsymbol{\mathbf{\theta}}) \propto \exp\left\{\langle \boldsymbol{\mathbf{r}}_0, \boldsymbol{\mathbf{x}}\rangle + \left\langle \text{vec}\left(-\frac{1}{2}\boldsymbol{\mathbf{Q}}_0\right), \text{vec}\left(\boldsymbol{\mathbf{x}}\boldsymbol{\mathbf{x}}^\top\right)\right\rangle \right\}
+\]</span>
+Furthermore, we assume that each factor <span class="math inline">\(g_k(\boldsymbol{\mathbf{\theta}}_k)\)</span> for <span class="math inline">\(k=1, \ldots, K\)</span> also follows a Multivariate Normal Distribution with natural parameter <span class="math inline">\(\boldsymbol{\mathbf{\theta}}_k = (\boldsymbol{\mathbf{r}}_k, \boldsymbol{\mathbf{Q}}_k)^\top\)</span>. Luckily, the product of Gaussians is again a Gaussian distribution. In particular we have
+<span class="math display">\[
+\begin{align}
+g(\boldsymbol{\mathbf{\theta}}) &amp;\propto
+\prod_{k=0}^K \exp\left\{ \boldsymbol{\mathbf{r}}_k^\top\boldsymbol{\mathbf{x}}+  \text{vec}\left(-\frac{1}{2}\boldsymbol{\mathbf{Q}}_k\right)^\top \text{vec}\left(\boldsymbol{\mathbf{x}}\boldsymbol{\mathbf{x}}^\top\right) \right\} \\
+&amp;= \exp\left\{\left(\sum_{k=0}^K \boldsymbol{\mathbf{r}}_k\right)^\top\boldsymbol{\mathbf{x}}+ \text{vec}\left(-\frac{1}{2}\sum_{k=0}^K \boldsymbol{\mathbf{Q}}_k\right)^\top  \text{vec}\left(\boldsymbol{\mathbf{x}}\boldsymbol{\mathbf{x}}^\top\right)\right\} \\
+&amp;:= \exp\left\{\boldsymbol{\mathbf{r}}^\top\boldsymbol{\mathbf{x}}+ \text{vec}\left(-\frac{1}{2}\boldsymbol{\mathbf{Q}}\right)^\top  \text{vec}\left(\boldsymbol{\mathbf{x}}\boldsymbol{\mathbf{x}}^\top\right)\right\}
+\end{align}
+\]</span>
+where we have defined the global natural parameters to be
+<span class="math display">\[
+\boldsymbol{\mathbf{r}}:= \sum_{k=0}^K \boldsymbol{\mathbf{r}}_k \qquad \text{and} \qquad \boldsymbol{\mathbf{Q}}:= \sum_{k=0}^K \boldsymbol{\mathbf{Q}}_k
+\]</span>
+In other words, the natural parameters of the global approximation are found by summing the natural parameters of all the sites.</p>
+<blockquote>
+<p><strong>Note</strong>: The parameters <span class="math inline">\(\boldsymbol{\mathbf{\theta}}_0, \ldots, \boldsymbol{\mathbf{\theta}}_k\)</span> are <em>not</em> the components of <span class="math inline">\(\boldsymbol{\mathbf{\theta}}\)</span>, they are different parameters.</p>
+</blockquote>
+</div>
+<div id="cavity-distribution" class="section level2">
+<h2>Cavity Distribution</h2>
+<p>The cavity distribution at the <span class="math inline">\(k^{\text{th}}\)</span> site is given by the product of all but the <span class="math inline">\(k^{\text{th}}\)</span> Multivariate Gaussian. This means that we can write the cavity distribution as
+<span class="math display">\[
+g_{-k}(\boldsymbol{\mathbf{\theta}}- \boldsymbol{\mathbf{\theta}}_k) \propto \exp\left\{\left(\boldsymbol{\mathbf{r}}- \boldsymbol{\mathbf{r}}_k\right)^\top\boldsymbol{\mathbf{x}}+ \text{vec}\left(-\frac{1}{2}\left(\boldsymbol{\mathbf{Q}}- \boldsymbol{\mathbf{Q}}_k\right)\right)^\top  \text{vec}\left(\boldsymbol{\mathbf{x}}\boldsymbol{\mathbf{x}}^\top\right)\right\}
+\]</span>
+In other words, the natural parameters of the cavity distribution are found by taking the difference between the global natural parameters and the natural parameters of the <span class="math inline">\(k^{\text{th}}\)</span> site.</p>
+</div>
+<div id="tilted-distribution" class="section level2">
+<h2>Tilted Distribution</h2>
+<p>The tilted distribution, also called pseudo-posterior, is found by multiplying the cavity distribution by the <span class="math inline">\(k^{\text{th}}\)</span> local likelihood term. In other words, the tilted distribution is a (pseudo-)posterior where we use the cavity distribution as a (pseudo-)prior and the single local likelihood term as the likelihood.</p>
+<p>In general, computing moments of this distribution will be intractable, however we how that calculating moments of this distribution will be easier than calculating moments of the entire target distribution.
+<span class="math display">\[
+\begin{align}
+g_{\backslash k}(\widetilde{\boldsymbol{\mathbf{\gamma}}}_k)
+&amp;\propto f_k(\boldsymbol{\mathbf{\gamma}}_k) \exp\left\{\left(\boldsymbol{\mathbf{r}}- \boldsymbol{\mathbf{r}}_k\right)^\top\boldsymbol{\mathbf{x}}+ \text{vec}\left(-\frac{1}{2}\left(\boldsymbol{\mathbf{Q}}- \boldsymbol{\mathbf{Q}}_k\right)\right)^\top  \text{vec}\left(\boldsymbol{\mathbf{x}}\boldsymbol{\mathbf{x}}^\top\right)\right\}
+\end{align}
+\]</span></p>
+</div>
+<div id="gaussian-expectation-propagation-updates" class="section level2">
+<h2>Gaussian Expectation Propagation Updates</h2>
+<div id="initialization" class="section level3">
+<h3>Initialization</h3>
+<ul>
+<li>Choose natural parameters for the prior distribution <span class="math inline">\(\boldsymbol{\mathbf{r}}_0\)</span> and <span class="math inline">\(\boldsymbol{\mathbf{Q}}_0\)</span>.</li>
+<li>For every site <span class="math inline">\(k=1, \ldots, K\)</span> choose the parameters <span class="math inline">\(\boldsymbol{\mathbf{r}}_k\)</span> and <span class="math inline">\(\boldsymbol{\mathbf{Q}}_k\)</span>.</li>
+<li>Compute the natural parameters of the global approximation
+<span class="math display">\[
+\boldsymbol{\mathbf{r}}\leftarrow \sum_{k=0}^K \boldsymbol{\mathbf{r}}_k \qquad \text{and} \qquad \boldsymbol{\mathbf{Q}}\leftarrow \sum_{k=0}^K \boldsymbol{\mathbf{Q}}_k
+\]</span></li>
+</ul>
+</div>
+<div id="updates" class="section level3">
+<h3>Updates</h3>
+<ul>
+<li>At the <span class="math inline">\(k^{\text{th}}\)</span> site subtract the <span class="math inline">\(k^{\text{th}}\)</span> natural parameters from the global ones, to obtain the natural parameters of the <strong>cavity distribution</strong>
+<span class="math display">\[
+\boldsymbol{\mathbf{r}}_{-k}\leftarrow \boldsymbol{\mathbf{r}}- \boldsymbol{\mathbf{r}}_k \qquad \text{and} \qquad \boldsymbol{\mathbf{Q}}_{-k} \leftarrow \boldsymbol{\mathbf{Q}}- \boldsymbol{\mathbf{Q}}_k
+\]</span></li>
+<li>Sample from the <strong>tilted distribution</strong> using an MCMC sampler to obtain <span class="math inline">\(N\)</span> samples <span class="math inline">\(\widetilde{\boldsymbol{\mathbf{\gamma}}}_k^{(1)}, \ldots, \widetilde{\boldsymbol{\mathbf{\gamma}}}_k^{(N)}\)</span> from
+<span class="math display">\[
+g_{\backslash k}(\widetilde{\boldsymbol{\mathbf{\gamma}}}_k)
+\propto f_k(\boldsymbol{\mathbf{\gamma}}_k) \exp\left\{\left(\boldsymbol{\mathbf{r}}- \boldsymbol{\mathbf{r}}_k\right)^\top\boldsymbol{\mathbf{x}}+ \text{vec}\left(-\frac{1}{2}\left(\boldsymbol{\mathbf{Q}}- \boldsymbol{\mathbf{Q}}_k\right)\right)^\top  \text{vec}\left(\boldsymbol{\mathbf{x}}\boldsymbol{\mathbf{x}}^\top\right)\right\}
+\]</span></li>
+<li>Perform <strong>moment-matching</strong> by computing the mean and the variance-coviariance matrix from the samples, and assign those values to the mean and the variance-covariance matrix of the newly-found global gaussian approximation.
+<span class="math display">\[
+\begin{align}
+\boldsymbol{\mathbf{\mu}}^{\text{new}, k}&amp;\leftarrow \frac{1}{N}\sum_{j=1}^N \widetilde{\boldsymbol{\mathbf{\gamma}}}_i^{(j)} \\
+\boldsymbol{\mathbf{\Sigma}}^{\text{new}, k} &amp;\leftarrow \frac{1}{N - 1}\sum_{j=1}^N \left(\widetilde{\boldsymbol{\mathbf{\gamma}}}_i^{(j)}  - \boldsymbol{\mathbf{\mu}}^{\text{new}, k}\right) \left(\widetilde{\boldsymbol{\mathbf{\gamma}}}_i^{(j)}  - \boldsymbol{\mathbf{\mu}}^{\text{new}, k}\right)^\top
+\end{align}
+\]</span>
+Notice that every site <span class="math inline">\(k=1, \ldots, K\)</span> has found (possibly) different new mean and variance-covariance parameters. We denote by <span class="math inline">\(\boldsymbol{\mathbf{\mu}}^{\text{new}, k}\)</span> the new mean parameter for the multivariate normal global approximation, found at site <span class="math inline">\(k\)</span>.</li>
+<li>Next, at every site <span class="math inline">\(i=1, \ldots, K\)</span>, <strong>convert</strong> the global mean and variance-covariance parameters into natural parameters
+<span class="math display">\[
+\begin{align}
+\boldsymbol{\mathbf{Q}}^{\text{new}, k} &amp;\leftarrow \left(\boldsymbol{\mathbf{\Sigma}}^{\text{new}, k}\right)^{-1} \\
+\boldsymbol{\mathbf{r}}^{\text{new}, k} &amp;\leftarrow \boldsymbol{\mathbf{Q}}^{\text{new}, k} \boldsymbol{\mathbf{\mu}}^{\text{new}, k}
+\end{align}
+\]</span></li>
+<li>At site <span class="math inline">\(k\)</span> find the new natural parameters for the <span class="math inline">\(k^{\text{th}}\)</span> approximating factor <span class="math inline">\(g_k(\boldsymbol{\mathbf{\theta}}_k)\)</span> by taking the difference between the new global natural parameters and the natural parameters of the old cavity distribution.
+<span class="math display">\[
+\begin{align}
+\boldsymbol{\mathbf{Q}}_k^{\text{new}} &amp;\leftarrow \boldsymbol{\mathbf{Q}}^{\text{new}, k} - \boldsymbol{\mathbf{Q}}_{-k} \\
+\boldsymbol{\mathbf{r}}_k^{\text{new}} &amp;\leftarrow \boldsymbol{\mathbf{r}}^{\text{new}, k} - \boldsymbol{\mathbf{r}}_{-k}
+\end{align}
+\]</span></li>
+<li>From each site, send <span class="math inline">\(\boldsymbol{\mathbf{r}}_k^{\text{new}}\)</span> and <span class="math inline">\(\boldsymbol{\mathbf{Q}}_k^{\text{new}}\)</span> to the posterior server and <strong>update global approximation</strong>
+<span class="math display">\[
+\begin{align}
+\boldsymbol{\mathbf{r}}^{\text{new}}_{\text{parallel}} &amp;\leftarrow \sum_{k=1}^K \boldsymbol{\mathbf{r}}_k^{\text{new}} \\
+\boldsymbol{\mathbf{Q}}^{\text{new}}_{\text{parallel}} &amp;\leftarrow \sum_{k=1}^K \boldsymbol{\mathbf{Q}}_k^{\text{new}}
+\end{align}
+\]</span></li>
+</ul>
+</div>
+</div>
+<div id="bibliography" class="section level1 unnumbered">
+<h1>Bibliography</h1>
+<div id="refs" class="references csl-bib-body hanging-indent">
+<div id="ref-barthelm2015divide" class="csl-entry">
+Barthelmé, Simon, Nicolas Chopin, and Vincent Cottet. 2015. <span>“Divide and Conquer in ABC: Expectation-Progagation Algorithms for Likelihood-Free Inference.”</span> <a href="https://arxiv.org/abs/1512.00205">https://arxiv.org/abs/1512.00205</a>.
+</div>
+</div>
+</div>

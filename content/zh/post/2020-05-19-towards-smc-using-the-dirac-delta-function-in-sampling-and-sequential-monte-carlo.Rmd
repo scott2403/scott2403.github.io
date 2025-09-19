@@ -1,0 +1,284 @@
+---
+title: 'Towards SMC: Using the Dirac-delta function in Sampling and Sequential Monte
+  Carlo'
+author: Mauro Camara Escudero
+date: '2020-05-19'
+slug: towards-smc-using-the-dirac-delta-function-in-sampling-and-sequential-monte-carlo
+categories:
+  - sampling
+  - dirac-delta-funtion
+  - dirac-delta-mass
+  - importance-sampling
+  - sequential-monte-carlo
+tags: []
+subtitle: 'Explanation of the Dirac-delta notation in Sampling and Sequential Monte Carlo.'
+summary: 'We derive the Dirac-delta function, explain how to use to approximate an Empirical PDF for a sample.'
+authors: []
+lastmod: '2020-05-19T15:02:08+01:00'
+featured: no
+image:
+  caption: ''
+  focal_point: ''
+  preview_only: no
+projects: []
+---
+\newcommand{\Pbb}{\mathbb{P}}
+\newcommand{\sample}{^{(i)}}
+\newcommand{\prob}[1]{\Pbb\left(#1\right)}
+\newcommand{\nsamples}{N}
+\newcommand{\normal}[2]{\mathcal{N}\left(#1, #2\right)}
+
+## Discrete Distributions, PMF and CDF
+Suppose we have a discrete random variable $X$ taking $k$ different values
+$$
+\Pbb[X = x_i] = p_i \qquad \forall\, i = 1, \ldots, k,
+$$
+where $0\leq p_i \leq 1$ and $\sum_{i=1}^k p_i = 1$. It's **probability mass function** is then equal to $p_i$ at $X=x_i$ and $0$ everywhere else, as shown in Figure \@ref(fig:pmf)
+$$
+P_X(x) = 
+\begin{cases}
+p_i & x=x_i \\
+0   & x\neq \{x_1, \ldots, x_k\}
+\end{cases}.
+$$
+
+```{r pmf, fig.align="center", message=FALSE, echo=FALSE, fig.cap="\\label{fig:pmf}Probability Mass Function"}
+library(ggplot2)
+library(latex2exp)
+# We have k possible states
+k <- 5
+states <- c(1, 2, 3, 4, 5)
+probs  <- c(0.4, 0.05, 0.3, 0.15, 0.1)
+points <- data.frame(x=states, y=probs)
+pmf    <- data.frame(xstart=states,
+                     xend=states,
+                     ystart=rep(0, k),
+                     yend=probs)
+xlabels <- expression("x[1]", "x[2]", "x[3]", "x[4]", "x[5]")
+ggplot(data=points) + 
+  geom_point(aes(x=x, y=y), size=4) + 
+  geom_segment(data=pmf, aes(x=xstart, y=ystart, xend=xend, yend=yend)) + 
+  theme_minimal() + 
+  scale_x_continuous(limits=c(-0.01, 6), breaks=1:5, labels=parse(text=xlabels)) + 
+  theme(panel.grid = element_blank(),
+        panel.background = element_blank(),
+        text=element_text(family="LM Roman 10", size=20),
+        axis.line=element_line(size = 1.0),
+        axis.title.y = element_text(angle=0, vjust=0.5, hjust=0.1),
+        axis.text.y=element_text(size=13)) + 
+  scale_y_continuous(limits=c(0, 1.05), expand=c(0,0), name=expression("P(x)"))
+```
+
+The **cumulative distribution function** of $X$, denoted $F_X(x)$, gives us the probability that the state of $X$ is less than or equal to $x$ (see Figure \@ref(fig:cdf))
+$$
+F_X(x) = \sum_{x_i \leq x} \Pbb[X = x_i] \qquad\qquad -\infty < x < \infty.
+$$
+
+```{r cdf, message=FALSE, warning=FALSE, fig.align="center", fig.cap="\\label{fig:cdf}Cumulative Distribution Function", echo=FALSE}
+points$ycum <- cumsum(probs)
+cdf <- data.frame(xstart=c(0, states),
+                  xend=1:6,
+                  ystart=c(0, cumsum(probs)),
+                  yend=c(0, cumsum(probs)))
+emptypoints <- data.frame(x=states, y=c(0, cumsum(probs)[1:4]))
+
+ggplot(data=points) + 
+  geom_point(aes(x=x, y=ycum), size=4) + 
+  geom_segment(data=cdf, aes(x=xstart, y=ystart, xend=xend, yend=yend)) + 
+  geom_point(data=emptypoints, aes(x=x, y=y), shape=1, size=4) + 
+  theme_minimal() + 
+  scale_x_continuous(limits=c(-0.01, 6), breaks=1:5, labels=parse(text=xlabels)) + 
+  theme(panel.grid = element_blank(),
+        panel.background = element_blank(),
+        text=element_text(family="LM Roman 10", size=20),
+        axis.line=element_line(size = 1.0),
+        axis.title.y = element_text(angle=0, vjust=0.5, hjust=0.1),
+        axis.text.y=element_text(size=13)) + 
+  scale_y_continuous(limits=c(0, 1.05), expand=c(0.05,0), name=expression("F(x)"))
+```
+
+## Rewriting Discrete Distributions as Continuous Distributions
+We can also express the CDF as a sum of step functions. For this purpose we define $u_y(x)$
+$$
+u_{y}(x) =
+\begin{cases}
+1 & x\geq y \\
+0 & x < y
+\end{cases},
+$$
+
+```{r step, echo=FALSE, message=FALSE, warning=FALSE, fig.align="center", fig.cap="\\label{fig:step}Step Function"}
+step_df <- data.frame(xstart=c(-5.0, 0.0),
+                      xend=c(0.0, 5.0),
+                      ystart=c(0, 1.0),
+                      yend=c(0, 1.0))
+dot_above <- data.frame(x=0.0, y=1.0)
+dot_below <- data.frame(x=0.0, y=0.0)
+dotted_line <- data.frame(x=0.0,
+                          xend=0.0,
+                          y=0.0,
+                          yend=1.0)
+# step function
+ggplot(data=step_df) + 
+  geom_segment(aes(x=xstart, y=ystart, xend=xend, yend=yend)) + 
+  geom_segment(data=dotted_line, aes(x=x, y=y, xend=xend, yend=yend), linetype=2) +
+  geom_point(data=dot_below, aes(x=x, y=y), shape=21, size=4, fill="white", stroke=1) + 
+  geom_point(data=dot_above, aes(x=x, y=y), size=4) + 
+  theme_minimal() +
+  theme(panel.grid = element_blank(),
+        panel.background = element_blank(),
+        text=element_text(family="LM Roman 10", size=20),
+        axis.line=element_line(size = 1.0),
+        axis.title.y = element_text(angle=0, vjust=0.5, hjust=0.1)) +
+  scale_x_continuous(name="x") + 
+  scale_y_continuous(name=TeX("$u_{0}(x)$")) + 
+  annotate("text", x=-2.5, y=0.07, label=TeX("$\\frac{d u_y(x)}{d x} = 0$", output="character"), parse=T, family="LM Roman 10") + 
+  annotate("text", x=2.5, y=0.95, label=TeX("$\\frac{d u_y(x)}{d x} = 0$", output="character"), parse=T, family="LM Roman 10") + 
+  annotate("text", x=1.0, y=0.5, label=TeX("$\\frac{d u_y(x)}{d x} = \\infty$", output="character"), parse=T, family="LM Roman 10")
+```
+
+and then rewrite the CDF as follows
+$$
+F_X(x) = \sum_{i=1}^N \prob{X = x_i} u_{x\sample}(x) = \sum_{i=1}^N p_i u_{x\sample}(x)
+$$
+This way of writing the CDF is more useful because, if we can find a suitable derivative for the step function, then we can find an approximation to the PDF. Unfortunately, the step function has a discontinuity at $x=y$. The solution to this problem lies in defining the derivative of the step function ourselves. We call this the **Dirac Delta function** and it satisfies the following properties (for any function $g(x)$)
+$$
+\frac{d \,u_{y}(x)}{d x} = \delta_y(x) =
+\begin{cases}
+\infty & x=y \\
+0 & x\neq y
+\end{cases}
+$$
+$$
+\int g(x) \delta_y(x) dx = g(y)
+$$
+
+```{r diracdelta, echo=FALSE, message=FALSE, warning=FALSE, fig.align="center", fig.cap="\\label{fig:diracdelta}Dirac-delta Function"}
+delta_df <- data.frame(xstart=c(-5.0, 0.0),
+                      xend=c(0.0, 5.0),
+                      ystart=c(0, 0.0),
+                      yend=c(0, 0.0))
+arrow_segment <- data.frame(x=0.0, 
+                            xend=0.0,
+                            y=0.97,
+                            yend=1.0)
+
+ggplot(data=delta_df) + 
+  geom_segment(aes(x=xstart, y=ystart, xend=xend, yend=yend)) +
+  geom_segment(data=dotted_line, aes(x=x, y=y, xend=xend, yend=yend), linetype=2) +
+  geom_segment(data=arrow_segment, aes(x=x, y=y, xend=xend, yend=yend), 
+               arrow=arrow(length=unit(0.5, "cm"), type="closed")) +
+  geom_point(data=dot_below, aes(x=x, y=y), shape=21, size=4, fill="white", stroke=1) +
+  theme_minimal() +
+  theme(panel.grid = element_blank(),
+        panel.background = element_blank(),
+        text=element_text(family="LM Roman 10", size=20),
+        axis.line=element_line(size = 1.0),
+        axis.title.y = element_text(angle=0, vjust=0.5, hjust=0.1)) +
+  scale_x_continuous(name="x") + 
+  scale_y_continuous(name=TeX("$\\delta_{0}(x)$"), limits=c(0.0, 1.0)) +
+  annotate("text", x=0.6, y=0.98, label=TeX("$+\\infty$", output="character"), parse=T, family="LM Roman 10", size=6)
+```
+
+
+Now we can find an approximate continuous PDF for $X$ by taking the derivative of $F_X(x)$
+$$
+p_X(x) = \frac{d F_X(x)}{dx} = \sum_{i=1}^\nsamples p_i \frac{d u_{x\sample}(x)}{dx} = \sum_{i=1}^\nsamples p_i \delta_{x\sample}(x)
+$$
+
+##Continuous approximation of an Empirical PDF
+Suppose now that we obtain realizations $x^{(1)}, \ldots, x^{(N)}$ of a sample $X^{(1)}, \ldots, X^{(N)}$ from a **probability density function** $p_X(x)$. Since we only have a finite number $N$ of such samples, we need to find a way of obtaining an approximate representation of $p_X(x)$ from them. One step towards this goal is to construct the **empirical distribution function**
+$$
+\widehat{F}_N(x) = \frac{1}{N}\sum_{i=1}^N \mathbb{I}(X^{(i)} \leq x) = \sum_{i=1}^\nsamples \frac{1}{\nsamples} \mathbb{I}(X^{(i)} \leq x),
+$$
+which essentially uses the indicator function to count how many observations of the sample are less than or equal to $x$ and then divides it by $N$, the number of samples. Another way of interpreting it is that is assigns probability $\frac{1}{\nsamples}$ to each sample. Practically, this means that $\widehat{F}_N(x)$ will be conceptually similar to Figure \@ref(fig:cdf), but with jumps of $\frac{1}{N}$ at every sample.
+
+For instance, suppose that we sample $N=5$ times from a standard normal $\mathcal{N}(0, 1)$ and we sort the samples in increasing order, as shown in Figure \@ref(fig:sample).
+
+```{r sample, echo=FALSE, warning=FALSE, message=FALSE, fig.align="center", fig.cap="\\label{fig:sample}The true PDF $\\normal{0}{1}$ is being approximated by a weighted sum of Dirac-delta functions."}
+set.seed(2)
+samples <- rnorm(n=5)
+cdf_probs <- cumsum(rep(1/5, 5))
+df <- data.frame(x=sort(samples), y=cdf_probs)
+emptypoints <- data.frame(x=sort(samples), y=c(0, cdf_probs[1:4]))
+cdf <- data.frame(xstart=c(-2, sort(samples)),
+                  xend=c(sort(samples), 2),
+                  ystart=c(0, cdf_probs),
+                  yend=c(0, cdf_probs))
+
+xlabels <- expression("x^{(1)}", "x^{(2)}", "x^{(3)}", "x^{(4)}", "x^{(5)}")
+ylabels <- c(0, cdf_probs)
+dotted_segment <- data.frame(xstart=sort(samples), 
+                             xend=sort(samples),
+                             ystart=ylabels[1:5],
+                             yend=ylabels[2:6])
+# first plot
+xnorm <- seq(-2, 2, length.out=100)
+normal <- data.frame(x=xnorm,
+                     y=dnorm(xnorm))
+cumulative <- data.frame(x=seq(-2, 2, by=0.01), y=pnorm(seq(-2, 2, by=0.01), 0, 1))
+sample_df <- data.frame(x=sort(samples), y=rep(0, 5))
+vertical_df <- data.frame(
+  x=sort(samples),
+  xend=sort(samples),
+  y=rep(0, 5),
+  yend=rep(1, 5)
+)
+arrow_ends <- data.frame(
+  x=sort(samples),
+  xend=sort(samples),
+  y=rep(0.97, 5),
+  yend=rep(1.0, 5)
+)
+horizontal_line <- data.frame(
+  x=c(-2, sort(samples)),
+  xend=c(sort(samples), 2),
+  y=rep(0, 6),
+  yend=rep(0, 6)
+)
+
+ggplot() + 
+  geom_line(data=normal, aes(x=x, y=y)) + 
+  geom_segment(data=vertical_df, aes(x=x, y=y, xend=xend, yend=yend), linetype=2) +
+  geom_segment(data=arrow_ends, aes(x=x, y=y, xend=xend, yend=yend), 
+               arrow=arrow(length=unit(0.5, "cm"), type="closed")) +
+  geom_segment(data=horizontal_line, aes(x=x, y=y, xend=xend, yend=yend)) + 
+  geom_point(data=sample_df, aes(x=x, y=y), size=4, shape=21, stroke=1, fill="white") + 
+  theme_minimal() + 
+  theme(panel.grid = element_blank(),
+        panel.background = element_blank(),
+        text=element_text(family="LM Roman 10", size=20),
+        axis.line=element_line(size = 1.0),
+        axis.title.y = element_text(angle=0, vjust=0.5, hjust=0.1)) + 
+  scale_x_continuous(limits=c(-2, 2), expand=c(0,0), breaks=sort(samples), labels=parse(text=xlabels)) + 
+  scale_y_continuous(limits=c(0.0, 1.05), breaks=ylabels, name=parse(text=expression("widehat(p)[N](x)")))
+```
+
+We can build a CDF with jumps of $\frac{1}{5}$ at every sample $x\sample$ (see Figure \@ref(fig:empirical)), and we can see how it gives a decent approximation of the true CDF. Importantly, by the Glivenko-Cantelli theorem \cite[Chapter 4]{billingsley:measure} we know that the empirical CDF converges to the true CDF as $N$ increases.
+
+```{r empirical, echo=FALSE, message=FALSE, warning=FALSE, fig.align="center", fig.cap="\\label{fig:empirical}he true CDF can be approximated by a weighted sum of step functions."}
+ggplot(data=df) + 
+  geom_point(aes(x=x, y=y), size=4) + 
+  geom_point(data=emptypoints, aes(x=x, y=y), shape=1, size=4) + 
+  geom_line(data=cumulative, aes(x=x, y=y)) + 
+  geom_segment(data=cdf, aes(x=xstart, y=ystart, xend=xend, yend=yend)) + 
+  geom_segment(data=dotted_segment, aes(x=xstart, y=ystart, xend=xend, yend=yend), linetype=2) +
+  annotate("text", x=0.30, y=0.7, label="1/5", parse=TRUE) +
+  theme_minimal() + 
+  theme(panel.grid = element_blank(),
+        panel.background = element_blank(),
+        text=element_text(family="LM Roman 10", size=20),
+        axis.line=element_line(size = 1.0),
+        axis.title.y = element_text(angle=0, vjust=0.5, hjust=0.1)) + 
+  scale_x_continuous(limits=c(-2, 2), expand=c(0,0), breaks=sort(samples), labels=parse(text=xlabels)) + 
+  scale_y_continuous(limits=c(0.0, 1.05), breaks=ylabels, name=parse(text=expression("widehat(F)[N](x)")))
+```
+
+
+At this point, we can follow the same steps as above: rewrite the empirical CDF as a weighted sum of step functions, and then take the derivative to find an approximate PDF using the Dirac-delta function.
+$$
+\widehat{F}_N(x) = \sum_{i=1}^{\nsamples} \frac{1}{N} u_{x\sample}(x) \quad \implies \quad \widehat{p}_N(x) = \sum_{i=1}^{\nsamples} \frac{1}{N} \delta_{x\sample}(x)
+$$
+
+
+

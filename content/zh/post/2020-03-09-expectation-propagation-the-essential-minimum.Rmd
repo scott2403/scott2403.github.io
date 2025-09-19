@@ -1,0 +1,44 @@
+---
+title: Expectation Propagation - The Essential Minimum
+author: Mauro Camara Escudero
+date: '2020-03-09'
+slug: expectation-propagation-the-essential-minimum
+categories:
+  - expectation-propagation
+tags:
+  - expectation-propagation
+  - variational-inference
+subtitle: ''
+summary: 'The bare practical minimum to understand Expectation Propagation'
+authors: []
+lastmod: '2020-03-09T22:52:13Z'
+featured: no
+image:
+  caption: ''
+  focal_point: ''
+  preview_only: no
+projects: []
+bibliography: bibliography.bib
+---
+Taken from @EPWay. Assume that you can factorize your **target distribution** 
+$$
+f(\theta) \propto \prod_{k=0}^K f_k(\theta)
+$$
+Approximate target distribution using a distribution with a similar factorization, called the **global approximation**
+$$
+g(\theta) \propto \prod_{k=0}^K g_k(\theta)
+$$
+At each iteration of the algorithm, and for every factor $k=1, \ldots, K$ form the **cavity distribution** by removing $k^{\text{th}}$ term from the global approximation
+$$
+g_{-k} \propto \frac{g(\theta)}{g_k(\theta)}
+$$
+also form the **tilted distribution** by including $f_k(\theta)$ to the cavity distribution (in place of $g_k(\theta)$)
+$$
+g_{\backslash k}(\theta) \propto f_k(\theta) g_{-k}(\theta)
+$$
+The algorithm updates the site approximation $g_k(\theta)$ so that the new global approximation approximates the tilted distribution
+$$
+g_k(\theta)^{\text{new}}g_{-k}(\theta) \approx f_k(\theta)g_{-k}(\theta)
+$$
+
+# Bibliography

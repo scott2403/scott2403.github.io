@@ -1,0 +1,644 @@
+---
+title: Measure Theory for ML, AI and Diffusion Models
+author: Mauro Camara Escudero
+date: '2024-02-16'
+slug: []
+categories: []
+tags: []
+subtitle: 'A summary of measure theory required for machine learning and artificial intelligence.'
+summary: 'Measure Theory for Machine Learning from Scratch'
+authors: []
+lastmod: '2024-02-16T13:46:31Z'
+featured: no
+image:
+  caption: ''
+  focal_point: ''
+  preview_only: no
+projects: []
+---
+\usepackage{xcolor}
+\usepackage{amsthm} 
+\theoremstyle{definition}
+\newtheorem{def}{Definition}[thm]
+\newcommand{\Xsf}{\mathsf{X}}
+\newcommand{\Ysf}{\mathsf{Y}}
+\newcommand{\Zsf}{\mathsf{Z}}
+\newcommand{\Xcal}{\mathcal{X}}
+\newcommand{\Ycal}{\mathcal{Y}}
+\newcommand{\Zcal}{\mathcal{Z}}
+\newcommand{\Rbb}{\mathbb{R}}
+\newcommand{\Bcal}{\mathcal{B}}
+\newcommand{\Pbb}{\mathbb{P}}
+\newcommand{\Mbb}{\mathbb{M}}
+\newcommand{\Ebb}{\mathbb{E}}
+\newcommand{\Xrm}{\mathrm{X}}
+\newcommand{\Yrm}{\mathrm{Y}}
+\newcommand{\Fcal}{\mathcal{F}}
+\newcommand{\Gcal}{\mathcal{G}}
+\newcommand{\Esf}{\mathsf{E}}
+\newcommand{\Ecal}{\mathcal{E}}
+\newcommand{\Gsf}{\mathsf{G}}
+\newcommand{\Asf}{\mathsf{A}}
+\newcommand{\Tsf}{\mathsf{T}}
+\newcommand{\Bsf}{\mathsf{B}}
+**Table of Contents**
+
+- [Randomness, Mathematics, and Intuition](#randomness)
+- [Sigma Algebras](#sigma-algebras)
+- [Measures](#measures)
+- [Random Variables](#random-variables)
+- [Comparing Random Variables](#comparing-random-variables)
+- [Topology](#mathematical-spaces)
+- [Integration](#integration)
+- [Expectations](#expectations)
+- [Lebesgue Measure](#lebesgue-measure)
+- [Density Functions](#density-functions)
+- [Change of Variables and Jacobians](#change-of-variables)
+- [Markov Kernels](#markov-kernels)
+- [Conditional Expectations](#conditional-expectations)
+- [Stochastic Processes](#stochastic-processes)
+
+# Introduction
+In this post, I will cover enough measure theory so that the reader will be able to understand the theory behind Denoising Diffusion Models, and more generally Machine Learning and Artificial Intelligence. To understand measure theory in full, a lot of background mathematical knowledge is required and inevitable, but I will try my best to make things intuitive and yet precise, while assuming **very few prerequisites**. Most importantly, I will always aim to show examples within Probability, Statistics, or Machine Learning, as to keep things on theme. After this post is complete, the plan is to make another one about Stochastic Calculus and SDEs for Machine Learning and Diffusion Models. 
+
+If you find any mistake, typo or for anything else, don't hesitate to contact me. 
+
+---
+
+<a name="randomness"></a>
+
+# Randomness, Mathematics, and Intuition
+In everyday language, we sometimes use the expression "the probability of/that". For instance,
+
+> The <span style="color:darkorange">probability</span> of <span style="color:deepskyblue">rolling a six</span> is <span style="color:#D81159">$1/6$</span>.
+
+I have emphasized in three different colors the key components of that sentence. Measure theory can be used to define each of those three terms rigorously. Specifically, it can answer these questions:
+
+1. What is a probability? (<span style="color:darkorange">orange</span> and <span style="color:#D81159">magenta</span>)
+2. What "things" can have an associated probability? (<span style="color:deepskyblue">blue</span>)
+
+All we need are **sets** and **functions**. 
+
+---
+
+## What this is all about
+Until we have built enough measure theory to talk about machine learning, I will often talk about this very simple scenario: A person rolling a six-sided die and observing which number comes out on top. This is a classic and straightforward scenario considered in probability theory, but will allow me to talk about various notions in measure theory without getting lost in the details. I will assume:
+
+- The die will *always* land with exactly one face up, meaning that it will never get stuck in any crack or height difference. Imagine the die is roll on an infinitely long and perfectly flat surface.
+- The person will *always* be able to observe which number comes out on top.
+
+Basically, I am making this super easy: the person rolls the die and observes either $1$, $2$, $3$, $4$, $5$, or $6$ written on top. This is known as an **experiment** in probability. I know, rolling a die is hardly an experiment, but the choice of this word is very fitting. It is called an experiment because, **before performing it, we do not know what the outcome of the experiment will be** (otherwise, if the die would always roll a $1$, we would not roll it and board games would be a lot less fun). 
+
+Rolling a die and observing the number on top is just a specific "experiment". The concept of experiment is central to probability theory because whenever we talk about probabilities, we have in mind some sort of experiment, which will result in exactly one outcome, and we are interested in figuring out what is the probability of **some** of these outcomes. I say some because at times we are not interested in the probability of a single outcome, but in the probability of some outcomes. For instance, we may be interested in the probability of <span style="color:deepskyblue">rolling an even number</span>. As we will see soon, we can call **event** the collection of all the "outcomes" that we are interested in.
+
+## Intuition behind probabilities
+A probability of something happening is a numeric value that tells us how likely that something is to happen (if this seems circular, that's good, because it is). Ideally, we would like to have a **maximum** probability value for things that are **certain** and a **minimum** probability value for things that are **impossible**. We could choose any two values, but historically, mathematicians have settled for $1$ and $0$ respectively. It makes sense to construct a **function** that takes a "thing" as input and outputs the probability of that thing happening, which is a value in $[0, 1]$.
+
+## Intuition behind events
+What "things" can we assign a probability to? Imagine that measure theory has not been developed yet and you find yourself wanting to write the statement above mathematically. What mathematical object can represent the words <span style="color:deepskyblue">rolling a six</span>? A first attempt could be to set it to the number six
+$$
+\underbrace{\textcolor{deepskyblue}{\text{rolling a six}}}_{\text{everyday language}} = \underbrace{6}_{\text{mathematics}}
+$$
+This approach doesn't seem to bad because it works seamlessly for other numbers, for instance "rolling a one" would simply be $1$ and so on. However, this approach breaks down when we consider more complicated expressions, for instance, it is not clear how one should "encode"
+
+> Rolling an even number (i.e. either 2, 4, or 6)
+
+using this convention. There are infinitely many natural numbers, so one could potentially encode this and many more complicated expressions for larger and larger numbers. For instance, <span style="color:deepskyblue">rolling an even number</span> could be represented as $7$, and <span style="color:deepskyblue">rolling an odd number</span> could be represented as $8$. There are various issues with this approach, but perhaps the most intuitive to understand is that this way we would have to manually encode each "thing" into a number. Thankfully, there is a better approach.
+
+After attempting to represents "things" with numbers, one may switch to sets. Consider again the task of rolling a six-sided die and observing which number comes on top. We assume that the die cannot get stuck anywhere and always lands on one face or the other, and that we can always observe the number on top. The possible outcomes of this task are that we observe $1$, $2$, $3$, $4$, $5$, or $6$. No other outcome is possible. The phrase <span style="color:deepskyblue">rolling a six</span> could then be encoded as a set
+$$
+\underbrace{\textcolor{deepskyblue}{\text{rolling a six}}}_{\text{everyday language}} = \underbrace{\{6\}}_{\text{mathematics}}.
+$$
+You may think that we have not improved the situation by much, since in this set there is only a single element (we say $\{6\}$ is a singleton set). However, this makes talking about more complex "things" a lot easier. For instance, <span style="color:deepskyblue">rolling an even number</span> can be represented by the set containing all the even numbers, and similarly for <span style="color:deepskyblue">rolling an odd number</span>
+$$
+\underbrace{\textcolor{deepskyblue}{\text{rolling an even number}}}_{\text{everyday language}} = \underbrace{\{2, 4, 6\}}_{\text{mathematics}}.
+$$
+Sometimes in board games you will need to roll a number above a certain value. This can also be represented easily, for instance 
+$$
+\underbrace{\textcolor{deepskyblue}{\text{rolling a number larger than three}}}_{\text{everyday language}} = \underbrace{\{4, 5, 6\}}_{\text{mathematics}}.
+$$
+It turns out, sets are **very flexible** and a great candidate to represent "things" that we want to assign a probability to. Speaking of, all the phrases I have colored in <span style="color:deepskyblue">blue</span> are called **events**. 
+
+> If we can talk about the probability of "something" happening, that something is known as an **event**.
+
+Something that may come as a shock, is that not every set is an event. There are sets for which we cannot talk about their "probability", we will talk more about that later. 
+
+## Intuition behind relationship of probabilities and events
+Okay, we can represent events as sets and it seems to be a sensible choice. Now, what does it mean that a certain event has a probability? We need to define the **probability function**. As we expect, this should take *sets* as inputs and return a value between $0$ and $1$, the higher the value, the more likely the event represented by the set, is to happen. Since the function takes sets as inputs, one may think that its domain is the *power set of all possible outcomes*. In other words, if we collect together all outcomes into a single set, which we call the **sample space**
+$$
+\Omega := \left\{1, 2, 3, 4, 5, 6\right\}
+$$
+then an event is any subset $\mathsf{E}\subseteq \Omega$. It turns out that when we have finitely many possible outcomes (such as in the die example) this is true, but when we have infinitely many, not all subsets are valid events. In either case, we call **event space** the set of all valid events. By definition, we know that this is a set whose elements are subsets of $\Omega$, but not necessarily *all* subsets. Typically, the event space is denoted by $\mathcal{F}$. In our six-sided die example, $\mathcal{F}$ contains all the subsets (since $\Omega$ has finitely many elements)
+$$
+\mathcal{F} = 2^\Omega.
+$$
+For example, $\{2, 4, 6\}\in\mathcal{F}$.
+
+---
+
+<a name="sigma-algebras"><a/>
+
+# Sigma Algebras
+The sigma algebra is the set of all events, i.e. all sets to which we can (and wish) to assign a measure to. One interpretation of a sigma algebra that is helpful for stochastic processes is that a sigma algebra represents information. I will write $2^{\Omega}$ as the *power set* of a set $\Omega$, which is the set of all of its subsets (that's a mouthful).
+
+> **Sigma Algebra**: Let $\Omega$ be a non-empty set. A set $\mathcal{F}\subseteq 2^\Omega$ is a sigma algebra over $\Omega$ if it satisfies:\
+1. $\Omega\in\mathcal{F}$ \
+2. Closure under the complementation operation
+$$
+\mathsf{A}\in\mathcal{F} \implies \Omega\backslash\mathsf{A} \in\mathcal{F}
+$$
+3. Closure under countable unions
+$$
+\mathsf{A}_i \in \mathcal{F} \,\,\,\,\,\forall\, i\in\mathcal{I}, \text{ with }|\mathcal{I}|\leq \aleph_0 \implies \bigcup_{i\in\mathcal{I}} \mathsf{A}_i \in\mathcal{F}
+$$
+
+Given a non-empty set $\Omega$, we can build several different sigma algebras on it. Some sigma algebras may be contained within larger sigma algebras. In that case, we refer to the smaller sigma algebra as a sub-sigma algebra. In the interpretation of stochastic processes, a sub-sigma algebra represents less information because it contains fewer events. Sub-sigma algebras are generally used for conditioning: they typically represent partial or conditional information. A common nomenclature is to call smaller sigma algebras *coarser* and larger sigma algebras *finer*.
+
+> **Sub-Sigma Algebras**: Let $\Omega$ be a set and $\mathcal{F}$ and $\mathcal{G}$ be two sigma algebras on it. If $\mathcal{G}\subseteq \mathcal{F}$ then we call $\mathcal{G}$ a sub-sigma algebra of $\mathcal{F}$.
+
+The intersection of sigma algebras, is itself a sigma algebra. This is true both for a countable and uncountable number of sigma algebras. The intuition is that the intersection of sigma algebras represents the common or mutual information.
+
+> **Intersection of Sigma Algebras**: Let $\Omega$ be a non-empty set, $\mathcal{I}$ be *any* set and $\{\mathcal{F}_i\,:\, i\in\mathcal{I}\}$ be a collection of sigma algebras on $\Omega$. The intersection of these sigma algebras
+$$
+\bigcap_{i\in\mathcal{I}} \mathcal{F}_i 
+$$
+is a sigma algebra over $\Omega$.
+
+Given a bunch of subsets of $\Omega$, it is typically possible to construct several sigma algebras containing all of these subsets. Out of all of these sigma algebras, there is one that is the smallest (or coarser). This is found as the intersection of all possible sigma algebras containing this collection of subsets. The way I make sense of this is that given a bunch of *potential* events, it is possible to find the smallest sigma algebra such that they are *actually* valid events.
+
+> **Sigma algebra generated by a collection of sets**: Let $\Omega$ be a non-empty set and $\mathcal{C}$ be a collection of subsets of $\Omega$. Then the collection $\mathcal{C}$ induces a sigma algebra on $\Omega$, which we call the sigma algebra generated by $\mathcal{C}$, and denote $\sigma(\mathcal{C})$. This sigma algebra is the intersection of all sigma algebras containing $\mathcal{C}$
+$$
+\sigma(\mathcal{C}) = \bigcap_{\substack{\mathcal{C}\in\mathcal{F} \\\text{sigma algebra}}} \mathcal{F}
+$$
+and it is the *smallest* sigma algebra containing $\mathcal{C}$.
+
+Since we almost always work with a set $\Omega$ and a sigma algebra on it, for convenience we give a name to the pair $(\Omega, \mathcal{F})$.
+
+>**Measurable Space**: Let $\Omega$ be a non-empty set and $\mathcal{F}\subset 2^\Omega$ be a sigma algebra on it. The pair $(\Omega, \mathcal{F})$ is called a measurable space, and any set $\mathsf{A}\in\mathcal{F}$ is called $\mathcal{F}$-measurable.
+
+---
+
+<a name="measures"><a/>
+
+# Measures
+Measures themselves have nothing to do, per se, with statistics. They are just functions that measure the size (or volume) of something. That something is a set in a sigma algebra. The size of something must be non-negative and if we measure the size of separate things, we should be able to sum them up with no problem. For a bit, I will call a measure $\mathbb{M}$.
+
+> **Measure**: Let $(\Omega, \mathcal{F})$ be a measurable space. A function $\mathbb{M}:\mathcal{F}\to [0, +\infty]$ is called a measure if it satisfies \
+1. $\mathbb{M}(\emptyset) = 0$ \
+2. Countable additivity: If $\{\mathsf{A}_i\,:\,i\in\mathcal{I}\}$ with $|\mathcal{I}|\leq \aleph_0$ is a countable collection of *pairwise disjoint* sets then
+$$
+\mathbb{M}\left(\bigcup_{i\in\mathcal{I}} \mathsf{A}_i\right) = \sum_{i\in\mathcal{I}} \mathbb{M}(\mathsf{A}_i)
+$$
+
+Again, as mathematicians we like to give names to things. Just as we typically work with measurable space $(\Omega, \mathcal{F})$, we typically assume that on this measurable space there is a measure $\mathbb{M}$, and hence for brevity call $(\Omega, \mathcal{F}, \mathbb{M})$ a measurable space. Basically, it's just a space where I have a systematic and coherent way of assigning a "size" value to subsets.
+
+> **Measure Space**: A triplet $(\Omega, \mathcal{F}, \mathbb{M})$ is called a measure space if $\mathbb{M}$ is a measure on the measurable space $(\Omega, \mathcal{F})$.
+
+So far, we have talked about measures as assigning "size" to sets. The key intuition that makes measure theory such a wonderful tool for probability theory, is that a probability is fundamentally the size of something *relative to the whole*. What does it mean? It means that the whole space $\Omega$ has a finite size, and so a probability measure assigns to any set $\mathsf{A}\in\mathcal{F}$ its relative size to the whole $\Omega$.
+
+> **Finite Measure**: Let $(\Omega, \mathcal{F}, \mathbb{M})$ be a measure space. We say $\mathbb{M}$ is *finite* if $\mathbb{M}(\Omega) < \infty$. We say $\mathbb{M}$ is $\sigma$-finite if there exists a countable partition $\{\Omega_n\,:\, n\in\mathbb{N}\}$ of $\Omega$ (meaning they are mutually disjoint and their union covers all of $\Omega$) such that $\mathbb{M}(\Omega_n) < \infty$ for each $n\in\mathsf{N}$. 
+
+Any finite measure can be turned into a probability measure by normalization. Often, for a general probability measure I will use the symbol $\mathbb{P}$ rather than $\mathbb{M}$.
+
+> **Probability Measure**: Let $(\Omega, \mathcal{F}, \mathbb{P})$ be a measurable space with $\mathbb{P}$ being a finite measure. If $\mathbb{P}(\mathsf{X}) = 1$ we say that $\mathbb{P}$ is a probability measure. Notice that given any finite measure $\mathbb{M}$, one can define a corresponding probability measure by normalization $\mathbb{P} := \mathbb{M} / \mathbb{M}(\Omega)$.
+
+Above, I have define $\sigma$-finite measures. What is this property useful for? Typically, this is used for the Radon-Nikodym theorem and Fubini's theorem, which we will see later. In  simpler language: we require $\sigma$-finite measures when we need to work with probability density functions or we need to exchange integrals.
+
+---
+
+<a name="random-variables"><a/>
+
+# Random Variables and Distributions
+
+A random variable is a well-behaved function that grabs possible outcomes of an experiments, and maps them to values that are relevant for the problem at hand, and on which we can perform maths. For instance, when flipping a coin, the possible outcomes may be $\Omega = \left\{\text{Head}, \text{Tail}\right\}$, and we note that the two outcomes are *words* and not numbers, in this particular example (in fact, they are not words, but sides of the coin itself). A random variable is a way to *encode* this information more appropriately. In this case, one could map $\text{Head}$ to $0$ and $\text{Tail}$ to $1$ (or vice-versa).
+
+> **Random Variable**: Let $(\Omega, \mathcal{F})$ and $(\mathsf{X}, \mathcal{X})$ be two measurable spaces. A function $\mathrm{X}:\Omega\to\mathsf{X}$ is $\mathcal{F}$-measurable if for every set $\mathsf{B}\in\mathcal{X}$ its preimage $\mathrm{X}^{-1}(\mathsf{B})$ is $(\mathcal{F},\Xcal)$-measurable
+$$
+\mathrm{X}^{-1}(\mathsf{B}) \in\mathcal{F} \qquad\forall\, \mathsf{B}\in\mathcal{X}.
+$$
+If on the measurable space $(\Omega, \mathcal{F})$ there is a *probability measure* $\mathbb{P}$, then the $(\Fcal, \mathcal{X})$-measurable function $\mathrm{X}$ is called a random variable.
+
+In most situations, we will just write $\Fcal$-measurable and not mention $\Xcal$, although (as explained in the next note), it can be important to be precise in some contexts. Earlier, I said that a random variable encodes information *appropriately*. What do I mean by that? The sigma algebra $\mathcal{X}$ encodes information in terms of subsets of $\mathsf{X}$ (in the case of the coin toss, in terms of $\mathsf{X} = \{0, 1\}$), whereas $\mathcal{F}$ encodes information in terms of the outcomes themselves. A function is a random variable then, whenever the information between these two spaces is *compatible*: Given any piece of information (event) in $\mathcal{X}$, there corresponds a piece of information (again, an event) in $\mathcal{F}$.
+
+I need to make a very important point which is often used implicitly in the theory of stochastic processes but, for me, was not obvious at first.
+
+> **Measurability of Random Variables defines them**: Let $(\Omega, \Fcal, \Pbb)$ be a probability space, $(\Xsf, \Xcal)$ be a measurable space and $\Xrm:\Omega\to\Xsf$ be a random variable. For $\Xrm$ to be a random variable, we require that it is $(\Fcal, \Xcal)$-measurable, meaning that **for any** set $\Asf\in\Xcal$ we **must have** $\Xrm^{-1}(\Asf)\in\Fcal$. I have highlighted those expressions because when we say $\Xrm:\Omega\to\Xsf$ is $(\Fcal, \Xcal)$-measurable, we are automatically saying that $\Fcal$ is the largest sigma algebra for which this happens (there can be smaller ones, as we will see later) **given that we are working with $\Xcal$**. This is fundamental to understand. If we have already defined $\Xrm$ being $(\Fcal, \Xcal)$-measurable and then we grab a large sigma algebra $\Gcal \supset \Fcal$, it cannot be that $\Xrm$ is strictly $(\Gcal, \Xcal)$-measurable **unless we extend the codomain** of $\Xrm$. In this case, the codomain is $\Xsf$ or, more broadly, the measurable space $(\Xsf, \Xcal)$. The definition of $\Xrm$ tells us that any set in $\Xcal$ has preimage in $\Fcal$, which means that no set in $\Xcal$ has preimage in $\Gcal \backslash \Fcal$. One could, potentially, extend the sigma algebra on $\Xcal$ so that some of its sets have preimage in $\Gcal \backslash \Fcal$, but I am not aware of a context where this is done. 
+
+The *only* difference between a measurable function and a random variable is that for a measurable function to be *called* a random variable, we require the original space to have an associated probability measure. This is because the whole point of creating a random variable is so that we can study/sample/work with its *distribution*, which we define next. At first, the distribution of a random variable seems quite cryptic, especially if you have never seen pushforward measures before. The idea, is very simple though. A random variable requires an initial probability space $(\Omega, \mathcal{F}, \mathbb{P})$, however we have not said anything about whether or not we have any measure at all on $(\mathsf{X}, \mathcal{X})$, the space where the random variable $\mathrm{X}$ takes values. It turns out that, we can *construct* a probability measure on $(\mathsf{X}, \mathcal{X})$: for any set $\mathsf{A}\in\mathcal{X}$ we first find its preimage with $\mathrm{X}$ and then measure its size with $\mathbb{P}$, this size is the size that the constructed probability measure will assign to it. Notice what we are doing: we are measuring sets in $\mathcal{X}$ using the size of sets in $\mathcal{F}$. This new probability measure is called a **probability distribution** (or just distribution).
+
+> **Distribution**: Let $(\Omega, \mathcal{F}, \mathbb{P})$ be a probability space, $(\mathsf{X}, \mathcal{X})$ be a measurable space and $\mathrm{X}:\Omega\to\mathsf{X}$ be a random variable. Then $\mathsf{X}$ induces a probability measure on $(\mathsf{X}, \mathcal{X})$, called the (probability) distribution of $\mathrm{X}$ and defined as the *pushforward* of $\mathbb{P}$ by $\mathrm{X}$
+$$
+\mathbb{P}^\mathrm{X} := \mathbb{P}\circ\mathrm{X}^{-1}.
+$$
+For any measurable set $\mathsf{A}\in\mathcal{X}$ we write $\mathbb{P}^{\mathrm{X}}(\mathsf{A}) = \mathbb{P}(\mathrm{X}^{-1}(\mathsf{A})) = \mathbb{P}(\mathrm{X}\in\mathsf{A})$.
+
+Notice that this is not just a measure: it is a *probability* measure, since $\mathbb{P}^{\mathrm{X}}(\mathsf{X}) = \mathbb{P}(\Omega) = 1$. A very neat property, which allows us to derive all sorts of things in probability very easily is that given any probability measure $\mathbb{P}$ and a function $f$ one can always write $\mathbb{P} = \left(\mathbb{P}^{f}\right)^{f^{-1}}$. In other words, the pushforwards cancel each other out. Alternatively, one can also write $\mathbb{P}^{f\circ f^{-1}}$ to save space.
+
+Measure theory is nice because when you don't have something, it gives you the recipe to create it. Remember how before we took any collection of subsets and generated the (smallest) sigma-algebra containing them? Well, given *any function* we can turn it into a measurable function. The trick is that we put into a bag all the preimages of that function and then generate the smallest sigma algebra from this bag. The resulting sigma algebra is then *the smallest (coarser) sigma algebra such that the function is measurable*. 
+
+> **Sigma Algebra generated by a function**: Let $(\mathsf{Y}, \mathcal{Y})$ be a measurable space, $\mathsf{X}$ be a non-empty set and $f:\mathsf{X}\to\mathsf{Y}$ be a function (not necessarily measurable). Then $f$ induces a sigma algebra on $\mathsf{X}$, denoted $\sigma(f)$ 
+$$
+\sigma(f) := \left\{f^{-1}(\mathsf{A})\,:\, \mathsf{A}\in\mathcal{Y}\right\},
+$$
+which is the *smallest* sigma algebra on $\mathsf{X}$ such that $f$ is measurable relative to it, indeed by definition $f$ is $\sigma(f)$-measurable. Therefor one could write $\sigma(f) = \sigma\left(\left\{f^{-1}(\mathsf{A})\,:\, \mathsf{A}\in\mathcal{Y}\right\}\right)$.
+
+Finally, just a remark. In the definition of measurable function $\mathrm{X}$, I have called it $\mathcal{F}$-measurable, specifying the sigma algebra on the domain. However, most times it will be clear from context (or just not that important) which sigma algebra $\mathrm{X}$ will be measurable with respect to. Nonetheless, I will try my best to always specify the sigma algebra. I am aware this makes notation a bit heavier, but in some cases, it may make it more precise and therefore easier to understand.
+
+---
+
+<a name="comparing-random-variables"><a/>
+
+# Comparing Random Variables
+Suppose we have a probability space $(\Omega, \Fcal, \Pbb)$ a measurable space $(\Xsf, \Xcal)$ and two random variables $\Xrm_1, \Xrm _2:\Omega\to\Xsf$. The following event
+$$
+\left\{\omega\in\Omega\,:\, \Xrm_1(\omega) = \Xrm_2(\omega) \right\}
+$$
+gathers all the outcomes such that the two random variables have the same value. It could be that two random variables always take on the same value because they are **identical**, and we would expect the probability of this event happening being one. It can also happen, however, that these random variables take on the same values often enough that the set of outcomes where they do not take on the same value has measure zero. In probability we do not work with certainty, but with "almost" certainty. If the complement event (which is always in the sigma algebra) has measure zero, then that's all we care about because it means that our event has measure one. For this reason, when
+$$
+\Pbb\left(\left\{\omega\in\Omega\,:\, \Xrm_1(\omega) = \Xrm_2(\omega) \right\}\right) = 1,
+$$
+we say that $\Xrm_1 = \Xrm_2$ **almost surely** or **with probability one**, and typically write $\Pbb(\Xrm_1 = \Xrm_2) = 1$, or abbreviate $\Xrm_1 = \Xrm_2$ a.s.
+
+---
+
+<a name="mathematical-spaces"><a/>
+
+# Mathematical Spaces
+Unfortunately, there is no way we can proceed forward without talking about topology. At the most practical level, it is because we need to make sense of $(\mathbb{R}^n, \mathcal{B}(\mathbb{R}^n))$, but at the more theoretical level it is needed to be able to define expectations and probability density functions appropriately. I will do my best to keep it intuitive and minimalist. The aim of this section is not to understand everything here, but just to connect the pieces together. 
+
+First, we need to have some intuition about what a *topology* is. Given a set $\mathsf{X}$, a topology on $\mathsf{X}$ is basically a bunch of subsets with some special properties. Mathematicians will hate me but **you don't need to remember these properties at all** for machine learning. They are helpful to read before dwelling into a proof, but all you need to know  is that these subsets represent a notion of **"closeness"** between the elements of $\mathsf{X}$. This is not closeness in the "numerical" sense, we are not given any value telling us how close things are. However, these subsets represent **neighborhoods**.
+
+> **Topology**: Given a set $\mathsf{X}$, a topology on it is a collection of its subsets $\tau\subseteq 2^{\mathsf{X}}$ such that \
+1. Contains the empty set and the set itself: $\emptyset,\mathsf{X}\in\tau$ \
+2. Closed under countable and *uncountable* unions.
+3. Closed under *finite* intersection.
+The elements of $\tau$, which are subsets of $\mathsf{X}$, are known as **open sets**.
+
+We call $(\mathsf{X}, \tau)$ a **topological space**. There may be many topologies that one can define on $\mathsf{X}$. Rather than listing all the subsets contained in a topology, sometimes one can find a smaller subset $\mathsf{B}\subset\tau$ such that every set in $\tau$ can be constructed by taking the union of sets in $\mathsf{B}$. The hope is that $\mathsf{B}$ is easier to characterize/describe, and so we can identify a topology by specifying $\mathsf{B}$ rather than $\tau$. Since we can use $\mathsf{B}$ to *generate* $\tau$, we steal the nomenclature from linear algebra and call $\mathsf{B}$ a basis or a base.
+
+> **Base**: Let $(\mathsf{X}, \tau)$ be a topological space and $\mathsf{B}\subseteq\tau$. We say that $\mathsf{B}$ is a base (or basis) for $\tau$ if for any set $\mathsf{A}\in\tau$ there exists a collection $\mathcal{S}\subseteq\mathsf{B}$ such that
+$$
+\mathsf{A} = \bigcup_{\mathsf{S}\in\mathcal{S}} \mathsf{S}
+$$
+
+Lots of notation, but again, don't try to remember all of this. Just absorb the concept that a basis is all you need to generate a topology. We will almost always work with topological spaces in machine learning. Their usefulness is that, given a topology we can use it to generate a sigma algebra (after all, the topology is simply a collection of subsets). This sigma algebra is special and it has a name, the Borel sigma algebra.
+
+> **Borel sigma-algebra**: Let $(\mathsf{X}, \tau)$ be a topological space, and $\sigma(\tau)$ be the sigma algebra generated by $\tau$. We call $\sigma(\tau)$ the Borel sigma algebra on $\mathsf{X}$. 
+
+At first sight, a topology and a sigma algebra look quite similar. Mathematically, they both contain $\emptyset$ and $\mathsf{X}$, and they are closed under finite unions and intersections, but the difference is that the topology is closed under **uncountable** unions (whereas a sigma algebra only countable), and the sigma algebra is closed under **countable** intersections. Another important difference, perhaps the most important, is that a sigma algebra is closed under complementation, but there is no such requirement in a topology. They are superficially similar objects, but the devil is in the details. Okay, cool, but intuitively what does this mean?  
+I have to admit, I struggle to find a valid intuition that is not rooted in mathematical details. However, one way I like to think about it, is that a topology gives you a notion of *closeness* of elements of $\mathsf{X}$, while a sigma algebra gives you the notion of relative sizes of subsets of $\mathsf{X}$. The Borel sigma algebra connects these two concepts. Being generated by the topology, means that every subset in the topology is also an element of the sigma algebra, meaning that we now have both notions! Always think that $\mathcal{B}(\mathsf{X})$ is typically much, much bigger than $\tau$.
+
+A topology represents a notion of **closeness**, but there is no "numeric" value to this closeness. A **vector space** (over a field $\mathsf{F}$) is a space whose elements can be **added together** and **rescaled**, and satisfy the usual properties that we would expect (e.g. associativity, commutativity, distributivity, etc). If we equip a vector space with a norm $\|\cdot\|$, we obtain (surprise surprise) a **normed vector space**, where now we have the notion of **length** of vectors (for nerds: in reality, we also need to equip its field with a norm). Yes, this is a numeric value. Automatically, this also gives us a notion of **distance**, since it can be interpreted as the length of the difference of two vectors. In mathematical language we say that the norm **induces a metric**
+$$
+d(x, y) := \|x - y\|,
+$$
+meaning that even if we didn't specify a metric, having a norm allows us to create one. This is now a notion of closeness that is numeric. If we equip a vector space with an inner product $\langle \cdot, \cdot\rangle$, we get an **inner product space** where now we additionally have the notion of **orientation** of vectors. Any inner product space is also a normed space, since the inner product **induces** a norm
+$$
+\|v\| = \sqrt{\langle v, v \rangle}.
+$$
+A **Banach** space is a **complete** normed space. To understand the word "complete" requires a course in analysis, but for our purposes it simply means that we can perform calculus on it, e.g. take limits. A **Hilbert** space is a complete inner product space. One more thing, a metric induces a topology! Here's a summary (and the only thing you should try understand, really, the rest can be forgotten)
+$$
+\langle \cdot, \cdot \rangle \text{ induces } \|\cdot\| \text{ induces } d(\cdot, \cdot) \text{ induces } \tau.
+$$
+If we know about their orientation, we know about their size. If we know about their size, we know about their distance. If we know about their distance, we know about their closeness. This is helpful because if we are given a Banach space $(\mathsf{X}, \|\cdot\|_\mathsf{X})$ then we automatically know that there is an induced topology $\tau_{\mathsf{X}}$ and therefore we can use it to generate a Borel sigma algebra $\mathcal{B}(\mathsf{X})$.
+
+> **Banach-Borel space**: From now on, given a Banach space $(\Xsf, \|\cdot\|_\Xsf)$ where the norm induces a metric, which induces a topology $\tau_\Xsf$ which is used to generate the Borel sigma algebra $\Bcal(\Xsf)$, I will call $(\Xsf, \Bcal(\Xsf), \|\cdot\|_\Xsf)$ a Banach-Borel space. I don't think this is common, I just came up with it, but it summarises its main features.
+
+---
+
+<a name="integration"><a/>
+
+# Integration
+Before talking about expectations, we need to recall a few notions about integrals. There are many ways to talk about integrals, some more and some less general. To my knowledge, it is not possible to talk about integrability given *any* measure space $(\Omega, \mathcal{F}, \mathbb{M})$ and *any* measurable space $(\mathsf{X}, \mathcal{X})$. Instead, we need to give more structure and talk about more specific scenarios. Perhaps the most **useful** definition of an integral is found when $\mathsf{X}$ is a Banach space with norm $\|\cdot\|_{\mathsf{X}}$ and it is equipped with the Borel sigma algebra $\mathcal{B}(\mathsf{X})$. This is the most useful one because it is very close to the situation where $(\mathsf{X}, \mathcal{X}) = (\mathbb{R}^n, \mathcal{B}(\mathbb{R}^n))$, which you will almost always encounter in machine learning.
+
+> **Bochner space**: Let $(\Omega, \mathcal{F}, \mathbb{M})$ be a measure space, $(\mathsf{X}, \|\cdot\|_\mathsf{X})$ be a Banach space. The norm $\|\cdot\|_{\mathsf{X}}$ induces a metric $d_{\mathsf{X}}(x, y) := \|x - y\|_{\mathsf{X}}$ which induces a topology $\tau_\mathsf{X}$ which generates the Borel sigma algebra $\mathcal{B}(\mathsf{X}) = \sigma(\tau_{\mathsf{X}})$, so that $(\mathsf{X}, \mathcal{B}(\mathsf{X}))$ is a measurable space. We can then define $L^p$ spaces
+$$
+L^p(\Omega, \mathcal{F}, \mathbb{M}; \mathsf{X}) := \left\{f:\Omega\to\mathsf{X}\left| f \text{ is } \mathcal{F}\text{-measurable and } \left(\int \|f(\omega)\|_{\mathsf{X}}^p \, \mathbb{M}(d\omega)\right)^{1/p} < \infty \right.\right\}, \qquad p\geq 1.
+$$
+If $f\in L^p(\Omega, \mathcal{F}, \mathbb{M}; \mathsf{X})$, we say that it is $L^p$-integrable and if $p=1$ we say $f$ is Bochner integrable. 
+
+A few comments are helpful to understand these spaces: 
+
+1. As the notation for the Bochner space suggests, a very important special case of Bochner spaces is found when $\mathsf{X}$ is finite-dimensional, in which case we recover the usual $L^p$ spaces. 
+
+2. The Bochner spaces $L^p(\Omega, \mathcal{F}, \mathbb{M}; \mathsf{X})$ are **Banach spaces** with norm 
+$$
+\|f\|_{L^p(\Omega, \mathcal{F}, \mathbb{M}; \mathsf{X})} := \left(\int \|f(\omega)\|_{\mathsf{X}}^p \, \mathbb{M}(d\omega)\right)^{1/p}, \qquad\qquad f\in L^p(\Omega, \mathcal{F}, \mathbb{M}; \mathsf{X}).
+$$
+3. If $\mathsf{X}$ is not just a Banach space, but also a Hilbert space with inner product $\langle \cdot, \cdot \rangle_{\mathsf{X}}$ then also $L^p(\Omega, \mathcal{F}, \mathbb{M}; \mathsf{X})$ is a Hilbert space with inner product
+$$
+\langle f, g \rangle_{L^p(\Omega, \mathcal{F}, \mathbb{M}; \mathsf{X})} := \int_{\Omega} \langle f(\omega), g(\omega)\rangle_{\mathsf{X}} \,\mathbb{M}(d\omega), \qquad\qquad f,g\in L^p(\Omega, \mathcal{F}, \mathbb{M}; \mathsf{X}).
+$$
+4. When $\mathbb{M}$ is a finite measure, then the spaces are nested $L^q \subset L^p \subset L^1$ for $1 \leq p \leq q < \infty$. Most times, we will only care about $p=1$ or $p=2$.
+
+Typically, we will write the integral of a function $f\in L^1(\Omega, \mathcal{F}, \mathbb{M};\mathsf{X})$ with respect to $\mathbb{M}$ as $\mathbb{M}(f)$. This notation is handy for various reasons, but one cute reason is that for any set $\mathsf{A}\in\mathcal{B}(\mathsf{X})$ we can write $\mathbb{M}(\mathsf{A})$ as an integral of the indicator function
+$$
+1_{\mathsf{A}}(\omega) = \begin{cases}
+    1 & \omega\in\mathsf{A} \\
+    0 & \omega\notin \mathsf{A}.
+\end{cases}
+$$
+Indeed this function is $\mathcal{F}$-measurable and one can write
+$$
+\mathbb{M}(1_{\mathsf{A}}) = \int_{\Omega} 1_{\mathsf{A}}(\omega) \, \mathbb{M}(d\omega) = \int_{\mathsf{A}} \mathbb{M}(d\omega) = \mathbb{M}(\mathsf{A}).
+$$
+
+---
+
+<a name="expectations"><a/>
+
+# Expectations
+Now that we understand integration in general, we can use it to define expectations when $\mathbb{M}$ is a probability measure $\mathbb{P}$. Indeed, it only makes sense to talk about expectations on a probability space (or perhaps, in a finite measure space) since the expected value tells us the average value that a random variable takes over the possible outcomes, according to their probability of occurring, given by $\mathbb{P}$.
+
+> **Expected value**: Let $(\Omega, \mathcal{F}, \mathbb{P})$ be a probability space, $(\mathsf{X}, \|\cdot\|_\mathsf{X})$ be a Banach space and $(\mathsf{X}, \mathcal{B}(\mathsf{X}))$ be a measurable space with $\mathcal{B}(\mathsf{X})$ being the Borel sigma algebra on $\mathsf{X}$ induced by $\|\cdot\|_{\mathsf{X}}$. Additionally, let $\mathrm{X}:\Omega\to\mathsf{X}$ be a random variable such that $\mathrm{X}\in L^1(\Omega, \mathcal{F}, \mathbb{P}; \mathsf{X})$. Then the expected value of $\mathrm{X}$ is the Bochner integral of $\mathrm{X}$ with respect to $\mathbb{P}$
+$$
+\mathbb{E}[\mathrm{X}] := \int_{\Omega} X(\omega) \mathbb{P}(d\omega).
+$$
+
+By definition, the expectation only exists when the conditions of $L^1$ are satisfied. Suppose you have a random variable $\mathrm{X}$ and you apply a transformation to it, what is the distribution of the new random variable? The answer to this question is fundamental for Normalizing Flows and a lot of the more theoretical generative modelling literature.
+
+---
+
+<a name="lebesgue-measure"><a/>
+
+# Lebesgue Measure
+Remember the integrals we used to solve in high-school?
+$$
+\int f(x) dx
+$$
+These appear much more commonly in the Machine Learning literature than the ones written in the last two sections, but it turns out that the notation $dx$ is just a shortcut for a very specific measure (or rather, class of measures): the **Lebesgue measure**. Like all measures, Lebesgue measures are defined on measurable spaces, but in this case on very specific measurable spaces: $(\mathbb{R}^n, \mathcal{B}(\mathbb{R}^n))$. Before giving an intuition for the Lebesgue measure, we need to have some understanding for these spaces that always pop up in machine learning.
+
+Let's start with $(\mathbb{R}, \mathcal{B}(\mathbb{R}))$. As the notation suggests, $\mathcal{B}(\mathbb{R})$ is the Borel sigma algebra on $\mathbb{R}$, so the first question should be: what topology was used to generate this sigma algebra? The answer is the **standard topology** on $\mathbb{R}$. I know, not very helpful, but I will give some intuition. The standard topology on $\mathbb{R}$ has, as base, the set of all open intervals
+$$
+\mathsf{B} = \left\{\left\{x\in\mathbb{R}\,:\, a < x < b\right\}\,:\, a, b\in\mathbb{R} \text{ with } a < b\right\}.
+$$
+Anything that you can create by the union of these open intervals is in the topology. It turns out, this generates everything that we usually need to work with in $\mathbb{R}$. To understand $\mathcal{B}(\mathbb{R}^n)$ we need to remember that this is the Cartesian product of $n$ identical copies of $\mathbb{R}$
+$$
+\mathbb{R}^n := \underbrace{\mathbb{R} \times \cdots \times \mathbb{R}}_{n \text{ times }},
+$$
+so the question reduces to: can we use the standard topology on $\mathbb{R}$ to generate the standard topology on $\mathbb{R}^n$? The answer is yes. It turns out that given two topological spaces, one can create a new one over their Cartesian product in a very simple and intuitive way.
+
+> **Product Topology**: Let $(\mathsf{X}, \tau_\mathsf{X})$ and $(\mathsf{Y}, \tau_{\mathsf{Y}})$ be two topological spaces with bases $\mathsf{B}_\mathsf{X}$ and $\mathsf{B}_\mathsf{Y}$ respectively. Then $\mathsf{X}\times\mathsf{Y}$ can be equipped with a topology. We call
+$$
+\mathsf{B}_{\mathsf{X}\times\mathsf{Y}} := \left\{\mathsf{A}_\mathsf{X}\times\mathsf{A}_{\mathsf{Y}}\,:\, \mathsf{A}_\mathsf{X}\in\mathsf{X}, \mathsf{A}_\mathsf{Y}\in\mathsf{Y}\right\}
+$$
+the set of open rectangles, and it contains the Cartesian products of any two elements of the bases. The set $\mathsf{B}_{\mathsf{X}\times\mathsf{Y}}$ forms a base for the product topology $\tau_{\mathsf{X}\times\mathsf{Y}}$ on $\mathsf{X}\times\mathsf{Y}$ and we call $(\mathsf{X}\times\mathsf{Y}, \tau_{\mathsf{X}\times\mathsf{Y}})$ the produt topological space.
+
+I have written the product of two topologies but in reality this works for any finite number of topologies. This gives us a simple recipe to construct a topology on $\mathbb{R}^n$, which will then generate $\mathcal{B}(\mathbb{R}^n))$. 
+
+The Lebesgue measure is the most common measure that people use on $(\mathbb{R}^n, \mathcal{B}(\mathbb{R}^n)))$ and in fact it is the measure used when dealing with integrals with the symbol $dx$. The Lebesgue measure on $(\mathbb{R}, \mathcal{B}(\mathbb{R}))$ is typically written as $\text{Leb}_{\mathbb{R}}$ and a precise definition is beyond the scope of this post (and perhaps a bit useless for most machine learning applications). What you need to know, is that this measure gives the **standard notion of length, area and volume**. The size of an interval $[a, b]$ in $\mathbb{R}$ is exactly what we would expect
+$$
+\text{Leb}_{\mathbb{R}}([a, b]) = b - a.
+$$
+This measure is clearly not finite, since $\text{Leb}_{\mathbb{R}}(\mathbb{R})$ cannot possibly be finite. However, it is $\sigma$-finite. The Lebesgue measure on $\mathbb{R}^n$ is simply the extension of this and for $n=2$ computes areas, for $n=3$ computes volumes. Finally, a bit about notation. Suppose we have a ($\sigma$-finite) measure space $(\mathbb{R}^n, \mathcal{B}(\mathbb{R}^n), \text{Leb}_{\mathbb{R}^n})$, a Banach measurable space $(\mathsf{X}, \mathcal{B}(\mathsf{X}))$ and a $\mathcal{B}(\mathbb{R}^n)$-measurable Bochner integrable function $f:\mathbb{R}^n\to\mathsf{X}$. Then sometimes people write
+$$
+\int_{\mathbb{R}^n} f(x) \text{Leb}_{\mathbb{R}^n}(dx) = \int_{\mathbb{R}^n} f(x) dx.
+$$
+
+---
+
+<a name="density-functions"><a/>
+
+# Density Functions
+In most machine learning papers, people do not work with distributions but with *probability density functions (pdf)*, or we can just call them density functions. A distribution is **not** a density function, they are entirely different things, although related. The distribution of a random variable tells you *the probability of events* filtered through the lens of $X$. A density function tells you the **relationship** between two measures.
+
+Very common in machine learning, is a normal density function with mean $\mu\in\mathbb{R}$ and scale $\sigma > 0$
+$$
+p(x; \mu, \sigma) = \frac{1}{\sqrt{2\pi}\sigma}\exp\left(-\frac{(x - \mu)^2}{2\sigma^2}\right),\qquad\qquad x\in\mathbb{R}
+$$
+We often say that a random variable $\mathrm{X}$ has a Gaussian distribution and then immediately think of the expression above, but we know that it cannot be a distribution, since it doesn't take sets as input, but rather points in $\mathbb{R}$. What does the expression above mean in measure-theoretic language? 
+
+Suppose $(\Omega, \mathcal{F}, \mathbb{P})$ is a probability space, and $\mathrm{X}:\Omega\to\mathbb{R}$ is a random variable from that space to $(\mathbb{R}, \mathcal{B}(\mathbb{R}))$. We have seen that the distribution of $\mathrm{X}$ is the probability measure $\mathbb{P}^{\mathrm{X}}$ on $(\mathbb{R}, \mathcal{B}(\mathbb{R}))$. The probability density function tells us how this distribution is different from the Lebesgue measure $\text{Leb}_{\mathbb{R}}$. Notice that density functions are not inherently connected to Lebesgue measures: density functions can represent the change between any two appropriate measures, but the reason why people write expressions such as the one above is that in most machine learning examples, one will be using a Lebesgue measure.
+
+I mentioned that a density function represents change between **appropriate** measures. What requirements do we need? It should be make sense that if any of the two measures is not finite, then the "change" between them is a bit meaningless. What is the change between something finite and something infinite? It turns out, that we can do slightly better than that, we need $\sigma$-finite measures. Another thing that we don't want to happen is if the measure that we are comparing against, assigns measure zero to a set, but the other one doesn't. It would create the same sort of awkwardness that we have when a denominator is zero. To avoid this scenario, we give a name to this type of relationship
+
+> **Absolute Continuity** Let $(\Omega, \mathcal{F})$ be a measurable space and $\mathbb{M}_1$ and $\mathbb{M}_2$ be two measures on it. We say that $\mathbb{M}_1$ is absolutely continuous with respect to $\mathbb{M}_2$, which we write $\mathbb{M}_1\ll \mathbb{M}_2$ if
+$$
+\mathbb{M}_2(\mathsf{A}) = 0 \implies \mathbb{M}_1(\mathsf{A}) = 0, \qquad\qquad \forall\, \mathsf{A}\in\mathcal{F}.
+$$
+
+We say that $\mathbb{M}_2$ **dominates** $\mathbb{M}_1$. All it means is that whenever $\mathbb{M}_2$ gives measure zero to a set, then also $\mathbb{M}_1$ does. The intuitive way to think about absolute continuity is that it tells us that we can, in some abstract sense, construct fractions $\mathbb{M}_1 / \mathbb{M}_2$. This is made more precise in the following theorem.
+
+> **Radon-Nikodym Theorem**: Let $(\Omega, \mathcal{F})$ be a measurable space and let $\mathbb{M}_1$ and $\mathbb{M}_2$ be two $\sigma$-finite measures on it, such that $\mathbb{M}_1 \ll \mathbb{M}_2$. Then, there exists a $\mathcal{F}$-measurable function
+$$
+\frac{d\mathbb{M}_1}{d\mathbb{M}_2}:\Omega\to [0, \infty)
+$$
+in $L^1(\Omega, \mathcal{F}, \mathbb{M}_2; \mathbb{R}_{\geq 0})$ such that its integral with respect to $\mathbb{M}_2$ exists, and
+$$
+\int_{\mathsf{A}} d\mathbb{M}_1 = \int_\mathsf{A} \frac{d\mathbb{M}_1}{d\mathbb{M}_2} d\mathbb{M}_2 \qquad\qquad\forall\,\, \mathsf{A}\in\mathcal{F}.
+$$
+We call the function $d\mathbb{M}_1 / d\mathbb{M}_2$ the Radon-Nikodym derivative of $\mathbb{M}_1$ with respect to $\mathbb{M}_2$ or simply the density of $\mathbb{M}_1$ with respect to $\mathbb{M}_2$.
+
+I remember seeing this and being incredibly confused. Partly because I was thinking "of course it does, the denominator cancels out!" while at the same time thinking "why is there $d$ in the fraction"? Let's go through the theorem slowly. The theorem says that under those two conditions, there **always** exists a measurable function with a special property. We have *decided* to call this measurable function with the symbol
+$$
+\frac{d\mathbb{M}_1}{d\mathbb{M}_2}
+$$
+but we could have chosen $f$, $g$ or your favorite symbol. However, this notation is **very** handy, because of the special property of this measurable function (notice it is measurable, but not necessarily a random variable, since we have not specified a probability measure on $(\Omega, \mathcal{F})$). The special property is that under the integral we can "change" from $d\mathbb{M}_1$ to a function times $d\mathbb{M}_2$. For this reason, this property is often referred to as **change of measure**. Basically, all this property is saying is that the expectation of the density times the indicator function of a measurable set $\mathsf{A}$, taken with respect to $\mathbb{M}_2$, is just the size of that set under $\mathbb{M}_1$.
+
+We can now start to understand what we mean when a random variable has a (univariate) Gaussian distribution.
+
+> **Gaussian distribution**: Let $(\Omega, \mathcal{F}, \mathbb{P})$ be a probability space and consider $(\mathbb{R}, \mathcal{B}(\mathbb{R}))$ equipped with $\text{Leb}_{\mathbb{R}}$. Let $\mathrm{X}:\Omega\to\mathbb{R}$ be a random variable with distribution $\mathbb{P}^{\mathrm{X}}$ and assume $\mathbb{P}^{\mathrm{X}}\ll \text{Leb}_{\mathbb{R}}$. We say that $\mathrm{X}$ is a Gaussian random variable and that $\mathbb{P}^{\mathrm{X}}$ is a Gaussian distribution if for $\mu\in\mathbb{R}$ and $\sigma > 0$ we have
+$$
+\frac{d\mathbb{P}^{\mathrm{X}}}{d\text{Leb}_{\mathbb{R}}}(x) = \frac{1}{\sqrt{2\pi}\sigma}\exp\left(-\frac{(x - \mu)^2}{2\sigma^2}\right)\qquad\qquad x\in\mathbb{R}.
+$$
+
+One last thing, there are two main ways of writing a Radon-Nikodym derivative. They look similar, but each emphasizes something different. The first way, shown above, emphasizes that it is a function, whereas another way
+$$
+\frac{\Mbb_1(d\omega)}{\Mbb_2(d\omega)}
+$$
+emphasizes the usage of the Radon-Nikodym theorem, since they it is "easier" to think about cancelling the denominator with another term of the form $\Mbb_2(d\omega)$. 
+
+---
+
+<a name="change-of-variables"><a/>
+
+# Change of Variables
+One of the most important tricks that we can use to manipulate integrals, which will be fundamental for Normalizing Flows, is the change of variables formula. You may already be familiar with a simplified version of this result from standard calculus. The idea is that if we are taking the expectation of a function $f$ with respect to $\mathbb{M}^g$ (the pushforward of a measure by a function) then this is equivalent to computing the expectation of $f\circ g$ with respect to $\mathbb{M}$. 
+
+>**Change of variables and Jacobians**: Let $(\Omega, \mathcal{F}, \mathbb{M})$ be a measure space, $(\mathsf{X}, \mathcal{B}(\mathsf{X}))$ be a Banach space equipped with the Borel sigma algebra induced by the norm. Let $f, g:\Omega\to\mathsf{X}$ be any two functions. Then $f\in L^1(\mathsf{X}, \mathcal{B}(\mathsf{X}), \mathbb{M}^g; \mathsf{X})$ **if and only if** $(f\circ g)\in L^1(\Omega, \mathcal{F}, \mathbb{M}; \mathsf{X})$ in which case
+$$
+\mathbb{M}^g(f) = \mathbb{M}(f\circ g),
+$$
+where $\mathbb{M}^g$ denotes the pushforward of $\mathbb{M}$ by $g$ (defined when $g$ is measurable).
+
+We can use this to talk about the usual change of variables encountered in basic probability. It's going to be a bit involved, but bear with me.
+
+> **Jacobians**: Let $(\Omega, \mathcal{F}, \mathbb{P})$ be a probability and consider on $(\mathbb{R}^n, \mathcal{B}(\mathbb{R}^n), \text{Leb}_{\mathbb{R}^n})$ a random variable $\mathrm{X}:\Omega\to\mathbb{R}^n$ with distribution $\mathbb{P}^{\mathrm{X}}$. Now, let $f:\mathbb{R}^n\to\mathbb{R}^n$ a diffeomorphism and define the random variable $\mathrm{Y} := f\circ\mathrm{X}$, with distribution $\mathbb{P}^{\mathrm{Y}}$. We wish to find an expression for the density function of the random variable $\mathrm{Y}$ with respect to the Lebesgue measure. On one hand, we have for any $\mathsf{A}\in\mathcal{B}(\mathbb{R}^n)$
+$$
+\mathbb{P}^{\mathrm{Y}}(\mathsf{A}) = \int_{\mathsf{A}} d\mathbb{P}^{\mathrm{Y}} = \int_{\mathsf{A}} \frac{d\mathbb{P}^{\mathrm{Y}}}{d\text{Leb}_{\mathbb{R}^n}}(y) \text{Leb}_{\mathbb{R}^n}(dy), 
+$$
+while on the other hand, using the change of variables formula
+$$
+\begin{align}
+    \mathbb{P}^{\mathrm{Y}}(\mathsf{A}) 
+    &= \int_{\mathbb{R}^n} 1_{\mathsf{A}}(y) \mathbb{P}^{f\circ X}(dy) \\
+    &= \int_{\mathbb{R}^n} 1_{\mathsf{A}}(f(x)) d\mathbb{P}^{X}(dx) && \text{change of variables} \\
+    &= \int_{\mathbb{R}^n} 1_{\mathsf{A}}(f(x)) \frac{d\mathbb{P}^{X}}{d\text{Leb}_{\mathbb{R}^n}}(x) \text{Leb}_{\mathbb{R}^n}(dx) && \text{Radon-Nikodym theorem} \\
+    &= \int_{\mathbb{R}^n} 1_{\mathsf{A}}(f(x)) \frac{d\mathbb{P}^{X}}{d\text{Leb}_{\mathbb{R}^n}}(x) \text{Leb}_{\mathbb{R}^n}^{f^{-1}\circ f}(dx) \\
+    &= \int_{\mathsf{A}} \frac{d\mathbb{P}^{X}}{d\text{Leb}_{\mathbb{R}^n}}(f^{-1}(y)) \text{Leb}_{\mathbb{R}^n}^{f}(dy) && \text{change of variables} \\
+    &= \int_{\mathsf{A}} \frac{d\mathbb{P}^{X}}{d\text{Leb}_{\mathbb{R}^n}}(f^{-1}(y)) \frac{d\text{Leb}_{\mathbb{R}^n}^{f}}{d\text{Leb}_{\mathbb{R}^n}}(y)\text{Leb}_{\mathbb{R}^n}(dy) && \text{Radon-Nikodym theorem} 
+\end{align}
+$$
+Putting these two facts together tells us
+$$
+\frac{d\mathbb{P}^{\mathrm{Y}}}{d\text{Leb}_{\mathbb{R}^n}}(y) = \frac{d\mathbb{P}^{X}}{d\text{Leb}_{\mathbb{R}^n}}(f^{-1}(y)) \frac{d\text{Leb}_{\mathbb{R}^n}^{f}}{d\text{Leb}_{\mathbb{R}^n}}(y).
+$$
+What a horrible-looking equation, but if you squint, it should look familiar. For simplicity, let's write $p_\mathrm{Y}(\cdot)$ for the density of the distribution of $\mathrm{Y}$ with respect to the Lebesgue and similarly $p_\mathrm{X}$. Then we have
+$$
+p_{\mathrm{Y}}(y) = p_{\mathrm{X}}(f^{-1}(y)) \frac{d\text{Leb}_{\mathbb{R}^n}^{f}}{d\text{Leb}_{\mathbb{R}^n}}(y).
+$$
+This looks almost exactly like the change of variables formula we find in basic probability courses. In fact, it's exactly the same formula, because it turns out that the Radon-Nikodym derivative of the pushforward of the Lebesgue measure by the Lebesgue measure is the absolute value of the determinant of the Jacobian of $f^{-1}$, in other words
+$$
+\frac{d\text{Leb}_{\mathbb{R}^n}^{f}}{d\text{Leb}_{\mathbb{R}^n}}(y) = \left|\det \mathrm{J}_{f^{-1}}(y)\right|.
+$$
+
+Another great application of the change of variables theorem is being able to write expectations as we usually do in an undergraduate course in probability, using $dx$ and $p(x)$, the density of the random variable.
+
+> **Undergraduate expectations**: Let $(\Omega, \Fcal, \Pbb)$ be a probability space, $\Xrm:\Omega\to\Rbb$ be a random variable from that space to $(\Rbb, \Bcal(\Rbb))$, with distribution $\Pbb^\Xrm$ which has density with respect to $\text{Leb}_\Rbb$ given by $p(x)$. Then we can write
+$$
+\int_{\Omega} \Xrm(\omega) \Pbb(d\omega) = \int_{\Omega} \Xrm(\omega) \Pbb^{\Xrm^{-1} \circ \Xrm}(d\omega) = 
+\int_\Xsf x \frac{\Pbb^\Xrm(dx)}{\text{Leb}_\Rbb(dx)}\text{Leb}_\Rbb(dx) = \int_\Xsf x p(x) dx.
+$$
+
+Very often people will write $\Pbb(\Xrm\in\Asf)$ rather than $\Pbb^\Xrm(\Asf)$. It is straightforward to verify that they are indeed the same thing, once we define the notation $\Xrm\in\Asf$. 
+
+> **Cute notation for $\Pbb^\Xrm(\Asf)$**: Let $(\Omega, \Fcal, \Pbb)$ be a probability space, $(\Xsf, \Bcal(\Xsf), \|\cdot\|_\Xsf)$ be a Banach-Borel space and $\Xrm:\Omega\to\Xsf$ be a random variable in $L^1(\Omega, \Fcal, \Pbb; \Xsf)$. The distribution of $\Xrm$ is, by definition the measure $\mathbb{P}^\Xrm(\Asf) = \Pbb(X^{-1}(\Asf))$ for any $\Asf\in\Bcal(\Xsf)$. To obtain the **cute** notation we define
+$$
+\{\Xrm \in \Asf\} := X^{-1}(\Asf)
+$$
+and often drop the parentheses $\Pbb^\Xrm(\Asf) = \Pbb(\{\Xrm\in\Asf\}) = \Pbb(\Xrm\in\Asf)$.
+
+Now that we have this notation, we can understand a bit better the following intuition about random variables, which is fundamental for stochastic processes.
+
+>**Intuition for measurability**: The intuition that I like to have about $\Xrm$ being $(\Fcal, \Xcal)$-measurable is that $\Fcal$ contains information in the form of events, and $\Xrm$ reveals information contained in $\Fcal$ through its values in $\Xsf$. Suppose that we wish to know the probability that the random variable $\Xrm$ takes values in $\Asf\in\Xcal$. By construction, we know that this is $\Pbb(X^{-1}(\Asf))$, i.e. we actually compute the probability of the preimage of $\Asf$ under $\Xrm$. Therefore, when we observe $\Xrm\in \Asf$ we are really observing the event $\{\omega\in\Omega\,:\, \Xrm(\omega)\in\Asf\}$ which is in $\Fcal$. Observing the random variable, we are really observing the events that we truly care about, the ones made out of the true underlying outcomes. 
+
+---
+
+<a name="markov-kernels"><a/>
+
+# Markov Kernels
+
+Markov Kernels are fundamental to obtain the measure-theoretic generalization of a conditional distribution and as such they find application all over machine learning. A Markov kernel is a function of two arguments, a point and a set, and we typically write $K(x, \mathsf{A})$. When you see this, just think of something like this $K(\mathsf{A} \mid x)$ meaning that we are conditioning on the first argument, and evaluating a probability measure in the second argument. We need two conditions to make sure $K(x, \mathsf{A})$ is a valid Markov kernel. The first one is that $K(\cdot \mid x)$ should always be a probability measure. This makes sense, no matter what we are conditioning on, we want to have a "conditional" probability measure. The second one, is perhaps less intuitive, and it helps to think of it as just adding regularity that is needed for later notions in this post. This second property is that when you fix the set $\mathsf{A}$, then $K(\mathsf{A} \mid \cdot)$ should be a measurable function. I will **not** use the notation $K(\mathsf{A}\mid x)$ but it helps remembering this form and reading "from $x$ to $\mathsf{A}$".
+
+> **Markov Kernel**: Let $(\mathsf{X}, \mathcal{X})$ and $(\mathsf{Y}, \mathcal{Y})$ be two measurable spaces and let $K:\mathsf{X}\times\mathcal{Y}\to [0, 1]$ be a function satisfying \
+1. The function $K(\cdot, \mathsf{A})$ is $\mathcal{X}$-measurable for any $\mathsf{A}\in\mathcal{Y}$ fixed. \
+2. The function $K(x, \cdot)$ is a probability measure on $(\mathsf{Y}, \mathcal{Y})$ for every $x\in\mathsf{X}$ fixed.
+
+
+Markov kernels have various properties. The first one we explore is that they can be composed.
+
+> **Composition of Markov Kernels**: Let $(\Xsf, \Xcal)$, $(\Ysf, \Ycal)$ and $(\Zsf, \Zcal)$ be measurable spaces and $K:\Xsf\times\Ycal\to[0,1]$ and $L:\Ysf\times\Zcal\to [0, 1]$ be Markov kernels. Then the composition
+$$
+(L\circ K)(x, \mathsf{A}) = \int_{\Ysf} L(y, \mathsf{A}) K(x, dy), \qquad\qquad x\in\Xsf, \mathsf{A}\in\Zcal
+$$
+is also a Markov kernel.
+
+Notice that the composition kernel is defined as an expectation and it always exist because $L(\cdot, \mathsf{A})$ is a bounded function for any $\mathsf{A}\in\Zcal$ and it is integrated on a set of finite measure, since $K(\Ysf, x) = 1$ for any $x\in\Xsf$, which means $L(\cdot, \mathsf{A})$ is integrable over $\Ysf$. The intuition behind these Markov kernels is that going from $x$ to the set $\mathcal{C}$ can be obtained by splitting the trajectory in half: go from $x$ to some other set $\mathsf{B}\in\Ycal$ and then from that set to the final set $\mathsf{A}\in\Zcal$. We need to integrate out the sets in $\Ycal$ because we could potentially go over any such set. This composition property is **associative**, meaning that for suitable kernels
+$$
+M \circ (L \circ K) = (M \circ L) \circ K
+$$
+which is why one often hears about Markov kernel forming a semigroup. This will be useful in the study of stochastic processes.
+
+---
+
+<a name="conditional-expectations"><a/>
+
+# Conditional Expectations
+As I mentioned before, a sigma algebra represents **information** since it contains events for which we can talk about probabilities. In line with this interpretation, we can use this information to perform **conditioning**. Suppose that we have some random variable $\Xrm$ that is measurable with respect to a sigma algebra $\Fcal$, which represents information. Now, the expected value $\Ebb[\Xrm]$ is in some sense **relative to** $\Fcal$, because the random variable is measurable with respect to this information, it is compatible with it. Now, given fewer information $\Gcal\subseteq\Fcal$ we wish to define an expectation that is **relative** to this lesser amount of information. In symbols, we could write $\Ebb[\Xrm]$ as $\Ebb[\Xrm \mid \Fcal]$ and we wish to define $\Ebb[\Xrm \mid \Gcal]$. The symbols give away the fact that different amounts of information should allow us to **condition** on them. 
+
+This is the aim of the next definition/theorem, it says that under certain conditions, there exists $\Ebb[\Xrm \mid \Gcal]$. 
+
+> **Conditional Expectation with respect to a sub-sigma algebra**: Let $(\Omega, \Fcal, \Pbb)$ be a probability space, $(\Esf, \Bcal(\Esf), \|\cdot\|_\Esf)$ be a Banach-Borel space, and $\Xrm:\Omega\to\Esf$ be a random variable such that $\Ebb[\|\Xrm\|_\Esf] <\infty$. Let $\Gcal\subseteq\Fcal$ be a sub-sigma algebra of $\Fcal$. Then, **there exists** a $\Gcal$-measurable function $\Yrm:\Omega\to\Esf$ with $\Ebb[\|\Yrm\|_\Esf] < \infty$ such that
+$$
+\int_{\mathrm{G}} \Yrm \, d\Pbb = \int_{\mathsf{G}} \Xrm \, d\Pbb \qquad\qquad \mathsf{G}\in\Gcal.
+$$
+If there exists another random variable $\tilde{\Yrm}$ satisfying these properties then $\Pbb(\tilde{\Yrm} = \Yrm) = 1$, and we call any random variable with these properties a **version** of the conditional expectation of $\Xrm$ given $\Gcal$ and write $\Yrm = \Ebb[\Xrm \mid \Gcal]$ almost surely.
+
+Given fewer information $\Gcal\subseteq\Fcal$, the conditional expectation $\Ebb[\Xrm\mid\Gcal]$ is any random variable whose expectation on sets $\Gsf\in\Gcal$ agrees with that of $\Xrm$. This makes sense: if the set $\Gsf$ is in the sub-sigma algebra that we are conditioning on, that information is available, and so conditioning is useless and we fall back to the standard expectation of $\Xrm$. Notice that the conditional expectation is not unique, there may be multiple versions.
+
+---
+
+# $\pi$-Systems and $\lambda$-Systems
+
+> **$\pi$-system**: Let $\mathsf{P}$ be a non-empty set that is closed under finite intersections, meaning that if $\mathsf{A}, \mathsf{B}\in\mathsf{P}$ then $\mathsf{A}\cap\mathsf{B} \in \mathsf{P}$ and by induction for any $n\in\mathbb{N}$ we have
+$$
+\bigcap_{i=1}^n \mathsf{A}_i \in \mathsf{P} \qquad \text{ where } \mathsf{A}_i\in\mathsf{P} \,\,\forall\, i=1, \ldots, n
+$$
+
+> **$\pi$-system over a set**: Let $\mathsf{X}$ be a non-empty set and $\mathsf{P}\subseteq \mathcal{P}(\mathsf{X})$ be a $\pi$-system whose elements are all subsets of $\mathsf{X}$. Then $\mathsf{P}$ is a $\pi$-system over $\mathsf{X}$.
+
+Of course, since $\mathsf{P}$ is a collection of subsets of $\mathsf{X}$, one can use it to generate a sigma algebra, $\sigma(\mathsf{P})$ over $\mathsf{X}$.
+
+> **$\lambda$-system over a set**: Let $\mathsf{X}$ be a non-empty set and $\mathcal{L}\subseteq \mathcal{P}(\mathsf{X})$ be a collection of subsets of $\mathsf{X}$. Then $\mathsf{L}$ is a $\lambda$-system if \
+1. Contains $\mathsf{X}$: $\mathsf{X}\in\mathsf{L}$ \
+2. Closed under complementation: $\mathsf{A}\in\mathsf{L} \implies \mathsf{X} \backslash \mathsf{A} \in \mathsf{L}$. \
+3. Closed under countable *disjoint* unions: If $\mathsf{A}_i \in \mathsf{L}$ for $i\in\mathcal{I}$ with $|\mathcal{I}|\leq \aleph_0$ and $A_i \cap A_j = \emptyset$ for $i \neq j$ then
+$$
+\bigcup_{i\in\mathcal{I}} \mathsf{A}_i \in \mathsf{L}.
+$$
+
+Importantly, if $\mathcal{S}$ is both a $\pi$-system and a $\lambda$-system over the non-empty set $\mathsf{X}$, then automatically $\mathcal{S}$ is a sigma-algebra over $\mathsf{X}$. The next theorem, tells us that the sigma algebra generated by a $\pi$-system that is strictly contained inside a $\lambda$-system, is itself strictly contained into the very same $\lambda$-system.
+
+> **$\pi$-$\lambda$ theorem**: Let $\mathsf{X}$ be a non-empty set, $\mathsf{P}\subset\mathsf{L}$ be a $\pi$-system and a $\lambda$-system over $\mathsf{X}$ respectively, then $\sigma(\mathsf{P}) \subset \mathsf{L}$.
+
+The usefulness of this theorem is that if two probability measures agree on a $\pi$-system, then these measures agree on the sigma algebra generated by it.
+
+> **Uniqueness of measures on $\pi$-system**: Let $\mathbb{P}$ and $\mathbb{Q}$ be two probability measures on $(\mathsf{X}, \sigma(\mathsf{P}))$, where $\mathsf{P}$ is a $\pi$-system over $\mathsf{X}$. Then
+$$
+\mathbb{P}(\mathsf{A}) = \mathbb{Q}(\mathsf{A}) \,\,\, \forall\,\mathsf{A}\in\mathsf{P} \implies \mathbb{P}(\mathsf{A}) = \mathbb{Q}(\mathsf{A}) \,\,\,\forall\, \mathsf{A}\in\sigma(\mathsf{P}).
+$$
+
+An important application of this is used to motivate the fact that two random variables are *equal in distribution* whenever they have the same cumulative distribution function. We express this below
+
+> **Same CDF implies same distribution**: Let $(\Omega, \mathcal{F}, \mathbb{P})$ be a probability space, $(\mathsf{X}, \mathcal{X})$ be a measurable space with $(\mathsf{X}, \leq)$ being totally ordered, and $\mathrm{X}_1, \mathrm{X}_2:\Omega\to \mathsf{X}$ be two random variables with distributions $\mathbb{P}^{\mathrm{X}_1}$ and $\mathbb{P}^{\mathrm{X}_2}$ respectively. Then the collection of sets
+$$
+\mathsf{P} := \left\{ \{y\in\mathsf{X} \, : \, y\leq x\} \,:\, x\in\mathsf{X}\right\}
+$$
+forms a $\pi$-system, and if we define the Cumulative Distribution Function (CDF) as
+$$
+\mathrm{F}_{\mathrm{X}_i}(x) := \mathbb{P}_{\mathrm{X}_i}\left(\{y\in\mathsf{X}\,:\,y\leq x\}\right) = \mathbb{P}\left(\left\{\omega\in\Omega\,:\, \mathrm{X}_i(\omega) \leq x\right\}\right) =: \mathbb{P}(\mathrm{X}_i \leq x) \qquad \forall\, x\in\mathsf{X}, \,\, i=1,2,
+$$
+then by the $\pi$-$\lambda$ theorem, if $\mathrm{X}_1$ and $\mathrm{X}_2$ have the same CDFs, then $\mathbb{P}^{\mathrm{X}_1}$ and $\mathbb{P}^{\mathrm{X}_2}$ agree on the $\pi$-system described above and thus they also agree on $\sigma(\mathsf{P})$. Therefore, as long as we choose $\mathcal{X} \equiv \sigma(\mathsf{P})$ then we are done.
+
+> **Cylinder sets**: 
+
+---
+
+<a name="stochastic-processes"><a/>
+
+# Stochastic Processes
+A stochastic process is a sequence of random variables, indexed by an index set $\Tsf$, defined on the same probability space and that take values on the same space $(\Xsf, \Xcal)$. 
+
+> **Stochastic Process**: Let $(\Omega, \mathcal{F}, \mathbb{P})$ be a probability space, $(\mathsf{X}, \mathcal{X})$ be a measurable space, and $(\mathsf{T}, \leq)$ be any totally-ordered set. The collection $\{\mathrm{X}_t\,:\, t\in\mathsf{T}\}$ of random variables $\mathrm{X}_t:\Omega\to\mathsf{X}$ each of them being $(\Fcal_t, \Xcal)$-measurable for **some** sub-sigma algebra $\Fcal_t\subseteq\Fcal$ is called a stochastic process. If $\mathsf{T}$ is uncountable, then it is a continuous-time stochastic process, if $\mathsf{T}$ is countable then it is a discrete-time stochastic process.
+
+Notice that I have not mentioned any relationship between the sub-sigma algebras $\Fcal_t$. All I require is that they are valid (but not necessarily strict) sub-sigma algebras $\Fcal_t\subseteq\Fcal$. Typically, we introduce stochastic processes in a time-context where as time progresses, the process evolves and we receive more information. A filtration is the mathematical object that is used to model a increasing sequence of "information". A filtration is a sequence of (nested) sigma algebras that grows larger and larger. Think of it as being a historical record of information, where the $t^{\text{th}}$ sigma algebra tells you the information available at time $t$ (we call it time because usually the index is time). As time progresses, we gain more information.
+
+> **Filtration**: Let $(\Omega, \mathcal{F}, \mathbb{P})$ be a probability space, and $(\mathsf{T}, \leq)$ be a totally-ordered set, which we call an index set. A filtration $\{\mathcal{F}_t\,:\, t\in\mathsf{T}\}$ induced by $(\mathsf{T}, \leq)$ is a collection of sub-sigma algebras of $\mathcal{F}$ such that $\mathcal{F}_q\subseteq\mathcal{F}_s$ when $q\leq s$.
+
+Again, we love naming things in mathematics, so we call $(\Omega, \Fcal, \Pbb, \{\Fcal_t\}_{t\in\Tsf})$ a **filtered probability space**, whenever $\{\Fcal_t\}_{t\in\Tsf}$ is a filtration as defined above. Now, we have introduced filtrations because, in general, we would like to have a stochastic process where each random variable is measurable with respect to the corresponding sub-sigma algebra in the filtration. Recall that when we specify $\Xrm_t$ by saying that it is $(\Fcal_t, \Xcal)$ measurable, we are effectively saying that $\Fcal_t$ is the largest sigma algebra, and so while $\Xrm_t$ can reveal information about $\Fcal_t$ it cannot reveal information about any $\Fcal_{\tau}$ with $\tau > t$. The result is a stochastic process where each random variable cannot reveal information about the future and therefore the process is **non-anticipating**. We call such a stochastic process **adapted** to the filtration.
+
+>**Adapted Process**: Let $(\Tsf, \leq)$ be a totally-ordered set, $(\Omega, \Fcal, \Pbb, \{\Fcal_t\}_{t\in\Tsf})$ be a filtered probability space, $(\Xsf, \Xcal)$ be a measurable space, and $\{\Xrm_t\}_{t\in\Tsf}$ be a stochastic process where each random variable $\Xrm_t:\Omega\to\Xsf$ is $(\Fcal_t,\Xcal)$-measurable. Then we say $\{\Xrm_t\,:\, t\in\Tsf\}$ is **adapted** to the filtration $\{\Fcal_t\,:\, t\in\Tsf\}$.
+
+One can construct many different filtrations, but there is one that is very natural once you take into account the various intuitions that we have been building so far. Since each random variable reveals information contained in the corresponding sigma algebra, it makes sense that the $t^{\text{th}}$ sigma algebra is generated by all the preceding random variables. This filtration is called the **natural** filtration. 
+
+> **Natural Filtration**: Let $(\Tsf, \leq)$ be a totally-ordered set, $(\Omega, \Fcal, \Pbb)$ be a probability space, $(\Xsf, \Xcal)$ be a measurable space and $\{\Xrm_t\,:\, t\in\Tsf\}$ be a collection of random variables, where we don't specify yet which sub-sigma algebra they are measurable with respect to. Notice that, sequentially, one can build a filtration as follow
+$$
+\Fcal_\tau^\Xrm := \sigma\left(\left\{\Xrm_t^{-1}(\Bsf) \,:\, t\leq \tau, \Bsf\in\Xcal\right\}\right), \qquad \forall\, \tau\in\Tsf.
+$$
+This is called the natural filtration and the stochastic process is automatically adapted to it.
+
+
+> **Path**: For $\omega\in\Omega$ **fixed** then $t\mapsto \mathrm{X}_t(\omega)$ is a function which we call the path of $\mathrm{X}_t$. 
+
+In fact, to each $\omega\in\Omega$ there corresponds a function $t\mapsto \mathrm{X}_t(\omega)$, so that we can put $\Omega$ on a one-to-one correspondence with the space $\mathsf{X}^\mathsf{T}$ of functions from $\mathsf{T}$ to $\mathsf{X}$. 
+
+---
+
+# Martingales
+
+> **Martingale**: Let $(\mathsf{T}, \leq)$ be a totally ordered set, $(\Omega, \mathcal{F}, \mathbb{P}, \{\mathcal{F}_t\}_{t\in\mathsf{T}})$ be a filtered complete probability space, $(\mathsf{X}, \mathcal{X})$ be a measurable space and $\{\mathrm{X}_t\}_{t\in\mathsf{T}}$ be a stochastic process adapted to $\{\mathcal{F}_t\}_{t\in\mathsf{T}}$. We say that a stochastic process is a martingale with respect to $\{\mathcal{F}_t\}_{t\in\mathsf{T}}$ and $\mathbb{P}$ if \
+1. $\mathbb{E}[|\mathrm{X}_t|] < \infty$ for every $t$ (meaning $\mathrm{X}_t$ is integrable) \
+2. $\mathrm{X}_s = \mathbb{E}[\mathrm{X}_t \mid \mathcal{F}_s]$ for $s < t$ (meaning our best guess for $\mathrm{X}_t$ given information up to time $s$ is $\mathrm{X}_s$)
+
+
+
