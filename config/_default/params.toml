@@ -44,7 +44,7 @@ local_business_type = ""
 org_name = ""
 
 # Description for social sharing and search engines. If undefined, superuser role is used in place.
-description = "Mauro Camara Escudero's personal website about machine learning, artificial intelligence and data science."
+description = "Hui-Tung Kuo's personal website about mathematics, physics and TCS."
 
 ############################
 ## Site Features

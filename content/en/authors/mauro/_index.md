@@ -24,7 +24,7 @@ bio: My research interests include Representation Theory, Algebraic Geometry and
 
 interests:
 - Algebraic/Geometric Representation Theory
-- Geometric Langlands Theory & its related physics problems
+- Geometric Langlands & its related physics problems
 - Lie Theory (Hopf algebras, Tensor categories)
 - Algebraic Geometry (Quantum cohomology, Moduli space)
 - Noncommutative Geometry & K-Theory
@@ -72,7 +72,7 @@ user_groups:
 - ResearchersContact
 - Visitors
 ---
-Passionate about leveraging data to drive positive change, particularly in **tech-for-good** sectors such as democracy, AI safety (particularly (mis-)alignment and training dynamics), energy, and environmental sciences. Pioneered the first algorithm for efficient [Approximate Manifold Sampling](https://maurocamaraescudero.netlify.app/phd_thesis.pdf) and contributed to the development of [Integrator Snippets](https://github.com/MauroCE/IntegratorSnippets), with a focus on Simulator-Based Inference (SBI). Some random things I have organised: [Generative Models Reading Group](https://github.com/MauroCE/GMRG), [Neural Network Reading Group](https://neuralnetworksbristol.netlify.app/), [Bristol Online Charity Danceathon](https://epigram.org.uk/2020/07/24/bristol-dance-groups-host-charity-danceathon/), [Postgraduates in AI (PAI) Link](https://compass.blogs.bristol.ac.uk/events/pai-link/). Below, you can find my [**course on LLMs**](/#ramblings).
+Greating, welcome to my personal website. I am a fourth-year student in the NJUPT, and My current research interests lie in representation theory, algebraic geometry, and mathematical physics.
 
 Other things I am passionate about include:
 
