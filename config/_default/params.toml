@@ -84,16 +84,16 @@ edit_page = { repo_url = "https://github.com/gcushen/hugo-academic", content_dir
 ############################
 
 # Enter contact details (optional). To hide a field, clear it to "".
-email = "maurocamaraescudero@gmail.com"
+email = "huiscott5@gmail.com"
 # phone = "888 888 88 88"
 
 # Address
 # For country_code, use the 2-letter ISO code (see https://en.wikipedia.org/wiki/ISO_3166-1_alpha-2 )
-address = { street = "Woodland Road", city = "Bristol", region = "", postcode = "BS8 1TH", country = "United Kingdom", country_code = "GB" }
+address = { street = "Wenyuan Road", city = "Nanjing", region = "", postcode = "210049", country = "China", country_code = "CN" }
 
 # Geographic coordinates
 # To get your coordinates, right-click on Google Maps and choose "What's here?". The coords will show up at the bottom.
-coordinates = { latitude = "51.457660", longitude = "-2.604121" }
+coordinates = { latitude = "32.08215810132817", longitude = "-118.76627789830577" }
 
 # Directions for visitors to locate you.
 directions = "Turn right at the entrance to office GA.14"
