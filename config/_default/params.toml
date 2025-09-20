@@ -93,7 +93,7 @@ address = { street = "Wenyuan Road", city = "Nanjing", region = "", postcode = "
 
 # Geographic coordinates
 # To get your coordinates, right-click on Google Maps and choose "What's here?". The coords will show up at the bottom.
-coordinates = { latitude = "32.08224", longitude = "118.76628" }
+coordinates = { latitude = "32.10789", longitude = "118.93043" }
 
 # Directions for visitors to locate you.
 directions = "Turn right at the entrance to office GA.14"
