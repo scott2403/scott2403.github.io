@@ -1,6 +1,6 @@
 ---
 # Display name
-name: 中文页面测试
+name: 郭慧通
 
 # R PORTFOLIO: https://statisticalcomputingportfolio.netlify.com/
 
@@ -12,32 +12,33 @@ authors:
 superuser: true
 
 # Role/position
-role: Machine Learning Engineer
+role: 一名数学本科生
 
 # Organizations/Affiliations
 organizations:
-- name: ExTrac AI
-  url: "https://extrac.ai/"
+- name: 南京邮电大学
+  url: "https://www.njupt.edu.cn/"
 
 # Short bio (displayed in user profile at end of posts)
-bio: My research interests include approximate manifold sampling and generative models.
+bio: 我的研究兴趣主要包括表示论、代数几何以及数学物理.
 
 interests:
-- Multilingual LLMs for low-resource languages
-- AI Safety, Trustworthy AI
-- Score-based sampling (HMC, MALA)
-- Generative Models (LLMs, DDGM)
-- Approximate Manifold Sampling
-- Scalable/Robust inference (SMC,SBI)
+- 一些动漫
+- 音乐剧、歌剧
+- 古典音乐
+- $\tex$
+- 哲学、语言学
+- Galgame :disappointed_relieved:
+- 一些应用数学
 
 education:
   courses:
-  - course: PhD in Statistical Machine Learning
-    institution: University of Bristol
-    year: 2020-2023
-  - course: BSc in Mathematics with Year in Employment
-    institution: University of Southampton
-    year: 2019
+#   - course: PhD in Statistical Machine Learning
+#     institution: University of Bristol
+#     year: 2020-2023
+  - course: 学士学位--信息与计算科学
+    institution: 南京邮电大学理学院
+    year: 2026
 
 # course: MRes in Computational Statistics and Data Science
 # institution: University of Bristol
@@ -59,9 +60,9 @@ social:
   link: https://github.com/MauroCE
 # Link to a PDF of your resume/CV from the About widget.
 # To enable, copy your resume/CV to `static/files/cv.pdf` and uncomment the lines below.
-# - icon: cv
-#   icon_pack: ai
-#   link: files/cv.pdf
+- icon: cv
+  icon_pack: ai
+  link: files/cv.pdf
 
 # Enter email to display Gravatar (if Gravatar enabled in Config)
 email: ""
@@ -72,12 +73,13 @@ user_groups:
 - ResearchersContact
 - Visitors
 ---
-Passionate about leveraging data to drive positive change, particularly in **tech-for-good** sectors such as democracy, AI safety (particularly (mis-)alignment and training dynamics), energy, and environmental sciences. Pioneered the first algorithm for efficient [Approximate Manifold Sampling](https://maurocamaraescudero.netlify.app/phd_thesis.pdf) and contributed to the development of [Integrator Snippets](https://github.com/MauroCE/IntegratorSnippets), with a focus on Simulator-Based Inference (SBI). Some random things I have organised: [Generative Models Reading Group](https://github.com/MauroCE/GMRG), [Neural Network Reading Group](https://neuralnetworksbristol.netlify.app/), [Bristol Online Charity Danceathon](https://epigram.org.uk/2020/07/24/bristol-dance-groups-host-charity-danceathon/), [Postgraduates in AI (PAI) Link](https://compass.blogs.bristol.ac.uk/events/pai-link/). Below, you can find my [**course on LLMs**](/#ramblings).
+Hi, 欢迎来到我的个人主页. 我现在是一名南京邮电大学的大四本科生, 我目前的研究兴趣主要集中在表示论、代数几何以及数学物理中
 
-Other things I am passionate about include:
+我主要关注如下的一些问题:
 
-- Basketball :basketball: 
-- Dancing (mostly Modern Jive, West Coast Swing and Blues) :dancer:
-- Journalism, especially investigative (e.g. Bellingcat) :detective:
-- Science of Cooking :test_tube: :shallow_pan_of_food:
-- Exercising whether bodyweight, calisthenics or at the gym :weight_lifting:
+- 代数表示论、几何表示论
+- 几何 Langlands 纲领及其相关的数学物理问题
+- Lie 理论 (包括代数群、量子群的表示, Hopf代数以及张量范畴的一些问题)
+- 辛几何与代数几何 (量子上同调、模空间、形变量子化等)
+- 非交换几何、K-理论
+- 数学物理 (TQFT/CFT的形式化数学理论、弦论、物理数学等)
