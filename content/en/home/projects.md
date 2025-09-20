@@ -5,7 +5,7 @@ headless = true  # This file represents a page section.
 active = true  # Activate this widget? true/false
 weight = 25  # Order that this section will appear.
 
-title = "Projects"
+title = "Notes"
 subtitle = ""
 
 [content]
@@ -26,15 +26,15 @@ subtitle = ""
     tag = "*"
   
   [[content.filter_button]]
-    name = "Spotify"
+    name = "Lecture Notes"
     tag = "Spotify"
   
   [[content.filter_button]]
-    name = "NLP"
+    name = "Seminar Notes"
     tag = "NLP"
   
   [[content.filter_button]]
-    name = "Data Journalism"
+    name = "Others"
     tag = "Data Journalism"
 
 [design]
