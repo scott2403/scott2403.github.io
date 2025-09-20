@@ -1,10 +1,10 @@
 ---
-title: "Freelance Services"
+title: "Misc"
 date: 2024-08-15
 draft: false
 type: "page"
 layout: "misc" # Create a custom layout if needed
-summary: "Professional freelance services tailored to meet your needs."
+summary: "Something."
 ---
 
 Are you looking for professional help in Machine Learning or Data Science? I'm here to help. With over a decade of experience, I offer a range of services tailored to meet your needs.
