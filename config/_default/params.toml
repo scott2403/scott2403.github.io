@@ -221,7 +221,7 @@ date_format = "January 2006"
 citation_style = "apa"
 
 # Configuration of project pages.
-[projects]
+[Notes]
 # Views for associated content.
 #   1: List
 #   2: Compact
