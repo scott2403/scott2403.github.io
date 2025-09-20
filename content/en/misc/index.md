@@ -3,7 +3,7 @@ title: "Freelance Services"
 date: 2024-08-15
 draft: false
 type: "page"
-layout: "freelance" # Create a custom layout if needed
+layout: "misc" # Create a custom layout if needed
 summary: "Professional freelance services tailored to meet your needs."
 ---
 

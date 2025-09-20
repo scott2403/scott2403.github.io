@@ -30,7 +30,7 @@ weight = 40
 
 [[main]]
 name = "Misc"
-url = "freelance/"
+url = "misc/"
 weight = 45
 
 [[main]]
