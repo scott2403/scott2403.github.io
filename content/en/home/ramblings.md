@@ -5,8 +5,8 @@ headless = true  # This file represents a page section.
 active = true  # Activate this widget? true/false
 weight = 50  # Order that this section will appear.
 
-title = "Ramblings"
-subtitle = "Tutorials, courses and various other rambling. "
+title = "Seminar"
+subtitle = "Seminars I have attended or organized. "
 
 # Date format
 #   Refer to https://sourcethemes.com/academic/docs/customization/#date-format
