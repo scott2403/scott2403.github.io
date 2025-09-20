@@ -28,7 +28,7 @@ interests:
 - 古典音乐
 - $\tex$
 - 哲学、语言学
-- Galgame :disappointed_relieved:
+- Galgame
 - 一些应用数学
 
 education:
