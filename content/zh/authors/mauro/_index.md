@@ -26,7 +26,7 @@ interests:
 - 一些动漫
 - 音乐剧、歌剧
 - 古典音乐
-- $\LaTeX$
+- $\bf{\LaTeX}$
 - 哲学、语言学
 - Galgame
 - 一些应用数学

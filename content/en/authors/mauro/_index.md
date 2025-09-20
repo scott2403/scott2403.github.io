@@ -26,7 +26,7 @@ interests:
 - Animes
 - Musical & Opera
 - Classical Music
-- $\LaTeX$
+- $\bf{\LaTeX}$
 - Philosophy & Linguistics
 - Galgames
 - Some Applied Mathematics
