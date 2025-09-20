@@ -9,34 +9,34 @@
 #  weight = 10
 
 [[main]]
-  name = "Posts & Teaching"
-  url = "#posts"
-  weight = 20
+name = "Posts & Teaching"
+url = "#posts"
+weight = 20
 
 [[main]]
-  name = "Talks"
-  url = "#talk"
-  weight = 25
+name = "Talks"
+url = "#talk"
+weight = 25
 
 [[main]]
-  name = "Notes"
-  url = "#projects"
-  weight = 30
+name = "Notes"
+url = "#projects"
+weight = 30
 
 [[main]]
-  name = "Papers & preprints"
-  url = "consulting/"
-  weight = 40
+name = "Papers & preprints"
+url = "PandA/"
+weight = 40
 
 [[main]]
-  name = "Misc"
-  url = "freelance/"
-  weight = 45
+name = "Misc"
+url = "freelance/"
+weight = 45
 
 [[main]]
-  name = "Seminar"
-  url = "#ramblings"
-  weight = 50
+name = "Seminar"
+url = "#ramblings"
+weight = 50
 
 #[[main]]
 #  name = "Cool Blogs"
@@ -49,9 +49,9 @@
 #  weight = 70
 
 [[main]]
-  name = "Contact"
-  url = "#contact"
-  weight = 80
+name = "Contact"
+url = "#contact"
+weight = 80
 
 
 # Link to a PDF of your resume/CV from the menu.
