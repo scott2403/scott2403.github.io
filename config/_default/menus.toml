@@ -9,7 +9,7 @@
 #  weight = 10
 
 [[main]]
-  name = "Posts"
+  name = "Posts & Teaching"
   url = "#posts"
   weight = 20
 
@@ -19,22 +19,22 @@
   weight = 25
 
 [[main]]
-  name = "Projects"
+  name = "Notes"
   url = "#projects"
   weight = 30
 
 [[main]]
-  name = "Consulting"
+  name = "Papers & preprints"
   url = "consulting/"
   weight = 40
 
 [[main]]
-  name = "Freelance"
+  name = "Misc"
   url = "freelance/"
   weight = 45
 
 [[main]]
-  name = "Ramblings"
+  name = "Seminar"
   url = "#ramblings"
   weight = 50
 

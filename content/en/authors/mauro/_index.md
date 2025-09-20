@@ -79,8 +79,8 @@ I'm mainly concerned with the following mathematical problems:
 
 - Algebraic/Geometric Representation Theory
 - Geometric Langlands & its related physics problems
-- Lie Theory (Hopf algebras, Tensor categories)
-- Algebraic Geometry (Quantum cohomology, Moduli space)
+- Lie Theory (Representation of Algebraic Groups/Quantum Groups, Hopf algebras, Tensor categories)
+- Symplectic/Algebraic Geometry (Quantum cohomology, Moduli space, Deformation Quantization)
 - Noncommutative Geometry & K-Theory
 - Mathematical Physics (including Mathematical concepts of TQFT/CFT & String Theory )
-
+  

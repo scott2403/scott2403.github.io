@@ -45,3 +45,8 @@
   url = "#ramblings"
   weight = 50
 
+  [[zh.menu.main]]
+  name = "联系我"
+  url = "#contact"
+  weight = 80
+
