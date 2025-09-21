@@ -77,7 +77,7 @@ user_groups:
 - ResearchersContact
 - Visitors
 ---
-Greetings, welcome to my personal website. I am a fourth-year student in the NJUPT, and My current research interests lie in representation theory, algebraic geometry, and mathematical physics.
+Greetings, welcome to my academic website. I am a fourth-year student in the NJUPT, and my current research interests lie in representation theory, algebraic geometry, and mathematical physics.
 
 I'm mainly concerned with the following mathematical problems:
 
