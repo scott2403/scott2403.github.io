@@ -7,8 +7,8 @@ headless = true  # This file represents a page section.
 active = true  # Activate this widget? true/false
 weight = 85  # Order that this section will appear.
 
-title = "Talks"
-subtitle = "Selected talks during my PhD."
+title = "报告"
+subtitle = ""
 
 [content]
   # Page type to display. E.g. post, talk, or publication.
