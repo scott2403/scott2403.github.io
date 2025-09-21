@@ -32,7 +32,7 @@
 
   [[zh.menu.main]]
   name = "论文和预印本"
-  url = "consulting/"
+  url = "zh-paper/"
   weight = 40
 
   [[zh.menu.main]]
