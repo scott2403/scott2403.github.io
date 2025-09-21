@@ -149,20 +149,9 @@ body {
     .contact-section h2 {
         font-size: 1.5em;
     }
+
 }
 
 
-:lang(zh) {
-    font-family: "Noto Sans SC", serif;
-}
 
-/* 中文标题 */
-:lang(zh) h1,
-:lang(zh) h2,
-:lang(zh) h3,
-:lang(zh) h4,
-:lang(zh) h5,
-:lang(zh) h6 {
-    font-family: "Noto Serif SC", "Songti SC", "STSong", serif;
-}
 
