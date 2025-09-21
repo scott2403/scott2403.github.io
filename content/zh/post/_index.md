@@ -1,5 +1,5 @@
 ---
-title: Posts
+title: 个人随笔与教学
 
 # View.
 #   1 = List
