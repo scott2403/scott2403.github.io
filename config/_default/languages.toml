@@ -21,7 +21,7 @@
    weight = 2
   
   [[zh.menu.main]]
-  name = "学术会议"
+  name = "报告"
   url = "#talk"
   weight = 25
 
@@ -37,7 +37,7 @@
 
   [[zh.menu.main]]
   name = "杂项"
-  url = "freelance/"
+  url = "zh-misc/"
   weight = 45
 
   [[zh.menu.main]]
