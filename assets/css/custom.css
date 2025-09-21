@@ -151,11 +151,9 @@ body {
     }
 }
 
-/* -----------------------------------------------------
-   中文字体设置（仅针对中文内容生效）
-   ----------------------------------------------------- */
+
 :lang(zh) {
-    font-family: "Noto Sans SC", "Microsoft YaHei", "PingFang SC", "Heiti SC", "STHeiti", sans-serif;
+    font-family: "Noto Sans SC", serif;
 }
 
 /* 中文标题 */
